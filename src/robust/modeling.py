@@ -23,6 +23,7 @@ import flax.linen.initializers as init
 import jax.numpy as jnp
 from chex import Array
 
+from src.dataset import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 from utils import fixed_sincos2d_embeddings
 
 DenseGeneral = partial(nn.DenseGeneral, kernel_init=init.truncated_normal(0.02))
@@ -149,6 +150,7 @@ class ViT(ViTBase, nn.Module):
         self.head = Dense(self.labels) if self.labels is not None else None
 
     def __call__(self, x: Array, det: bool = True) -> Array:
+        x = (x - IMAGENET_DEFAULT_MEAN) / IMAGENET_DEFAULT_STD
         x = self.drop(self.embed(x), det)
         for layer in self.layer:
             x = layer(x, det)

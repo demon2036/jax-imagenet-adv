@@ -75,7 +75,7 @@ class TrainModule(nn.Module):
         # Normalize the pixel values in TPU devices, instead of copying the normalized
         # float values from CPU. This may reduce both memory usage and latency.
         images = jnp.moveaxis(images, 1, 3).astype(jnp.float32) / 0xFF
-        images = (images - IMAGENET_DEFAULT_MEAN) / IMAGENET_DEFAULT_STD
+
 
         labels = nn.one_hot(labels, self.model.labels) if labels.ndim == 1 else labels
         labels = labels.astype(jnp.float32)
