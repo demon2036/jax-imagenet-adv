@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 from __future__ import annotations
+
 
 import argparse
 import random
@@ -27,9 +29,9 @@ from flax.serialization import msgpack_serialize
 from flax.training.common_utils import shard
 from torch.utils.data import DataLoader
 
-from dataset import create_dataloaders
-from training import TrainState, create_train_state, training_step, validation_step
-from utils import AverageMeter, save_checkpoint_in_background
+from src.dataset import create_dataloaders
+from src.training import TrainState, create_train_state, training_step, validation_step
+from src.utils import AverageMeter, save_checkpoint_in_background
 
 warnings.filterwarnings("ignore")
 
@@ -61,16 +63,16 @@ def main(args: argparse.Namespace):
             average_meter.update(**unreplicate(metrics))
 
         if (
-            jax.process_index() == 0
-            and args.log_interval > 0
-            and step % args.log_interval == 0
+                jax.process_index() == 0
+                and args.log_interval > 0
+                and step % args.log_interval == 0
         ):
             metrics = average_meter.summary(prefix="train/")
             metrics["processed_samples"] = step * args.train_batch_size
             wandb.log(metrics, step)
 
         if args.eval_interval > 0 and (
-            step % args.eval_interval == 0 or step == args.training_steps
+                step % args.eval_interval == 0 or step == args.training_steps
         ):
             if jax.process_index() == 0:
                 params_bytes = msgpack_serialize(unreplicate(state.params))
