@@ -1,3 +1,5 @@
+export PYTHONPATH=src
+
 python3  src/standard/main.py \
     --output-dir $GCS_MODEL_DIR \
     --train-dataset-shards "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-train-{0000..1023}.tar" \
