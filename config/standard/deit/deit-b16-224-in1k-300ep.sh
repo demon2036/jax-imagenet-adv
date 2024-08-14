@@ -1,4 +1,4 @@
-python3  src/standard/main.py \
+python3  src/main.py \
     --output-dir $GCS_MODEL_DIR \
     --train-dataset-shards "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-train-{0000..1023}.tar" \
     --valid-dataset-shards "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-validation-{00..63}.tar" \
