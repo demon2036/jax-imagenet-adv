@@ -80,12 +80,11 @@ def main(args: argparse.Namespace):
         return state.apply_fn({"params": state.params}, images + image_perturbation)
         # return state.apply_fn({'params': state.params}, images)
 
-    def adversarial_loss(perturbation,state,image,label):
+    def adversarial_loss(perturbation, state, image, label):
         logits = state.apply_fn({"params": state.params}, image + perturbation)
         loss_value = jnp.mean(softmax_cross_entropy_with_integer_labels(logits, label))
         # loss_value = logits
         return loss_value
-
 
     @functools.partial(jax.pmap)
     def test2(image, label, state, epsilon=4 / 255, step_size=4 / 3 / 255, maxiter=1, key=None):
@@ -98,16 +97,10 @@ def main(args: argparse.Namespace):
         # image_perturbation = jnp.zeros_like(image)
         image_perturbation = jax.random.uniform(key, image.shape, minval=-epsilon, maxval=epsilon)
 
-
-
-        # for _ in range(maxiter):
-        #     # compute gradient of the loss wrt to the image
-        #     sign_grad = jnp.sign(adversarial_loss(image_perturbation))
-
-        grad_adversarial = jax.jit(jax.grad(adversarial_loss))
+        grad_adversarial = jax.grad(adversarial_loss)
         for _ in range(maxiter):
             # compute gradient of the loss wrt to the image
-            sign_grad = jnp.sign(grad_adversarial(image_perturbation,state,image,label))
+            sign_grad = jnp.sign(grad_adversarial(image_perturbation, state, image, label))
 
             # heuristic step-size 2 eps / maxiter
             image_perturbation += step_size * sign_grad
