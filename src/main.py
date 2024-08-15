@@ -87,7 +87,7 @@ def main(args: argparse.Namespace):
         return loss_value,loss_value
 
     def adversarial_loss2(params, state, image, label):
-        logits = state.apply_fn({"params": params}, image)
+        logits = state.apply_fn({"params": state.params}, image+params)
         loss_value = jnp.mean(softmax_cross_entropy_with_integer_labels(logits, label))
         # loss_value = logits
         return loss_value, loss_value
@@ -103,7 +103,7 @@ def main(args: argparse.Namespace):
         # image_perturbation = jnp.zeros_like(image)
         image_perturbation = jax.random.uniform(key, image.shape, minval=-epsilon, maxval=epsilon)
 
-        (_, metrics), grads = jax.value_and_grad(adversarial_loss2, has_aux=True)(state.params, state, image, label)
+        (_, metrics), grads = jax.value_and_grad(adversarial_loss2, has_aux=True)(image, state, image, label)
         # grad_adversarial = jax.value_and_grad(adversarial_loss,has_aux=True)
         # (_, metrics), grads=grad_adversarial(image_perturbation, state, image, label)
         return grads
