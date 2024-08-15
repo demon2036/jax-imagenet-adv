@@ -67,7 +67,7 @@ def create_transforms(args: argparse.Namespace) -> tuple[nn.Module, nn.Module]:
             T.CenterCrop(args.image_size),
         ]
 
-    train_transforms = [*train_transforms, T.RandomHorizontalFlip(), T.PILToTensor(), ]
+    # train_transforms = [*train_transforms, T.RandomHorizontalFlip(), T.PILToTensor(), ]
 
     train_transforms += [
         T.RandomHorizontalFlip(),
@@ -76,11 +76,11 @@ def create_transforms(args: argparse.Namespace) -> tuple[nn.Module, nn.Module]:
         T.RandomErasing(args.random_erasing, value="random"),
         T.PILToTensor(),
     ]
-    # valid_transforms = [
-    #     T.Resize(int(args.image_size / args.test_crop_ratio), interpolation=3),
-    #     T.CenterCrop(args.image_size),
-    #     T.PILToTensor(),
-    # ]
+    valid_transforms = [
+        T.Resize(int(args.image_size / args.test_crop_ratio), interpolation=3),
+        T.CenterCrop(args.image_size),
+        T.PILToTensor(),
+    ]
     return T.Compose(train_transforms), T.Compose(valid_transforms)
 
 
