@@ -278,12 +278,13 @@ def create_train_state(args: argparse.Namespace) -> TrainState:
         droppath=args.droppath,
         grad_ckpt=args.grad_ckpt,
     )
-    module = TrainModule(
-        model=model,
-        mixup=Mixup(args.mixup, args.cutmix),
-        label_smoothing=args.label_smoothing if args.criterion == "ce" else 0,
-        criterion=CRITERION_COLLECTION[args.criterion],
-    )
+    # module = TrainModule(
+    #     model=model,
+    #     mixup=Mixup(args.mixup, args.cutmix),
+    #     label_smoothing=args.label_smoothing if args.criterion == "ce" else 0,
+    #     criterion=CRITERION_COLLECTION[args.criterion],
+    # )
+    module=model
 
     # Initialize the model weights with dummy inputs. Using the init RNGS and inputs, we
     # will tabulate the summary of model and its parameters. Furthermore, empty gradient
