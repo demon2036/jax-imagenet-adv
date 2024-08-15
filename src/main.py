@@ -79,12 +79,50 @@ def main(args: argparse.Namespace):
         return state.apply_fn({"params": state.params}, images + image_perturbation)
         # return state.apply_fn({'params': state.params}, images)
 
-    pgd_attack_pmap = jax.pmap(pgd_attack)
+    @functools.partial(jax.pmap)
+    def test2(image, label, state, epsilon=4 / 255, step_size=4 / 3 / 255, maxiter=1, key=None):
+
+        image = einops.rearrange(image, 'b c h w->b h w c')
+        image = image.astype(jnp.float32)
+
+        label = label.astype(jnp.int32)
+
+        # image_perturbation = jnp.zeros_like(image)
+        image_perturbation = jax.random.uniform(key, image.shape, minval=-epsilon, maxval=epsilon)
+
+        def adversarial_loss(perturbation):
+            logits = state.apply_fn({"params": state.params}, image + perturbation)
+            loss_value = jnp.mean(softmax_cross_entropy_with_integer_labels(logits, label))
+            # loss_value = logits
+            return loss_value
+
+        # for _ in range(maxiter):
+        #     # compute gradient of the loss wrt to the image
+        #     sign_grad = jnp.sign(adversarial_loss(image_perturbation))
+
+        grad_adversarial = jax.jit(jax.grad(adversarial_loss))
+        for _ in range(maxiter):
+            # compute gradient of the loss wrt to the image
+            sign_grad = jnp.sign(grad_adversarial(image_perturbation))
+
+            # heuristic step-size 2 eps / maxiter
+            image_perturbation += step_size * sign_grad
+            # projection step onto the L-infinity ball centered at image
+            image_perturbation = jnp.clip(image_perturbation, - epsilon, epsilon)
+
+        # sign_grad = jnp.sign(grad_adversarial(image_perturbation))
+        # image_perturbation += step_size * sign_grad
+        # image_perturbation = jnp.clip(image_perturbation, - epsilon, epsilon)
+
+        # clip the image to ensure pixels are between 0 and 1
+        return jnp.clip(image + image_perturbation, 0, 1)
+
+    # pgd_attack_pmap = jax.pmap(pgd_attack)
 
     for step in tqdm.trange(1, args.training_steps + 1, dynamic_ncols=True):
         # state, metrics = training_step(state, batch)
-        out = pgd_attack_pmap(batch[0], batch[1], state, key=key)
-        # out = test(batch[0], batch[1], state, key=key)
+        # out = pgd_attack_pmap(batch[0], batch[1], state, key=key)
+        out = test2(batch[0], batch[1], state, key=key)
         # pgd_attack(b)
 
     for step in tqdm.trange(1, args.training_steps + 1, dynamic_ncols=True):
