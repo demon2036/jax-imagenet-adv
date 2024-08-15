@@ -29,9 +29,12 @@ from flax.serialization import msgpack_serialize
 from flax.training.common_utils import shard
 from torch.utils.data import DataLoader
 
-from dataset import create_dataloaders
+
 from standard.training import TrainState, create_train_state, training_step, validation_step
 from utils import AverageMeter, save_checkpoint_in_background
+
+
+from dataset_mix import create_dataloaders
 
 warnings.filterwarnings("ignore")
 
@@ -49,7 +52,7 @@ def evaluate(state: TrainState, dataloader: DataLoader) -> dict[str, float]:
 
 def main(args: argparse.Namespace):
     train_dataloader, valid_dataloader = create_dataloaders(args)
-    train_dataloader_iter = iter(train_dataloader)
+    # train_dataloader_iter = iter(train_dataloader)
     state = create_train_state(args).replicate()
 
     if jax.process_index() == 0:
