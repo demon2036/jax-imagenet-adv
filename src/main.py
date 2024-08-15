@@ -103,9 +103,9 @@ def main(args: argparse.Namespace):
         # image_perturbation = jnp.zeros_like(image)
         image_perturbation = jax.random.uniform(key, image.shape, minval=-epsilon, maxval=epsilon)
 
-        # (_, metrics), grads = jax.value_and_grad(adversarial_loss2, has_aux=True)(state.params, state, image, label)
-        grad_adversarial = jax.value_and_grad(adversarial_loss,has_aux=True)
-        (_, metrics), grads=grad_adversarial(image_perturbation, state, image, label)
+        (_, metrics), grads = jax.value_and_grad(adversarial_loss2, has_aux=True)(state.params, state, image, label)
+        # grad_adversarial = jax.value_and_grad(adversarial_loss,has_aux=True)
+        # (_, metrics), grads=grad_adversarial(image_perturbation, state, image, label)
         return grads
 
 
