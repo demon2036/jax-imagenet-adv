@@ -69,18 +69,18 @@ def create_transforms(args: argparse.Namespace) -> tuple[nn.Module, nn.Module]:
 
     train_transforms = [*train_transforms, T.RandomHorizontalFlip(), T.PILToTensor(), ]
 
-    # train_transforms += [
-    #     T.RandomHorizontalFlip(),
-    #     auto_augment_factory(args),
-    #     T.ColorJitter(args.color_jitter, args.color_jitter, args.color_jitter),
-    #     T.RandomErasing(args.random_erasing, value="random"),
-    #     T.PILToTensor(),
-    # ]
-    valid_transforms = [
-        T.Resize(int(args.image_size / args.test_crop_ratio), interpolation=3),
-        T.CenterCrop(args.image_size),
+    train_transforms += [
+        T.RandomHorizontalFlip(),
+        auto_augment_factory(args),
+        T.ColorJitter(args.color_jitter, args.color_jitter, args.color_jitter),
+        T.RandomErasing(args.random_erasing, value="random"),
         T.PILToTensor(),
     ]
+    # valid_transforms = [
+    #     T.Resize(int(args.image_size / args.test_crop_ratio), interpolation=3),
+    #     T.CenterCrop(args.image_size),
+    #     T.PILToTensor(),
+    # ]
     return T.Compose(train_transforms), T.Compose(valid_transforms)
 
 
@@ -130,10 +130,10 @@ def mix_dataloader_iter(train_dataloader, train_origin_dataloader):
 def create_dataloaders(
         args: argparse.Namespace,
 ) -> tuple[Any | None, DataLoader | None]:
-    train_dataloader, valid_dataloader = None, None
+    train_dataloader, valid_dataloader,train_origin_dataloader = None, None,None
     train_transform, valid_transform = create_transforms(args)
 
-    dataset_mix_ratio = 1.0
+    dataset_mix_ratio = 0.0
     total_batch_size = args.train_batch_size // jax.process_count()
     train_batch_size = int(total_batch_size * dataset_mix_ratio)
     train_origin_batch_size = total_batch_size - train_batch_size
@@ -141,28 +141,31 @@ def create_dataloaders(
     args.generated_dataset_shards = 'gs://shadow-center-2b/imagenet-generated-100steps/shards-{00000..06399}.tar'
 
     if args.train_dataset_shards is not None:
-        dataset = wds.DataPipeline(
-            wds.SimpleShardList(args.generated_dataset_shards, seed=args.shuffle_seed),
-            itertools.cycle,
-            wds.detshuffle(),
-            wds.slice(jax.process_index(), None, jax.process_count()),
-            wds.split_by_worker,
-            wds.tarfile_to_samples(handler=wds.ignore_and_continue),
-            wds.detshuffle(),
-            wds.decode("pil", handler=wds.ignore_and_continue),
-            wds.to_tuple("jpg", "cls", handler=wds.ignore_and_continue),
-            partial(repeat_samples, repeats=args.augment_repeats),
-            wds.map_tuple(train_transform, torch.tensor),
-        )
-        train_dataloader = DataLoader(
-            dataset,
-            batch_size=train_batch_size // args.grad_accum,
-            num_workers=args.train_loader_workers,
-            collate_fn=partial(collate_and_shuffle, repeats=args.augment_repeats),
-            drop_last=True,
-            prefetch_factor=20,
-            persistent_workers=True,
-        )
+        if train_batch_size > 0:
+            dataset = wds.DataPipeline(
+                wds.SimpleShardList(args.generated_dataset_shards, seed=args.shuffle_seed),
+                itertools.cycle,
+                wds.detshuffle(),
+                wds.slice(jax.process_index(), None, jax.process_count()),
+                wds.split_by_worker,
+                wds.tarfile_to_samples(handler=wds.ignore_and_continue),
+                wds.detshuffle(),
+                wds.decode("pil", handler=wds.ignore_and_continue),
+                wds.to_tuple("jpg", "cls", handler=wds.ignore_and_continue),
+                partial(repeat_samples, repeats=args.augment_repeats),
+                wds.map_tuple(train_transform, torch.tensor),
+            )
+            train_dataloader = DataLoader(
+                dataset,
+                batch_size=train_batch_size // args.grad_accum,
+                num_workers=args.train_loader_workers,
+                collate_fn=partial(collate_and_shuffle, repeats=args.augment_repeats),
+                drop_last=True,
+                prefetch_factor=20,
+                persistent_workers=True,
+            )
+        else:
+            train_dataloader = None
 
         if train_origin_batch_size > 0:
             dataset = wds.DataPipeline(
@@ -187,6 +190,8 @@ def create_dataloaders(
                 prefetch_factor=20,
                 persistent_workers=True,
             )
+        else:
+            train_origin_dataloader = None
 
     if args.valid_dataset_shards is not None:
         dataset = wds.DataPipeline(
@@ -209,5 +214,5 @@ def create_dataloaders(
             persistent_workers=True,
         )
 
-    return mix_dataloader_iter(train_dataloader, None), valid_dataloader
+    return mix_dataloader_iter(train_dataloader, train_origin_dataloader), valid_dataloader
     # return train_dataloader, valid_dataloader
