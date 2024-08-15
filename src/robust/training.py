@@ -130,16 +130,16 @@ def training_step(state, batch):
         one_hot = jax.nn.one_hot(labels, logits_adv.shape[-1])
         one_hot = optax.smooth_labels(one_hot, state.label_smoothing)
         loss = jnp.mean(optax.softmax_cross_entropy(logits=logits_adv, labels=one_hot))
-        metrics = {'loss': loss, }
+        metrics = {'loss': loss, 'accuracy_adv' : jnp.mean(jnp.argmax(logits_adv, -1) == labels)}
         return loss, metrics
 
     grad_fn = jax.value_and_grad(loss_fn, has_aux=True)
     (loss, metrics), grads = grad_fn(state.params)
     # accuracy_std = jnp.mean(jnp.argmax(metrics['logits'], -1) == labels)
-    accuracy_adv = jnp.mean(jnp.argmax(metrics['logits_adv'], -1) == labels)
+    # accuracy_adv = jnp.mean(jnp.argmax(metrics['logits_adv'], -1) == labels)
 
     # metrics['accuracy'] = accuracy_std
-    metrics['adversarial accuracy'] = accuracy_adv
+    # metrics['adversarial accuracy'] = accuracy_adv
 
     metrics = jax.lax.pmean(metrics, axis_name="batch")
 
