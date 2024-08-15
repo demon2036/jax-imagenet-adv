@@ -84,15 +84,13 @@ def main(args: argparse.Namespace):
         logits = state.apply_fn({"params": state.params}, image + perturbation)
         loss_value = jnp.mean(softmax_cross_entropy_with_integer_labels(logits, label))
         # loss_value = logits
-        return loss_value
-
-
-    def adversarial_loss2(params, state, image, label):
-        logits = state.apply_fn({"params": params}, image )
-        loss_value = jnp.mean(softmax_cross_entropy_with_integer_labels(logits, label))
-        # loss_value = logits
         return loss_value,loss_value
 
+    def adversarial_loss2(params, state, image, label):
+        logits = state.apply_fn({"params": params}, image)
+        loss_value = jnp.mean(softmax_cross_entropy_with_integer_labels(logits, label))
+        # loss_value = logits
+        return loss_value, loss_value
 
     @functools.partial(jax.pmap)
     def test2(image, label, state, epsilon=4 / 255, step_size=4 / 3 / 255, maxiter=1, key=None):
@@ -105,13 +103,10 @@ def main(args: argparse.Namespace):
         # image_perturbation = jnp.zeros_like(image)
         image_perturbation = jax.random.uniform(key, image.shape, minval=-epsilon, maxval=epsilon)
 
-        (_, metrics), grads = jax.value_and_grad(adversarial_loss2, has_aux=True)(state.params,state,image,label)
+        # (_, metrics), grads = jax.value_and_grad(adversarial_loss2, has_aux=True)(state.params, state, image, label)
+        grad_adversarial = jax.value_and_grad(adversarial_loss,has_aux=True)
+        (_, metrics), grads=grad_adversarial(image_perturbation, state, image, label)
         return grads
-        # grad_adversarial = jax.grad(adversarial_loss)
-        # return grad_adversarial(image_perturbation, state, image, label)
-
-
-
 
 
         for _ in range(maxiter):
@@ -122,8 +117,6 @@ def main(args: argparse.Namespace):
             image_perturbation += step_size * sign_grad
             # projection step onto the L-infinity ball centered at image
             image_perturbation = jnp.clip(image_perturbation, - epsilon, epsilon)
-
-
 
         # clip the image to ensure pixels are between 0 and 1
         return jnp.clip(image + image_perturbation, 0, 1)
