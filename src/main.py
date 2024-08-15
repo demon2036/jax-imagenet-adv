@@ -62,10 +62,8 @@ def main(args: argparse.Namespace):
     for step in tqdm.trange(1, args.training_steps + 1, dynamic_ncols=True):
         batch = shard(jax.tree_util.tree_map(np.asarray, next(train_dataloader_iter)))
         # state, metrics = training_step(state, batch)
-        img=pgd_attack(batch[0],batch[1],state)
+        img = jax.pmap(pgd_attack)(batch[0], batch[1], state)
         # pgd_attack(b)
-
-
 
 
 
