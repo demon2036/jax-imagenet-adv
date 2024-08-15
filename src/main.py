@@ -25,7 +25,7 @@ import tqdm
 import wandb
 from flax.jax_utils import unreplicate
 from flax.serialization import msgpack_serialize
-from flax.training.common_utils import shard
+from flax.training.common_utils import shard, shard_prng_key
 from torch.utils.data import DataLoader
 from robust.training import TrainState, create_train_state, training_step, validation_step
 from utils import AverageMeter, save_checkpoint_in_background
@@ -59,10 +59,14 @@ def main(args: argparse.Namespace):
         wandb.init(name=args.name, project=args.project, config=args)
     average_meter, max_val_acc1 = AverageMeter(use_latest=["learning_rate"]), 0.0
 
+
+    key=jax.random.PRNGKey(1)
+    key=shard_prng_key(key)
+
     for step in tqdm.trange(1, args.training_steps + 1, dynamic_ncols=True):
         batch = shard(jax.tree_util.tree_map(np.asarray, next(train_dataloader_iter)))
         # state, metrics = training_step(state, batch)
-        img = jax.pmap(pgd_attack)(batch[0], batch[1], state)
+        img = jax.pmap(pgd_attack)(batch[0], batch[1], state,key=key)
         # pgd_attack(b)
 
 
