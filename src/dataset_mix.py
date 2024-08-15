@@ -136,7 +136,7 @@ def create_dataloaders(
     train_batch_size = int(total_batch_size * dataset_mix_ratio)
     train_origin_batch_size = total_batch_size - train_batch_size
 
-    args.generated_dataset_shards='gs://shadow-center-2b/imagenet-generated-100steps/shards-0{0000..06399}.tar'
+    args.generated_dataset_shards='gs://shadow-center-2b/imagenet-generated-100steps/shards-0{0000..6399}.tar'
 
     if args.train_dataset_shards is not None:
         dataset = wds.DataPipeline(
