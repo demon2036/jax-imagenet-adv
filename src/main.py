@@ -154,4 +154,5 @@ if __name__ == "__main__":
     parser.add_argument("--ipaddr")
     parser.add_argument("--hostname")
     parser.add_argument("--output-dir", default=".")
+    jax.distributed.initialize()
     main(parser.parse_args())

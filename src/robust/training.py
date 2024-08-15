@@ -302,7 +302,7 @@ def create_train_state(args: argparse.Namespace) -> TrainState:
     if args.pretrained_ckpt is not None:
         params = load_pretrained_params(args, params)
     if args.grad_accum > 1:
-        grad_accum = jax.tree_map(jnp.zeros_like, params)
+        grad_accum = jax.tree_util.tree_map(jnp.zeros_like, params)
 
     # Create learning rate scheduler and optimizer with gradient clipping. The learning
     # rate will be recorded at `hyperparams` by `optax.inject_hyperparameters`.
