@@ -98,6 +98,7 @@ def main(args: argparse.Namespace):
         image_perturbation = jax.random.uniform(key, image.shape, minval=-epsilon, maxval=epsilon)
 
         grad_adversarial = jax.grad(adversarial_loss)
+        return grad_adversarial(image_perturbation, state, image, label)
         for _ in range(maxiter):
             # compute gradient of the loss wrt to the image
             sign_grad = jnp.sign(grad_adversarial(image_perturbation, state, image, label))
@@ -107,9 +108,7 @@ def main(args: argparse.Namespace):
             # projection step onto the L-infinity ball centered at image
             image_perturbation = jnp.clip(image_perturbation, - epsilon, epsilon)
 
-        # sign_grad = jnp.sign(grad_adversarial(image_perturbation))
-        # image_perturbation += step_size * sign_grad
-        # image_perturbation = jnp.clip(image_perturbation, - epsilon, epsilon)
+
 
         # clip the image to ensure pixels are between 0 and 1
         return jnp.clip(image + image_perturbation, 0, 1)
