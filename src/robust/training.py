@@ -113,7 +113,7 @@ def training_step(state, batch):
     print(images.shape)
 
     """Computes gradients, loss and accuracy for a single batch."""
-    adv_image = pgd_attack(images, labels, state, state.params, key=key['mixup'], )
+    adv_image = pgd_attack(images, labels, state,  key=key['mixup'], )
 
     # def loss_fn(params):
     #     logits = state.apply_fn({'params': params}, images)
