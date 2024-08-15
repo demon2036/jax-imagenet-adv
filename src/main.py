@@ -68,6 +68,7 @@ def main(args: argparse.Namespace):
     @functools.partial(jax.pmap)
     def test(images):
         images=einops.rearrange(images,'b c h w -> b h w c')
+        print(images.shape)
         return state.apply_fn({'params':state.params},images)
 
 
