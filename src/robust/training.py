@@ -112,7 +112,7 @@ def training_step(state, batch):
     print(images.shape)
 
     """Computes gradients, loss and accuracy for a single batch."""
-    adv_image = pgd_attack(images, labels, state, state.params, key=key, )
+    adv_image = pgd_attack(images, labels, state, state.params, key=key['mixup_rng'], )
 
     # def loss_fn(params):
     #     logits = state.apply_fn({'params': params}, images)
@@ -236,6 +236,7 @@ def validation_step(state, data):
     inputs, labels = data
     inputs = inputs.astype(jnp.float32)
     labels = labels.astype(jnp.int64)
+    key=jax.random.PRNGKey(0)
 
     # print(images)
     # while True:
@@ -248,7 +249,7 @@ def validation_step(state, data):
     maxiter = 10
     EPSILON = 4 / 255
 
-    adversarial_images = pgd_attack(inputs, labels, state, epsilon=EPSILON, maxiter=maxiter,
+    adversarial_images = pgd_attack(inputs, labels, state, epsilon=EPSILON, maxiter=maxiter,key=key
                                     step_size=EPSILON * 2 / maxiter)
     logits_adv = state.apply_fn({"params": state.ema_params}, adversarial_images)
     adversarial_accuracy = jnp.argmax(logits_adv, axis=-1) == labels
