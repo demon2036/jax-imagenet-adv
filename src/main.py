@@ -28,6 +28,7 @@ import wandb
 from flax.jax_utils import unreplicate
 from flax.serialization import msgpack_serialize
 from flax.training.common_utils import shard, shard_prng_key
+from optax import softmax_cross_entropy_with_integer_labels
 from torch.utils.data import DataLoader
 from robust.training import TrainState, create_train_state, training_step, validation_step
 from utils import AverageMeter, save_checkpoint_in_background
