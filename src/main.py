@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import argparse
+import functools
 import random
 import warnings
 
@@ -59,17 +60,23 @@ def main(args: argparse.Namespace):
         wandb.init(name=args.name, project=args.project, config=args)
     average_meter, max_val_acc1 = AverageMeter(use_latest=["learning_rate"]), 0.0
 
+    key = jax.random.PRNGKey(1)
+    key = shard_prng_key(key)
 
-    key=jax.random.PRNGKey(1)
-    key=shard_prng_key(key)
+
+    @functools.partial(jax.pmap)
+    def test(images):
+        return state.apply_fn({'params':state.params},images)
+
+
+
 
     for step in tqdm.trange(1, args.training_steps + 1, dynamic_ncols=True):
         batch = shard(jax.tree_util.tree_map(np.asarray, next(train_dataloader_iter)))
         # state, metrics = training_step(state, batch)
-        img = jax.pmap(pgd_attack)(batch[0], batch[1], state,key=key)
+        # img = jax.pmap(pgd_attack)(batch[0], batch[1], state, key=key)
+        img = test(batch[0], )
         # pgd_attack(b)
-
-
 
     for step in tqdm.trange(1, args.training_steps + 1, dynamic_ncols=True):
         for _ in range(args.grad_accum):
