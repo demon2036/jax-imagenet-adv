@@ -32,6 +32,8 @@ from dataset import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 from modeling import ViT
 from utils import Mixup, get_layer_index_fn, load_pretrained_params, modified_lamb
 
+from ..attacks.pgd import pgd_attack
+
 CRITERION_COLLECTION = {
     "ce": optax.softmax_cross_entropy,
     "bce": lambda x, y: optax.sigmoid_binary_cross_entropy(x, y > 0).mean(-1),
@@ -76,7 +78,6 @@ class TrainModule(nn.Module):
         # float values from CPU. This may reduce both memory usage and latency.
         images = jnp.moveaxis(images, 1, 3).astype(jnp.float32) / 0xFF
 
-
         labels = nn.one_hot(labels, self.model.labels) if labels.ndim == 1 else labels
         labels = labels.astype(jnp.float32)
 
@@ -98,8 +99,11 @@ class TrainModule(nn.Module):
 
 @partial(jax.pmap, axis_name="batch", donate_argnums=0)
 def training_step(state: TrainState, batch: ArrayTree) -> tuple[TrainState, ArrayTree]:
+    images, labels = batch
+    adv_image = pgd_attack(images, labels, state, state.params)
+
     def loss_fn(params: ArrayTree) -> ArrayTree:
-        metrics = state.apply_fn({"params": params}, *batch, det=False, rngs=rngs)
+        metrics = state.apply_fn({"params": params}, adv_image, labels, det=False, rngs=rngs)
         metrics = jax.tree_map(jnp.mean, metrics)
         return metrics["loss"], metrics
 
@@ -135,12 +139,22 @@ def training_step(state: TrainState, batch: ArrayTree) -> tuple[TrainState, Arra
 
 @partial(jax.pmap, axis_name="batch")
 def validation_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
+    metrics_adv = state.apply_fn(
+        {"params": state.params},
+        images=pgd_attack(batch[0], batch[1], state, state.params, step_size=1 / 255, maxiter=10),
+        labels=jnp.where(batch[1] != -1, batch[1], 0),
+        det=True,
+    )
+
     metrics = state.apply_fn(
         {"params": state.params},
         images=batch[0],
         labels=jnp.where(batch[1] != -1, batch[1], 0),
         det=True,
     )
+
+    metrics['val_adv_acc1'] = metrics_adv['acc1']
+
     metrics["num_samples"] = batch[1] != -1
     metrics = jax.tree_map(lambda x: (x * (batch[1] != -1)).sum(), metrics)
     return jax.lax.psum(metrics, axis_name="batch")
@@ -188,7 +202,7 @@ def create_train_state(args: argparse.Namespace) -> TrainState:
     # rate will be recorded at `hyperparams` by `optax.inject_hyperparameters`.
     @partial(optax.inject_hyperparams, hyperparam_dtype=jnp.float32)
     def create_optimizer_fn(
-        learning_rate: optax.Schedule,
+            learning_rate: optax.Schedule,
     ) -> optax.GradientTransformation:
         tx = OPTIMIZER_COLLECTION[args.optimizer](
             learning_rate=learning_rate,
