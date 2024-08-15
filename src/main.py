@@ -81,7 +81,7 @@ def main(args: argparse.Namespace):
         # return state.apply_fn({'params': state.params}, images)
 
     def adversarial_loss(perturbation, state, image, label):
-        logits = state.apply_fn({"params": state.params}, image + perturbation)
+        logits = state.apply_fn({"params": state.params},perturbation)
         loss_value = jnp.mean(softmax_cross_entropy_with_integer_labels(logits, label))
         # loss_value = logits
         return loss_value,loss_value
