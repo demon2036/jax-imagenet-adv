@@ -66,17 +66,22 @@ def main(args: argparse.Namespace):
     import jax.numpy as jnp
 
     @functools.partial(jax.pmap)
-    def test(images, state):
-        images = einops.rearrange(images, 'b c h w -> b h w c')
+    def test(images, state, key):
+        images = einops.rearrange(images, 'b c h w->b h w c')
         images = images.astype(jnp.float32)
-        print(images.shape,images.dtype)
-        return state.apply_fn({'params': state.params}, images)
+
+        # label = label.astype(jnp.int32)
+
+        # image_perturbation = jnp.zeros_like(image)
+        image_perturbation = jax.random.uniform(key, images.shape, minval=-4, maxval=4)
+        return state.apply_fn({"params": state.params}, images + image_perturbation)
+        # return state.apply_fn({'params': state.params}, images)
 
     for step in tqdm.trange(1, args.training_steps + 1, dynamic_ncols=True):
         batch = shard(jax.tree_util.tree_map(np.asarray, next(train_dataloader_iter)))
         # state, metrics = training_step(state, batch)
         # img = jax.pmap(pgd_attack)(batch[0], batch[1], state, key=key)
-        img = test(batch[0], state)
+        img = test(batch[0], state,key)
         # pgd_attack(b)
 
     for step in tqdm.trange(1, args.training_steps + 1, dynamic_ncols=True):

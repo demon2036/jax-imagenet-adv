@@ -32,11 +32,13 @@ def pgd_attack(image, label, state, epsilon=4 / 255, step_size=4 / 3 / 255, maxi
   """
     image = einops.rearrange(image, 'b c h w->b h w c')
     image = image.astype(jnp.float32)
-    return state.apply_fn({"params": state.params}, image + image_perturbation)
+
     label = label.astype(jnp.int32)
 
+
     # image_perturbation = jnp.zeros_like(image)
-    # image_perturbation = jax.random.uniform(key, image.shape, minval=-epsilon, maxval=epsilon)
+    image_perturbation = jax.random.uniform(key, image.shape, minval=-epsilon, maxval=epsilon)
+    return state.apply_fn({"params": state.params}, image + image_perturbation)
 
     def adversarial_loss(perturbation):
         logits = state.apply_fn({"params": state.params}, image + perturbation)
