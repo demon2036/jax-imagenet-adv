@@ -88,7 +88,7 @@ class TrainModule(nn.Module):
 
         logits = self.model(images, det=det)
 
-        return logits
+        return logits, labels
 
     # def train_func(self, images: Array, labels: Array, det: bool = True) -> ArrayTree:
     #     # Normalize the pixel values in TPU devices, instead of copying the normalized
@@ -125,7 +125,7 @@ def training_step(state: TrainState, batch: ArrayTree) -> tuple[TrainState, Arra
 
     def loss_fn(params: ArrayTree) -> ArrayTree:
 
-        logits = state.apply_fn({"params": params}, images, labels, det=False, rngs=rngs)
+        logits, labels = state.apply_fn({"params": params}, images, batch[1], det=False, rngs=rngs)
         loss = state.criterion(logits, labels)
         labels = labels == labels.max(-1, keepdims=True)
         preds = jax.lax.top_k(logits, k=5)[1]
@@ -220,7 +220,7 @@ def create_train_state(args: argparse.Namespace) -> TrainState:
         "labels": jnp.zeros((1,), dtype=jnp.int32),
     }
     init_rngs = {"params": jax.random.PRNGKey(args.init_seed)}
-    print(module.tabulate(init_rngs, **example_inputs))
+    # print(module.tabulate(init_rngs, **example_inputs))
 
     params = module.init(init_rngs, **example_inputs)["params"]
     if args.pretrained_ckpt is not None:
