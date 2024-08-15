@@ -32,7 +32,7 @@ from dataset import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 from modeling import ViT
 from utils import Mixup, get_layer_index_fn, load_pretrained_params, modified_lamb
 
-from ..attacks.pgd import pgd_attack
+from attacks.pgd import pgd_attack
 
 CRITERION_COLLECTION = {
     "ce": optax.softmax_cross_entropy,
