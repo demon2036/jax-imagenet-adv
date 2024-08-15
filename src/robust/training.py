@@ -73,14 +73,11 @@ class TrainModule(nn.Module):
     label_smoothing: float = 0.0
     criterion: Callable[[Array, Array], Array] = CRITERION_COLLECTION["ce"]
 
-    def __call__(self, images: Array, labels: Array, det: bool = True, use_pgd=True) -> ArrayTree:
+    def __call__(self, images: Array, labels: Array, det: bool = True) -> ArrayTree:
         # Normalize the pixel values in TPU devices, instead of copying the normalized
         # float values from CPU. This may reduce both memory usage and latency.
         # images, labels = batch
         images = jnp.moveaxis(images, 1, 3).astype(jnp.float32) / 0xFF
-
-        if use_pgd:
-            images = jax.lax.stop_gradient(pgd_attack(images, labels, self.model, ))
 
         labels = nn.one_hot(labels, self.model.labels) if labels.ndim == 1 else labels
         labels = labels.astype(jnp.float32)
@@ -89,22 +86,51 @@ class TrainModule(nn.Module):
             labels = optax.smooth_labels(labels, self.label_smoothing)
             images, labels = self.mixup(images, labels)
 
-        loss = self.criterion((logits := self.model(images, det=det)), labels)
-        labels = labels == labels.max(-1, keepdims=True)
+        logits = self.model(images, det=det)
 
-        # Instead of directly comparing the maximum classes of predicted logits with the
-        # given one-hot labels, we will check if the predicted classes are within the
-        # label set. This approach is equivalent to traditional methods in single-label
-        # classification and also supports multi-label tasks.
-        preds = jax.lax.top_k(logits, k=5)[1]
-        accs = jnp.take_along_axis(labels, preds, axis=-1)
-        return {"loss": loss, "acc1": accs[:, 0], "acc5": accs.any(-1)}
+        return logits
+
+    # def train_func(self, images: Array, labels: Array, det: bool = True) -> ArrayTree:
+    #     # Normalize the pixel values in TPU devices, instead of copying the normalized
+    #     # float values from CPU. This may reduce both memory usage and latency.
+    #     # images, labels = batch
+    #     images = jnp.moveaxis(images, 1, 3).astype(jnp.float32) / 0xFF
+    #
+    #     images = jax.lax.stop_gradient(pgd_attack(images, labels, self.model, ))
+    #
+    #     labels = nn.one_hot(labels, self.model.labels) if labels.ndim == 1 else labels
+    #     labels = labels.astype(jnp.float32)
+    #
+    #     if not det:
+    #         labels = optax.smooth_labels(labels, self.label_smoothing)
+    #         images, labels = self.mixup(images, labels)
+    #
+    #     loss = self.criterion((logits := self.model(images, det=det)), labels)
+    #     labels = labels == labels.max(-1, keepdims=True)
+    #
+    #     # Instead of directly comparing the maximum classes of predicted logits with the
+    #     # given one-hot labels, we will check if the predicted classes are within the
+    #     # label set. This approach is equivalent to traditional methods in single-label
+    #     # classification and also supports multi-label tasks.
+    #     preds = jax.lax.top_k(logits, k=5)[1]
+    #     accs = jnp.take_along_axis(labels, preds, axis=-1)
+    #     return {"loss": loss, "acc1": accs[:, 0], "acc5": accs.any(-1)}
 
 
 @partial(jax.pmap, axis_name="batch", donate_argnums=0)
 def training_step(state: TrainState, batch: ArrayTree) -> tuple[TrainState, ArrayTree]:
+    images, labels = batch
+    images = jnp.moveaxis(images, 1, 3).astype(jnp.float32) / 0xFF
+    images = pgd_attack(images, labels, state, state.params, )
+
     def loss_fn(params: ArrayTree) -> ArrayTree:
-        metrics = state.apply_fn({"params": params}, *batch,  det=False, rngs=rngs)
+
+        logits = state.apply_fn({"params": params}, images, labels, det=False, rngs=rngs)
+        loss = state.criterion(logits, labels)
+        labels = labels == labels.max(-1, keepdims=True)
+        preds = jax.lax.top_k(logits, k=5)[1]
+        accs = jnp.take_along_axis(labels, preds, axis=-1)
+        metrics = {"loss": loss, "acc1": accs[:, 0], "acc5": accs.any(-1)}
         metrics = jax.tree_map(jnp.mean, metrics)
         return metrics["loss"], metrics
 
@@ -154,7 +180,7 @@ def validation_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
         {"params": state.params},
         images=images,
         labels=jnp.where(batch[1] != -1, batch[1], 0),
-        det=True,use_pgd=True
+        det=True, use_pgd=True
     )
 
     metrics['val_adv_acc1'] = metrics_adv['acc1']
@@ -190,7 +216,7 @@ def create_train_state(args: argparse.Namespace) -> TrainState:
     # will tabulate the summary of model and its parameters. Furthermore, empty gradient
     # accumulation arrays will be prepared if the gradient accumulation is enabled.
     example_inputs = {
-        "images": jnp.zeros((1,3, args.image_size, args.image_size, ), dtype=jnp.int8),
+        "images": jnp.zeros((1, 3, args.image_size, args.image_size,), dtype=jnp.int8),
         "labels": jnp.zeros((1,), dtype=jnp.int32),
     }
     init_rngs = {"params": jax.random.PRNGKey(args.init_seed)}
