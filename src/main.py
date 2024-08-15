@@ -86,6 +86,14 @@ def main(args: argparse.Namespace):
         # loss_value = logits
         return loss_value
 
+
+    def adversarial_loss2(params, state, image, label):
+        logits = state.apply_fn({"params": params}, image )
+        loss_value = jnp.mean(softmax_cross_entropy_with_integer_labels(logits, label))
+        # loss_value = logits
+        return loss_value,loss_value
+
+
     @functools.partial(jax.pmap)
     def test2(image, label, state, epsilon=4 / 255, step_size=4 / 3 / 255, maxiter=1, key=None):
 
@@ -97,8 +105,15 @@ def main(args: argparse.Namespace):
         # image_perturbation = jnp.zeros_like(image)
         image_perturbation = jax.random.uniform(key, image.shape, minval=-epsilon, maxval=epsilon)
 
-        grad_adversarial = jax.grad(adversarial_loss)
-        return grad_adversarial(image_perturbation, state, image, label)
+        (_, metrics), grads = jax.value_and_grad(adversarial_loss2, has_aux=True)(state.params,state,image,label)
+        return grads
+        # grad_adversarial = jax.grad(adversarial_loss)
+        # return grad_adversarial(image_perturbation, state, image, label)
+
+
+
+
+
         for _ in range(maxiter):
             # compute gradient of the loss wrt to the image
             sign_grad = jnp.sign(grad_adversarial(image_perturbation, state, image, label))
