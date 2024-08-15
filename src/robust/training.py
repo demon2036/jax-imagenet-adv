@@ -102,7 +102,7 @@ class TrainState(train_state.TrainState):
 
 
 @partial(jax.pmap, axis_name="batch", donate_argnums=0)
-def apply_model_trade(state, batch):
+def training_step(state, batch):
     key, updates = state.split_rngs()
     images, labels = batch
     images = einops.rearrange(images, 'b c h w->b h w c')
