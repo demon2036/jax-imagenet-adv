@@ -29,6 +29,7 @@ def pgd_attack(image, label, state, params, epsilon=4 / 255, step_size=4 / 3 / 2
     :param epsilon:
     :param step_size:
   """
+    label=jnp.astype(label,jnp.int32)
     image_perturbation = jnp.zeros_like(image)
 
     def adversarial_loss(perturbation):
