@@ -1,4 +1,4 @@
-
+export ALLOW_OBSOLETE=1
 
 python3  src/main.py \
     --output-dir $GCS_MODEL_DIR \
