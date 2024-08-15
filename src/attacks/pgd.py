@@ -38,30 +38,30 @@ def pgd_attack(image, label, state, epsilon=4 / 255, step_size=4 / 3 / 255, maxi
 
     # image_perturbation = jnp.zeros_like(image)
     image_perturbation = jax.random.uniform(key, image.shape, minval=-epsilon, maxval=epsilon)
-    return state.apply_fn({"params": state.params}, image + image_perturbation)
+
 
     def adversarial_loss(perturbation):
         logits = state.apply_fn({"params": state.params}, image + perturbation)
-        # loss_value = jnp.mean(softmax_cross_entropy_with_integer_labels(logits, label))
+        loss_value = jnp.mean(softmax_cross_entropy_with_integer_labels(logits, label))
         # loss_value=jnp.mean(lo)
         loss_value=logits
         return loss_value
 
 
-    for _ in range(maxiter):
-        # compute gradient of the loss wrt to the image
-        sign_grad = jnp.sign(adversarial_loss(image_perturbation))
-
-
-    # grad_adversarial = jax.jit(jax.grad(adversarial_loss))
     # for _ in range(maxiter):
     #     # compute gradient of the loss wrt to the image
-    #     sign_grad = jnp.sign(grad_adversarial(image_perturbation))
-    #
-    #     # heuristic step-size 2 eps / maxiter
-    #     image_perturbation += step_size * sign_grad
-    #     # projection step onto the L-infinity ball centered at image
-    #     image_perturbation = jnp.clip(image_perturbation, - epsilon, epsilon)
+    #     sign_grad = jnp.sign(adversarial_loss(image_perturbation))
+
+
+    grad_adversarial = jax.jit(jax.grad(adversarial_loss))
+    for _ in range(maxiter):
+        # compute gradient of the loss wrt to the image
+        sign_grad = jnp.sign(grad_adversarial(image_perturbation))
+
+        # heuristic step-size 2 eps / maxiter
+        image_perturbation += step_size * sign_grad
+        # projection step onto the L-infinity ball centered at image
+        image_perturbation = jnp.clip(image_perturbation, - epsilon, epsilon)
 
     # sign_grad = jnp.sign(grad_adversarial(image_perturbation))
     # image_perturbation += step_size * sign_grad
