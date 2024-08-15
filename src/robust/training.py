@@ -244,7 +244,7 @@ def validation_step(state, data):
     #     pass
     inputs = einops.rearrange(inputs, 'b c h w->b h w c')
 
-    logits = state.apply_fn({"params": state.ema_params}, inputs)
+    logits = state.apply_fn({"params": state.params}, inputs)
     clean_accuracy = jnp.argmax(logits, axis=-1) == labels
 
     maxiter = 10
@@ -252,7 +252,7 @@ def validation_step(state, data):
 
     adversarial_images = pgd_attack(inputs, labels, state, epsilon=EPSILON, maxiter=maxiter,key=key,
                                     step_size=EPSILON * 2 / maxiter)
-    logits_adv = state.apply_fn({"params": state.ema_params}, adversarial_images)
+    logits_adv = state.apply_fn({"params": state.params}, adversarial_images)
     adversarial_accuracy = jnp.argmax(logits_adv, axis=-1) == labels
 
     metrics = {"adversarial accuracy": adversarial_accuracy, "accuracy": clean_accuracy, "num_samples": labels != -1}
