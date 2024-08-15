@@ -1,10 +1,10 @@
-
+export  TRAIN_BATCH_SIZE=4096
 
 python3  src/main.py \
     --output-dir $GCS_MODEL_DIR \
     --train-dataset-shards "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-train-{0000..1023}.tar" \
     --valid-dataset-shards "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-validation-{00..63}.tar" \
-    --train-batch-size 2048 \
+    --train-batch-size TRAIN_BATCH_SIZE \
     --valid-batch-size 512 \
     --train-loader-workers 40 \
     --valid-loader-workers 10 \
@@ -41,10 +41,10 @@ python3  src/main.py \
     --lr-decay 1.0 \
     --clip-grad 0.0 \
     --grad-accum 1 \
-    --warmup-steps $((1281167 * 5 / 1024)) \
-    --training-steps $((1281167 * 300 / 1024)) \
+    --warmup-steps $((1281167 * 5 / TRAIN_BATCH_SIZE)) \
+    --training-steps $((1281167 * 300 / TRAIN_BATCH_SIZE)) \
     --log-interval 100 \
-    --eval-interval $((1281167 * 5 / 1024)) \
+    --eval-interval $((1281167 * 5 / TRAIN_BATCH_SIZE)) \
     --project deit3-jax \
     --name $(basename $0 .sh) \
     --ipaddr $(curl -s ifconfig.me) \

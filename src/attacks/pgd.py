@@ -38,7 +38,7 @@ def pgd_attack(image, label, state, epsilon=4 / 255, step_size=4 / 3 / 255, maxi
         loss_value = jnp.mean(softmax_cross_entropy_with_integer_labels(logits, label))
         return loss_value
 
-    grad_adversarial = jax.grad(adversarial_loss)
+    grad_adversarial = jax.jit(jax.grad(adversarial_loss))
     # for _ in range(maxiter):
     #     # compute gradient of the loss wrt to the image
     #     sign_grad = jnp.sign(grad_adversarial(image_perturbation))
