@@ -290,7 +290,7 @@ def create_train_state(args: argparse.Namespace) -> TrainState:
     # will tabulate the summary of model and its parameters. Furthermore, empty gradient
     # accumulation arrays will be prepared if the gradient accumulation is enabled.
     example_inputs = {
-        "images": jnp.zeros((1, 3, args.image_size, args.image_size,), dtype=jnp.int8),
+        "images": jnp.zeros((1, args.image_size, args.image_size,3), dtype=jnp.float32),
         # "labels": jnp.zeros((1,), dtype=jnp.int32),
     }
     init_rngs = {"params": jax.random.PRNGKey(args.init_seed)}
