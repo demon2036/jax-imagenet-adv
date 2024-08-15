@@ -131,7 +131,7 @@ def create_dataloaders(
     train_dataloader, valid_dataloader = None, None
     train_transform, valid_transform = create_transforms(args)
 
-    dataset_mix_ratio=0.7
+    dataset_mix_ratio=1.0
     total_batch_size = args.train_batch_size // jax.process_count()
     train_batch_size = int(total_batch_size * dataset_mix_ratio)
     train_origin_batch_size = total_batch_size - train_batch_size
