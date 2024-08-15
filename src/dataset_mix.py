@@ -161,28 +161,30 @@ def create_dataloaders(
             prefetch_factor=20,
             persistent_workers=True,
         )
-        dataset = wds.DataPipeline(
-            wds.SimpleShardList(args.train_dataset_shards, seed=args.shuffle_seed),
-            itertools.cycle,
-            wds.detshuffle(),
-            wds.slice(jax.process_index(), None, jax.process_count()),
-            wds.split_by_worker,
-            wds.tarfile_to_samples(handler=wds.ignore_and_continue),
-            wds.detshuffle(),
-            wds.decode("pil", handler=wds.ignore_and_continue),
-            wds.to_tuple("jpg", "cls", handler=wds.ignore_and_continue),
-            partial(repeat_samples, repeats=args.augment_repeats),
-            wds.map_tuple(train_transform, torch.tensor),
-        )
-        train_origin_dataloader = DataLoader(
-            dataset,
-            batch_size=train_origin_batch_size // args.grad_accum,
-            num_workers=args.train_loader_workers,
-            collate_fn=partial(collate_and_shuffle, repeats=args.augment_repeats),
-            drop_last=True,
-            prefetch_factor=20,
-            persistent_workers=True,
-        )
+
+        if train_origin_batch_size>0:
+            dataset = wds.DataPipeline(
+                wds.SimpleShardList(args.train_dataset_shards, seed=args.shuffle_seed),
+                itertools.cycle,
+                wds.detshuffle(),
+                wds.slice(jax.process_index(), None, jax.process_count()),
+                wds.split_by_worker,
+                wds.tarfile_to_samples(handler=wds.ignore_and_continue),
+                wds.detshuffle(),
+                wds.decode("pil", handler=wds.ignore_and_continue),
+                wds.to_tuple("jpg", "cls", handler=wds.ignore_and_continue),
+                partial(repeat_samples, repeats=args.augment_repeats),
+                wds.map_tuple(train_transform, torch.tensor),
+            )
+            train_origin_dataloader = DataLoader(
+                dataset,
+                batch_size=train_origin_batch_size // args.grad_accum,
+                num_workers=args.train_loader_workers,
+                collate_fn=partial(collate_and_shuffle, repeats=args.augment_repeats),
+                drop_last=True,
+                prefetch_factor=20,
+                persistent_workers=True,
+            )
 
 
 
