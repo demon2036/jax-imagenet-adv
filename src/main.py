@@ -63,18 +63,20 @@ def main(args: argparse.Namespace):
 
     key = jax.random.PRNGKey(1)
     key = shard_prng_key(key)
+    import jax.numpy as jnp
 
     @functools.partial(jax.pmap)
-    def test(images,state):
+    def test(images, state):
         images = einops.rearrange(images, 'b c h w -> b h w c')
-        print(images.shape)
+        images = images.astype(jnp.float32)
+        print(images.shape,images.dtype)
         return state.apply_fn({'params': state.params}, images)
 
     for step in tqdm.trange(1, args.training_steps + 1, dynamic_ncols=True):
         batch = shard(jax.tree_util.tree_map(np.asarray, next(train_dataloader_iter)))
         # state, metrics = training_step(state, batch)
         # img = jax.pmap(pgd_attack)(batch[0], batch[1], state, key=key)
-        img = test(batch[0],state )
+        img = test(batch[0], state)
         # pgd_attack(b)
 
     for step in tqdm.trange(1, args.training_steps + 1, dynamic_ncols=True):
