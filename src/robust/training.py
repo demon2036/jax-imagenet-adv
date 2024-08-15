@@ -76,7 +76,6 @@ class TrainModule(nn.Module):
     def __call__(self, images: Array, labels: Array, det: bool = True) -> ArrayTree:
         # Normalize the pixel values in TPU devices, instead of copying the normalized
         # float values from CPU. This may reduce both memory usage and latency.
-        images = jnp.moveaxis(images, 1, 3).astype(jnp.float32) / 0xFF
 
         labels = nn.one_hot(labels, self.model.labels) if labels.ndim == 1 else labels
         labels = labels.astype(jnp.float32)
@@ -100,6 +99,8 @@ class TrainModule(nn.Module):
 @partial(jax.pmap, axis_name="batch", donate_argnums=0)
 def training_step(state: TrainState, batch: ArrayTree) -> tuple[TrainState, ArrayTree]:
     images, labels = batch
+    images = jnp.moveaxis(images, 1, 3).astype(jnp.float32) / 0xFF
+
     adv_image = pgd_attack(images, labels, state, state.params)
 
     def loss_fn(params: ArrayTree) -> ArrayTree:
@@ -139,16 +140,19 @@ def training_step(state: TrainState, batch: ArrayTree) -> tuple[TrainState, Arra
 
 @partial(jax.pmap, axis_name="batch")
 def validation_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
+    images, labels = batch
+    images = jnp.moveaxis(images, 1, 3).astype(jnp.float32) / 0xFF
+
     metrics_adv = state.apply_fn(
         {"params": state.params},
-        images=pgd_attack(batch[0], batch[1], state, state.params, step_size=1 / 255, maxiter=10),
+        images=pgd_attack(images, batch[1], state, state.params, step_size=1 / 255, maxiter=10),
         labels=jnp.where(batch[1] != -1, batch[1], 0),
         det=True,
     )
 
     metrics = state.apply_fn(
         {"params": state.params},
-        images=batch[0],
+        images=images,
         labels=jnp.where(batch[1] != -1, batch[1], 0),
         det=True,
     )
