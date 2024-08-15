@@ -75,7 +75,6 @@ class TrainModule(nn.Module):
         # float values from CPU. This may reduce both memory usage and latency.
         images = jnp.moveaxis(images, 1, 3).astype(jnp.float32) / 0xFF
 
-
         labels = nn.one_hot(labels, self.model.labels) if labels.ndim == 1 else labels
         labels = labels.astype(jnp.float32)
 
@@ -187,7 +186,7 @@ def create_train_state(args: argparse.Namespace) -> TrainState:
     # rate will be recorded at `hyperparams` by `optax.inject_hyperparameters`.
     @partial(optax.inject_hyperparams, hyperparam_dtype=jnp.float32)
     def create_optimizer_fn(
-        learning_rate: optax.Schedule,
+            learning_rate: optax.Schedule,
     ) -> optax.GradientTransformation:
         tx = OPTIMIZER_COLLECTION[args.optimizer](
             learning_rate=learning_rate,

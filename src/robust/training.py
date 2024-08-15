@@ -73,9 +73,14 @@ class TrainModule(nn.Module):
     label_smoothing: float = 0.0
     criterion: Callable[[Array, Array], Array] = CRITERION_COLLECTION["ce"]
 
-    def __call__(self, images: Array, labels: Array, det: bool = True) -> ArrayTree:
+    def __call__(self, images: Array, labels: Array, det: bool = True, use_pgd=True) -> ArrayTree:
         # Normalize the pixel values in TPU devices, instead of copying the normalized
         # float values from CPU. This may reduce both memory usage and latency.
+        # images, labels = batch
+        images = jnp.moveaxis(images, 1, 3).astype(jnp.float32) / 0xFF
+
+        if use_pgd:
+            images = jax.lax.stop_gradient(pgd_attack(images, labels, self.model, ))
 
         labels = nn.one_hot(labels, self.model.labels) if labels.ndim == 1 else labels
         labels = labels.astype(jnp.float32)
@@ -98,11 +103,6 @@ class TrainModule(nn.Module):
 
 @partial(jax.pmap, axis_name="batch", donate_argnums=0)
 def training_step(state: TrainState, batch: ArrayTree) -> tuple[TrainState, ArrayTree]:
-    images, labels = batch
-    images = jnp.moveaxis(images, 1, 3).astype(jnp.float32) / 0xFF
-
-    adv_image = pgd_attack(images, labels, state, state.params)
-
     def loss_fn(params: ArrayTree) -> ArrayTree:
         metrics = state.apply_fn({"params": params}, adv_image, labels, det=False, rngs=rngs)
         metrics = jax.tree_map(jnp.mean, metrics)
@@ -141,20 +141,20 @@ def training_step(state: TrainState, batch: ArrayTree) -> tuple[TrainState, Arra
 @partial(jax.pmap, axis_name="batch")
 def validation_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
     images, labels = batch
-    images = jnp.moveaxis(images, 1, 3).astype(jnp.float32) / 0xFF
+    # images = jnp.moveaxis(images, 1, 3).astype(jnp.float32) / 0xFF
 
     metrics_adv = state.apply_fn(
         {"params": state.params},
         images=pgd_attack(images, batch[1], state, state.params, step_size=1 / 255, maxiter=10),
         labels=jnp.where(batch[1] != -1, batch[1], 0),
-        det=True,
+        det=True
     )
 
     metrics = state.apply_fn(
         {"params": state.params},
         images=images,
         labels=jnp.where(batch[1] != -1, batch[1], 0),
-        det=True,
+        det=True,use_pgd=True
     )
 
     metrics['val_adv_acc1'] = metrics_adv['acc1']
@@ -190,7 +190,7 @@ def create_train_state(args: argparse.Namespace) -> TrainState:
     # will tabulate the summary of model and its parameters. Furthermore, empty gradient
     # accumulation arrays will be prepared if the gradient accumulation is enabled.
     example_inputs = {
-        "images": jnp.zeros((1,  args.image_size, args.image_size,3), dtype=jnp.float32),
+        "images": jnp.zeros((1, args.image_size, args.image_size, 3), dtype=jnp.float32),
         "labels": jnp.zeros((1,), dtype=jnp.int32),
     }
     init_rngs = {"params": jax.random.PRNGKey(args.init_seed)}

@@ -4,7 +4,7 @@ import jax
 import optax
 
 
-def pgd_attack(image, label, state, params, epsilon=4 / 255, step_size=4 / 3 / 255, maxiter=3):
+def pgd_attack(image, label, model, epsilon=4 / 255, step_size=4 / 3 / 255, maxiter=3):
     """PGD attack on the L-infinity ball with radius epsilon.
 
   Args:
@@ -32,7 +32,8 @@ def pgd_attack(image, label, state, params, epsilon=4 / 255, step_size=4 / 3 / 2
     image_perturbation = jnp.zeros_like(image)
 
     def adversarial_loss(perturbation):
-        logits = state.apply_fn({"params": params}, image + perturbation)
+        # logits = state.apply_fn({"params": params}, image + perturbation)
+        logits = model(image + perturbation)
         loss_value = jnp.mean(softmax_cross_entropy_with_integer_labels(logits, label))
         return loss_value
 
