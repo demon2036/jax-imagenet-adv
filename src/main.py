@@ -82,7 +82,7 @@ def main(args: argparse.Namespace):
 
         # state, metrics = training_step(state, batch)
         # img = jax.pmap(pgd_attack)(batch[0], batch[1], state, key=key)
-        out = test(img, state,batch[1],key=key)
+        out = test(batch[0], batch[1], state, key=key)
         # pgd_attack(b)
 
     for step in tqdm.trange(1, args.training_steps + 1, dynamic_ncols=True):
