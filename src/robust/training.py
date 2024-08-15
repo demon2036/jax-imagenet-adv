@@ -18,6 +18,7 @@ import argparse
 from functools import partial
 from typing import Callable
 
+import einops
 import flax
 import flax.linen as nn
 import jax
@@ -67,114 +68,199 @@ class TrainState(train_state.TrainState):
         )
 
 
-class TrainModule(nn.Module):
-    model: ViT
-    mixup: Mixup
-    label_smoothing: float = 0.0
-    criterion: Callable[[Array, Array], Array] = CRITERION_COLLECTION["ce"]
+# class TrainModule(nn.Module):
+#     model: ViT
+#     mixup: Mixup
+#     label_smoothing: float = 0.0
+#     criterion: Callable[[Array, Array], Array] = CRITERION_COLLECTION["ce"]
+#
+#     def __call__(self, images: Array, labels: Array, det: bool = True) -> ArrayTree:
+#         # Normalize the pixel values in TPU devices, instead of copying the normalized
+#         # float values from CPU. This may reduce both memory usage and latency.
+#         # images, labels = batch
+#         images = jnp.moveaxis(images, 1, 3).astype(jnp.float32) / 0xFF
+#
+#         labels = nn.one_hot(labels, self.model.labels) if labels.ndim == 1 else labels
+#         labels = labels.astype(jnp.float32)
+#
+#         if not det:
+#             labels = optax.smooth_labels(labels, self.label_smoothing)
+#             images, labels = self.mixup(images, labels)
+#
+#         logits = self.model(images, det=det)
+#
+#         return logits, labels
 
-    def __call__(self, images: Array, labels: Array, det: bool = True) -> ArrayTree:
-        # Normalize the pixel values in TPU devices, instead of copying the normalized
-        # float values from CPU. This may reduce both memory usage and latency.
-        # images, labels = batch
-        images = jnp.moveaxis(images, 1, 3).astype(jnp.float32) / 0xFF
-
-        labels = nn.one_hot(labels, self.model.labels) if labels.ndim == 1 else labels
-        labels = labels.astype(jnp.float32)
-
-        if not det:
-            labels = optax.smooth_labels(labels, self.label_smoothing)
-            images, labels = self.mixup(images, labels)
-
-        logits = self.model(images, det=det)
-
-        return logits, labels
-
-    # def pgd_step(self, images: Array, det: bool = True) -> ArrayTree:
-    #     # Normalize the pixel values in TPU devices, instead of copying the normalized
-    #     # float values from CPU. This may reduce both memory usage and latency.
-    #     # images, labels = batch
-    #     images = jnp.moveaxis(images, 1, 3).astype(jnp.float32) / 0xFF
-    #     logits = self.model(images, det=det)
-    #
-    #     return logits
-
-
-
-
+# def pgd_step(self, images: Array, det: bool = True) -> ArrayTree:
+#     # Normalize the pixel values in TPU devices, instead of copying the normalized
+#     # float values from CPU. This may reduce both memory usage and latency.
+#     # images, labels = batch
+#     images = jnp.moveaxis(images, 1, 3).astype(jnp.float32) / 0xFF
+#     logits = self.model(images, det=det)
+#
+#     return logits
 
 
 @partial(jax.pmap, axis_name="batch", donate_argnums=0)
-def training_step(state: TrainState, batch: ArrayTree) -> tuple[TrainState, ArrayTree]:
+def apply_model_trade(state, batch):
+    key, updates = state.split_rngs()
     images, labels = batch
-    images = jnp.moveaxis(images, 1, 3).astype(jnp.float32) / 0xFF
-    images = pgd_attack(images, labels, state, state.params, )
+    images = einops.rearrange(images, 'b c h w->b h w c')
+    images = images.astype(jnp.float32) / 255
+    labels = labels.astype(jnp.float32)
 
-    def loss_fn(params: ArrayTree) -> ArrayTree:
+    print(images.shape)
 
-        logits, labels = state.apply_fn({"params": params}, images, batch[1], det=False, rngs=rngs)
-        loss = state.criterion(logits, labels)
-        labels = labels == labels.max(-1, keepdims=True)
-        preds = jax.lax.top_k(logits, k=5)[1]
-        accs = jnp.take_along_axis(labels, preds, axis=-1)
-        metrics = {"loss": loss, "acc1": accs[:, 0], "acc5": accs.any(-1)}
-        metrics = jax.tree_map(jnp.mean, metrics)
-        return metrics["loss"], metrics
+    """Computes gradients, loss and accuracy for a single batch."""
+    adv_image = pgd_attack(images, labels, state, state.params, key=key, )
 
-    def update_fn(state: TrainState) -> TrainState:
-        # Collect a global gradient from the accumulated gradients and apply actual
-        # parameter update with resetting the accumulations to zero.
-        grads = jax.tree_map(lambda g: g / state.micro_in_mini, state.grad_accum)
-        return state.apply_gradients(
-            grads=jax.lax.pmean(grads, axis_name="batch"),
-            grad_accum=jax.tree_map(jnp.zeros_like, state.grad_accum),
-            micro_step=state.micro_step % state.micro_in_mini,
-        )
+    # def loss_fn(params):
+    #     logits = state.apply_fn({'params': params}, images)
+    #     logits_adv = state.apply_fn({'params': params}, adv_image)
+    #     one_hot = jax.nn.one_hot(labels, logits.shape[-1])
+    #     one_hot = optax.smooth_labels(one_hot, state.label_smoothing)
+    #     loss = jnp.mean(optax.softmax_cross_entropy(logits=logits, labels=one_hot))
+    #     trade_loss = optax.kl_divergence(nn.log_softmax(logits_adv, axis=1), nn.softmax(logits, axis=1)).mean()
+    #     metrics = {'loss': loss, 'trade_loss': trade_loss, 'logits': logits, 'logits_adv': logits_adv}
+    #     return loss + state.trade_beta * trade_loss, metrics
 
-    rngs, updates = state.split_rngs()
-    (_, metrics), grads = jax.value_and_grad(loss_fn, has_aux=True)(state.params)
+    def loss_fn(params):
+        logits_adv = state.apply_fn({'params': params}, adv_image)
+        one_hot = jax.nn.one_hot(labels, logits.shape[-1])
+        one_hot = optax.smooth_labels(one_hot, state.label_smoothing)
+        loss = jnp.mean(optax.softmax_cross_entropy(logits=logits_adv, labels=one_hot))
+        metrics = {'loss': loss, }
+        return loss, metrics
+
+    grad_fn = jax.value_and_grad(loss_fn, has_aux=True)
+    (loss, metrics), grads = grad_fn(state.params)
+    # accuracy_std = jnp.mean(jnp.argmax(metrics['logits'], -1) == labels)
+    accuracy_adv = jnp.mean(jnp.argmax(metrics['logits_adv'], -1) == labels)
+
+    # metrics['accuracy'] = accuracy_std
+    metrics['adversarial accuracy'] = accuracy_adv
+
     metrics = jax.lax.pmean(metrics, axis_name="batch")
 
-    # Update parameters with the gradients. If the gradient accumulation is enabled,
-    # then the parameters will be updated at the end of each mini-batch step. In every
-    # micro steps, the gradients will be accumulated.
-    if state.grad_accum is None:
-        state = state.apply_gradients(grads=jax.lax.pmean(grads, axis_name="batch"))
-    else:
-        state = state.replace(
-            grad_accum=jax.tree_map(lambda ga, g: ga + g, state.grad_accum, grads),
-            micro_step=state.micro_step + 1,
-        )
-        state = jax.lax.cond(
-            state.micro_step == state.micro_in_mini, update_fn, lambda x: x, state
-        )
+    grads = jax.lax.pmean(grads, axis_name="batch")
+
+    state = state.apply_gradients(grads=grads)
+
+    # new_ema_params = jax.tree_util.tree_map(
+    #     lambda ema, normal: ema * state.ema_decay + (1 - state.ema_decay) * normal,
+    #     state.ema_params, state.params)
+    # state = state.replace(ema_params=new_ema_params)
+
     return state.replace(**updates), metrics | state.opt_state.hyperparams
 
 
-@partial(jax.pmap, axis_name="batch")
-def validation_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
-    images, labels = batch
-    # images = jnp.moveaxis(images, 1, 3).astype(jnp.float32) / 0xFF
+# @partial(jax.pmap, axis_name="batch", donate_argnums=0)
+# def training_step(state: TrainState, batch: ArrayTree) -> tuple[TrainState, ArrayTree]:
+#     images, labels = batch
+#     images = jnp.moveaxis(images, 1, 3).astype(jnp.float32) / 0xFF
+#     images = pgd_attack(images, labels, state, state.params, )
+#
+#     def loss_fn(params: ArrayTree) -> ArrayTree:
+#
+#         logits, labels = state.apply_fn({"params": params}, images, batch[1], det=False, rngs=rngs)
+#         loss = state.criterion(logits, labels)
+#         labels = labels == labels.max(-1, keepdims=True)
+#         preds = jax.lax.top_k(logits, k=5)[1]
+#         accs = jnp.take_along_axis(labels, preds, axis=-1)
+#         metrics = {"loss": loss, "acc1": accs[:, 0], "acc5": accs.any(-1)}
+#         metrics = jax.tree_map(jnp.mean, metrics)
+#         return metrics["loss"], metrics
+#
+#     def update_fn(state: TrainState) -> TrainState:
+#         # Collect a global gradient from the accumulated gradients and apply actual
+#         # parameter update with resetting the accumulations to zero.
+#         grads = jax.tree_map(lambda g: g / state.micro_in_mini, state.grad_accum)
+#         return state.apply_gradients(
+#             grads=jax.lax.pmean(grads, axis_name="batch"),
+#             grad_accum=jax.tree_map(jnp.zeros_like, state.grad_accum),
+#             micro_step=state.micro_step % state.micro_in_mini,
+#         )
+#
+#     rngs, updates = state.split_rngs()
+#     (_, metrics), grads = jax.value_and_grad(loss_fn, has_aux=True)(state.params)
+#     metrics = jax.lax.pmean(metrics, axis_name="batch")
+#
+#     # Update parameters with the gradients. If the gradient accumulation is enabled,
+#     # then the parameters will be updated at the end of each mini-batch step. In every
+#     # micro steps, the gradients will be accumulated.
+#     if state.grad_accum is None:
+#         state = state.apply_gradients(grads=jax.lax.pmean(grads, axis_name="batch"))
+#     else:
+#         state = state.replace(
+#             grad_accum=jax.tree_map(lambda ga, g: ga + g, state.grad_accum, grads),
+#             micro_step=state.micro_step + 1,
+#         )
+#         state = jax.lax.cond(
+#             state.micro_step == state.micro_in_mini, update_fn, lambda x: x, state
+#         )
+#     return state.replace(**updates), metrics | state.opt_state.hyperparams
 
-    metrics_adv = state.apply_fn(
-        {"params": state.params},
-        images=pgd_attack(images, batch[1], state, state.params, step_size=1 / 255, maxiter=10),
-        labels=jnp.where(batch[1] != -1, batch[1], 0),
-        det=True
-    )
 
-    metrics = state.apply_fn(
-        {"params": state.params},
-        images=images,
-        labels=jnp.where(batch[1] != -1, batch[1], 0),
-        det=True, use_pgd=True
-    )
+# @partial(jax.pmap, axis_name="batch")
+# def validation_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
+#     images, labels = batch
+#     images = einops.rearrange(images, 'b c h w->b h w c')
+#     images = images.astype(jnp.float32) / 255
+#     labels = labels.astype(jnp.float32)
+#
+#     metrics_adv = state.apply_fn(
+#         {"params": state.params},
+#         images=pgd_attack(images, batch[1], state, state.params, step_size=1 / 255, maxiter=10),
+#         labels=jnp.where(batch[1] != -1, batch[1], 0),
+#         det=True
+#     )
+#
+#     metrics = state.apply_fn(
+#         {"params": state.params},
+#         images=images,
+#         labels=jnp.where(batch[1] != -1, batch[1], 0),
+#         det=True, use_pgd=True
+#     )
+#
+#     metrics['val_adv_acc1'] = metrics_adv['acc1']
+#
+#     metrics["num_samples"] = batch[1] != -1
+#     metrics = jax.tree_map(lambda x: (x * (batch[1] != -1)).sum(), metrics)
+#     return jax.lax.psum(metrics, axis_name="batch")
 
-    metrics['val_adv_acc1'] = metrics_adv['acc1']
 
-    metrics["num_samples"] = batch[1] != -1
-    metrics = jax.tree_map(lambda x: (x * (batch[1] != -1)).sum(), metrics)
-    return jax.lax.psum(metrics, axis_name="batch")
+@partial(jax.pmap, axis_name="batch", )
+def validation_step(state, data):
+    # inputs, labels = data
+
+    inputs, labels = data
+    inputs = inputs.astype(jnp.float32)
+    labels = labels.astype(jnp.int64)
+
+    # print(images)
+    # while True:
+    #     pass
+    inputs = einops.rearrange(inputs, 'b c h w->b h w c')
+
+    logits = state.apply_fn({"params": state.ema_params}, inputs)
+    clean_accuracy = jnp.argmax(logits, axis=-1) == labels
+
+    maxiter = 10
+    EPSILON = 4 / 255
+
+    adversarial_images = pgd_attack(inputs, labels, state, epsilon=EPSILON, maxiter=maxiter,
+                                    step_size=EPSILON * 2 / maxiter)
+    logits_adv = state.apply_fn({"params": state.ema_params}, adversarial_images)
+    adversarial_accuracy = jnp.argmax(logits_adv, axis=-1) == labels
+
+    metrics = {"adversarial accuracy": adversarial_accuracy, "accuracy": clean_accuracy, "num_samples": labels != -1}
+
+    metrics = jax.tree_util.tree_map(lambda x: (x * (labels != -1)).sum(), metrics)
+
+    metrics = jax.lax.psum(metrics, axis_name='batch')
+
+    # metrics = jax.lax.pmean(metrics, axis_name='batch')
+    return metrics
 
 
 def create_train_state(args: argparse.Namespace) -> TrainState:
