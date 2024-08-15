@@ -1,4 +1,4 @@
-export  TRAIN_BATCH_SIZE=1024
+export  TRAIN_BATCH_SIZE=4096
 
 python3  src/main.py \
     --output-dir $GCS_MODEL_DIR \
