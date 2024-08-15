@@ -20,6 +20,7 @@ import functools
 import random
 import warnings
 
+import einops
 import jax
 import numpy as np
 import tqdm
@@ -66,6 +67,7 @@ def main(args: argparse.Namespace):
 
     @functools.partial(jax.pmap)
     def test(images):
+        images=einops.rearrange(images,'b c h w -> b h w c')
         return state.apply_fn({'params':state.params},images)
 
 
