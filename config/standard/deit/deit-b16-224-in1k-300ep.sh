@@ -1,10 +1,10 @@
-export ALLOW_OBSOLETE=1
+
 
 python3  src/main.py \
     --output-dir $GCS_MODEL_DIR \
     --train-dataset-shards "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-train-{0000..1023}.tar" \
     --valid-dataset-shards "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-validation-{00..63}.tar" \
-    --train-batch-size 1024 \
+    --train-batch-size 2048 \
     --valid-batch-size 512 \
     --train-loader-workers 40 \
     --valid-loader-workers 10 \
