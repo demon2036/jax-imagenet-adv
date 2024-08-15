@@ -249,7 +249,7 @@ def validation_step(state, data):
     maxiter = 10
     EPSILON = 4 / 255
 
-    adversarial_images = pgd_attack(inputs, labels, state, epsilon=EPSILON, maxiter=maxiter,key=key
+    adversarial_images = pgd_attack(inputs, labels, state, epsilon=EPSILON, maxiter=maxiter,key=key,
                                     step_size=EPSILON * 2 / maxiter)
     logits_adv = state.apply_fn({"params": state.ema_params}, adversarial_images)
     adversarial_accuracy = jnp.argmax(logits_adv, axis=-1) == labels
