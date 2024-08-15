@@ -126,7 +126,7 @@ def training_step(state, batch):
 
     def loss_fn(params):
         logits_adv = state.apply_fn({'params': params}, adv_image)
-        one_hot = jax.nn.one_hot(labels, logits.shape[-1])
+        one_hot = jax.nn.one_hot(labels, logits_adv.shape[-1])
         one_hot = optax.smooth_labels(one_hot, state.label_smoothing)
         loss = jnp.mean(optax.softmax_cross_entropy(logits=logits_adv, labels=one_hot))
         metrics = {'loss': loss, }
