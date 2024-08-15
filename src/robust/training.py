@@ -48,6 +48,7 @@ OPTIMIZER_COLLECTION = {
 class TrainState(train_state.TrainState):
     mixup_rng: PRNGKey
     dropout_rng: PRNGKey
+    label_smoothing:float =0.1
 
     micro_step: int = 0
     micro_in_mini: int = 1
