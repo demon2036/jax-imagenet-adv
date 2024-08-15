@@ -107,7 +107,7 @@ def training_step(state, batch):
     images, labels = batch
     images = einops.rearrange(images, 'b c h w->b h w c')
     images = images.astype(jnp.float32) / 255
-    labels = labels.astype(jnp.float32)
+    labels = labels.astype(jnp.int32)
 
     print(images.shape)
 
