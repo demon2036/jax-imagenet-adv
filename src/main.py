@@ -32,6 +32,7 @@ from utils import AverageMeter, save_checkpoint_in_background
 
 # from dataset_mix import create_dataloaders
 from dataset import create_dataloaders
+from attacks.pgd import pgd_attack
 
 
 # warnings.filterwarnings("ignore")
@@ -57,6 +58,16 @@ def main(args: argparse.Namespace):
     if jax.process_index() == 0:
         wandb.init(name=args.name, project=args.project, config=args)
     average_meter, max_val_acc1 = AverageMeter(use_latest=["learning_rate"]), 0.0
+
+    for step in tqdm.trange(1, args.training_steps + 1, dynamic_ncols=True):
+        batch = shard(jax.tree_util.tree_map(np.asarray, next(train_dataloader_iter)))
+        # state, metrics = training_step(state, batch)
+        img=pgd_attack(batch[0],batch[1],state)
+        # pgd_attack(b)
+
+
+
+
 
     for step in tqdm.trange(1, args.training_steps + 1, dynamic_ncols=True):
         for _ in range(args.grad_accum):

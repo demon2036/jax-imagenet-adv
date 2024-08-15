@@ -1,9 +1,10 @@
+import einops
 import jax.numpy as jnp
 from optax.losses import softmax_cross_entropy_with_integer_labels
 import jax
 import optax
 
-@jax.jit
+
 def pgd_attack(image, label, state, epsilon=4 / 255, step_size=4 / 3 / 255, maxiter=3, key=None):
     """PGD attack on the L-infinity ball with radius epsilon.
 
@@ -29,6 +30,9 @@ def pgd_attack(image, label, state, epsilon=4 / 255, step_size=4 / 3 / 255, maxi
     :param epsilon:
     :param step_size:
   """
+    image = einops.rearrange(image, 'b c h w->b h w c')
+    image = image.astype(jnp.float32)
+    label = label.astype(jnp.int64)
 
     # image_perturbation = jnp.zeros_like(image)
     image_perturbation = jax.random.uniform(key, image.shape, minval=-epsilon, maxval=epsilon)
