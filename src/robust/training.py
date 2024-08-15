@@ -291,7 +291,7 @@ def create_train_state(args: argparse.Namespace) -> TrainState:
     # accumulation arrays will be prepared if the gradient accumulation is enabled.
     example_inputs = {
         "images": jnp.zeros((1, 3, args.image_size, args.image_size,), dtype=jnp.int8),
-        "labels": jnp.zeros((1,), dtype=jnp.int32),
+        # "labels": jnp.zeros((1,), dtype=jnp.int32),
     }
     init_rngs = {"params": jax.random.PRNGKey(args.init_seed)}
     # print(module.tabulate(init_rngs, **example_inputs))

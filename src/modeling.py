@@ -149,8 +149,8 @@ class ViT(ViTBase, nn.Module):
         self.norm = nn.LayerNorm()
         self.head = Dense(self.labels) if self.labels is not None else None
 
-    def __call__(self, x: Array, det: bool = True) -> Array:
-        x = (x - IMAGENET_DEFAULT_MEAN) / IMAGENET_DEFAULT_STD
+    def __call__(self, images: Array, det: bool = True) -> Array:
+        x = (images - IMAGENET_DEFAULT_MEAN) / IMAGENET_DEFAULT_STD
         x = self.drop(self.embed(x), det)
         for layer in self.layer:
             x = layer(x, det)
