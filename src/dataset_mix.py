@@ -67,13 +67,15 @@ def create_transforms(args: argparse.Namespace) -> tuple[nn.Module, nn.Module]:
             T.CenterCrop(args.image_size),
         ]
 
-    train_transforms += [
-        T.RandomHorizontalFlip(),
-        auto_augment_factory(args),
-        T.ColorJitter(args.color_jitter, args.color_jitter, args.color_jitter),
-        T.RandomErasing(args.random_erasing, value="random"),
-        T.PILToTensor(),
-    ]
+    train_transforms = [*train_transforms, T.RandomHorizontalFlip(), T.PILToTensor(), ]
+
+    # train_transforms += [
+    #     T.RandomHorizontalFlip(),
+    #     auto_augment_factory(args),
+    #     T.ColorJitter(args.color_jitter, args.color_jitter, args.color_jitter),
+    #     T.RandomErasing(args.random_erasing, value="random"),
+    #     T.PILToTensor(),
+    # ]
     valid_transforms = [
         T.Resize(int(args.image_size / args.test_crop_ratio), interpolation=3),
         T.CenterCrop(args.image_size),
@@ -131,12 +133,12 @@ def create_dataloaders(
     train_dataloader, valid_dataloader = None, None
     train_transform, valid_transform = create_transforms(args)
 
-    dataset_mix_ratio=1.0
+    dataset_mix_ratio = 1.0
     total_batch_size = args.train_batch_size // jax.process_count()
     train_batch_size = int(total_batch_size * dataset_mix_ratio)
     train_origin_batch_size = total_batch_size - train_batch_size
 
-    args.generated_dataset_shards='gs://shadow-center-2b/imagenet-generated-100steps/shards-{00000..06399}.tar'
+    args.generated_dataset_shards = 'gs://shadow-center-2b/imagenet-generated-100steps/shards-{00000..06399}.tar'
 
     if args.train_dataset_shards is not None:
         dataset = wds.DataPipeline(
@@ -162,7 +164,7 @@ def create_dataloaders(
             persistent_workers=True,
         )
 
-        if train_origin_batch_size>0:
+        if train_origin_batch_size > 0:
             dataset = wds.DataPipeline(
                 wds.SimpleShardList(args.train_dataset_shards, seed=args.shuffle_seed),
                 itertools.cycle,
@@ -186,10 +188,6 @@ def create_dataloaders(
                 persistent_workers=True,
             )
 
-
-
-
-
     if args.valid_dataset_shards is not None:
         dataset = wds.DataPipeline(
             wds.SimpleShardList(args.valid_dataset_shards),
@@ -211,5 +209,5 @@ def create_dataloaders(
             persistent_workers=True,
         )
 
-    return mix_dataloader_iter(train_dataloader, None),valid_dataloader
+    return mix_dataloader_iter(train_dataloader, None), valid_dataloader
     # return train_dataloader, valid_dataloader
