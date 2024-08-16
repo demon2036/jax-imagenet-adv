@@ -19,10 +19,11 @@ import argparse
 import functools
 import random
 import warnings
-
+import jax.numpy as jnp
 import einops
 import jax
 import numpy as np
+import optax
 import tqdm
 import wandb
 from flax.jax_utils import unreplicate
@@ -52,116 +53,31 @@ def evaluate(state: TrainState, dataloader: DataLoader) -> dict[str, float]:
     return jax.tree_util.tree_map(lambda x: x / num_samples, metrics)
 
 
+def block_all(xs):
+    jax.tree_util.tree_map(lambda x: x.block_until_ready(), xs)
+    return xs
+
+
 def main(args: argparse.Namespace):
-    train_dataloader, valid_dataloader = create_dataloaders(args)
-    train_dataloader_iter = iter(train_dataloader)
-    # train_dataloader_iter = train_dataloader
-    state = create_train_state(args).replicate()
-
-    if jax.process_index() == 0:
-        wandb.init(name=args.name, project=args.project, config=args)
-    average_meter, max_val_acc1 = AverageMeter(use_latest=["learning_rate"]), 0.0
-
-    key = jax.random.PRNGKey(1)
-    key = shard_prng_key(key)
-    import jax.numpy as jnp
-    batch = shard(jax.tree_util.tree_map(np.asarray, next(train_dataloader_iter)))
+    state = create_train_state(args)
+    b = 32
+    batch = (jnp.ones((b, 256, 256, 3,)), jnp.ones((b,)))
     img = batch[0]
+    img = img.astype(jnp.bfloat16)
+    label = batch[1].astype(jnp.int32)
 
-    @functools.partial(jax.pmap)
-    def test(images, label, state, key):
-        images = einops.rearrange(images, 'b c h w->b h w c')
-        images = images.astype(jnp.float32)
+    @functools.partial(jax.jit)
+    def test2(image, label, state, ):
+        def adversarial_loss2(params, state, image, label):
+            logits = state.apply_fn({"params": params}, image)
+            loss_value = jnp.mean(optax.softmax_cross_entropy_with_integer_labels(logits, label))
+            return loss_value
 
-        # label = label.astype(jnp.int32)
-
-        # image_perturbation = jnp.zeros_like(image)
-        image_perturbation = jax.random.uniform(key, images.shape, minval=-4, maxval=4)
-        return state.apply_fn({"params": state.params}, images + image_perturbation)
-        # return state.apply_fn({'params': state.params}, images)
-
-    def adversarial_loss(perturbation, state, image, label):
-        logits = state.apply_fn({"params": state.params},perturbation)
-        loss_value = jnp.mean(softmax_cross_entropy_with_integer_labels(logits, label))
-        # loss_value = logits
-        return loss_value,loss_value
-
-    def adversarial_loss2(params, state, image, label):
-        logits = state.apply_fn({"params": state.params}, params)
-        loss_value = jnp.mean(softmax_cross_entropy_with_integer_labels(logits, label))
-        # loss_value = logits
-        return loss_value, loss_value
-
-    @functools.partial(jax.pmap)
-    def test2(image, label, state, epsilon=4 / 255, step_size=4 / 3 / 255, maxiter=1, key=None):
-
-        image = einops.rearrange(image, 'b c h w->b h w c')
-        image = image.astype(jnp.float32)
-
-        label = label.astype(jnp.int32)
-
-        # image_perturbation = jnp.zeros_like(image)
-        image_perturbation = jax.random.uniform(key, image.shape, minval=-epsilon, maxval=epsilon)
-
-        (_, metrics), grads = jax.value_and_grad(adversarial_loss2, has_aux=True)(image, state, image, label)
-        # grad_adversarial = jax.value_and_grad(adversarial_loss,has_aux=True)
-        # (_, metrics), grads=grad_adversarial(image_perturbation, state, image, label)
+        grads = jax.grad(adversarial_loss2, argnums=0)(state.params, state, image, label)
         return grads
 
-
-        for _ in range(maxiter):
-            # compute gradient of the loss wrt to the image
-            sign_grad = jnp.sign(grad_adversarial(image_perturbation, state, image, label))
-
-            # heuristic step-size 2 eps / maxiter
-            image_perturbation += step_size * sign_grad
-            # projection step onto the L-infinity ball centered at image
-            image_perturbation = jnp.clip(image_perturbation, - epsilon, epsilon)
-
-        # clip the image to ensure pixels are between 0 and 1
-        return jnp.clip(image + image_perturbation, 0, 1)
-
-    # pgd_attack_pmap = jax.pmap(pgd_attack)
-
     for step in tqdm.trange(1, args.training_steps + 1, dynamic_ncols=True):
-        # state, metrics = training_step(state, batch)
-        # out = pgd_attack_pmap(batch[0], batch[1], state, key=key)
-        out = test2(batch[0], batch[1], state, key=key)
-        # pgd_attack(b)
-
-    for step in tqdm.trange(1, args.training_steps + 1, dynamic_ncols=True):
-        for _ in range(args.grad_accum):
-            batch = shard(jax.tree_util.tree_map(np.asarray, next(train_dataloader_iter)))
-            state, metrics = training_step(state, batch)
-            average_meter.update(**unreplicate(metrics))
-
-        if (
-                jax.process_index() == 0
-                and args.log_interval > 0
-                and step % args.log_interval == 0
-        ):
-            metrics = average_meter.summary(prefix="train/")
-            metrics["processed_samples"] = step * args.train_batch_size
-            wandb.log(metrics, step)
-
-        if args.eval_interval > 0 and (
-                step % args.eval_interval == 0 or step == args.training_steps
-        ):
-            if jax.process_index() == 0:
-                params_bytes = msgpack_serialize(unreplicate(state.params))
-                save_checkpoint_in_background(args, params_bytes, postfix="last")
-            if valid_dataloader is None:
-                continue
-
-            metrics = evaluate(state, valid_dataloader)
-            if jax.process_index() == 0:
-                if metrics["val/acc1"] > max_val_acc1:
-                    max_val_acc1 = metrics["val/acc1"]
-                    save_checkpoint_in_background(args, params_bytes, postfix="best")
-
-                metrics["val/acc1/best"] = max_val_acc1
-                metrics["processed_samples"] = step * args.train_batch_size
-                wandb.log(metrics, step)
+        out = block_all(test2(img, label, state, ))
 
 
 if __name__ == "__main__":
@@ -225,5 +141,5 @@ if __name__ == "__main__":
     parser.add_argument("--ipaddr")
     parser.add_argument("--hostname")
     parser.add_argument("--output-dir", default=".")
-    jax.distributed.initialize()
+    # jax.distributed.initialize()
     main(parser.parse_args())
