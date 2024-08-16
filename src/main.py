@@ -19,11 +19,10 @@ import argparse
 import functools
 import random
 import warnings
-import jax.numpy as jnp
+
 import einops
 import jax
 import numpy as np
-import optax
 import tqdm
 import wandb
 from flax.jax_utils import unreplicate
@@ -31,11 +30,11 @@ from flax.serialization import msgpack_serialize
 from flax.training.common_utils import shard, shard_prng_key
 from optax import softmax_cross_entropy_with_integer_labels
 from torch.utils.data import DataLoader
-from robust.training import TrainState, create_train_state, training_step, validation_step
+from standard.training import TrainState, create_train_state, training_step, validation_step
 from utils import AverageMeter, save_checkpoint_in_background
 
-# from dataset_mix import create_dataloaders
-from dataset import create_dataloaders
+from dataset_mix import create_dataloaders
+# from dataset import create_dataloaders
 from attacks.pgd import pgd_attack
 
 
@@ -53,31 +52,51 @@ def evaluate(state: TrainState, dataloader: DataLoader) -> dict[str, float]:
     return jax.tree_util.tree_map(lambda x: x / num_samples, metrics)
 
 
-def block_all(xs):
-    jax.tree_util.tree_map(lambda x: x.block_until_ready(), xs)
-    return xs
-
-
 def main(args: argparse.Namespace):
-    state = create_train_state(args)
-    b = 32
-    batch = (jnp.ones((b, 256, 256, 3,)), jnp.ones((b,)))
-    img = batch[0]
-    img = img.astype(jnp.bfloat16)
-    label = batch[1].astype(jnp.int32)
+    train_dataloader, valid_dataloader = create_dataloaders(args)
+    # train_dataloader_iter = iter(train_dataloader)
+    train_dataloader_iter = train_dataloader
+    state = create_train_state(args).replicate()
 
-    @functools.partial(jax.jit)
-    def test2(image, label, state, ):
-        def adversarial_loss2(params, state, image, label):
-            logits = state.apply_fn({"params": params}, image)
-            loss_value = jnp.mean(optax.softmax_cross_entropy_with_integer_labels(logits, label))
-            return loss_value
+    if jax.process_index() == 0:
+        wandb.init(name=args.name, project=args.project, config=args)
+    average_meter, max_val_acc1 = AverageMeter(use_latest=["learning_rate"]), 0.0
 
-        grads = jax.grad(adversarial_loss2, argnums=0)(state.params, state, image, label)
-        return grads
+
 
     for step in tqdm.trange(1, args.training_steps + 1, dynamic_ncols=True):
-        out = block_all(test2(img, label, state, ))
+        for _ in range(args.grad_accum):
+            batch = shard(jax.tree_util.tree_map(np.asarray, next(train_dataloader_iter)))
+            state, metrics = training_step(state, batch)
+            average_meter.update(**unreplicate(metrics))
+
+        if (
+                jax.process_index() == 0
+                and args.log_interval > 0
+                and step % args.log_interval == 0
+        ):
+            metrics = average_meter.summary(prefix="train/")
+            metrics["processed_samples"] = step * args.train_batch_size
+            wandb.log(metrics, step)
+
+        if args.eval_interval > 0 and (
+                step % args.eval_interval == 0 or step == args.training_steps
+        ):
+            if jax.process_index() == 0:
+                params_bytes = msgpack_serialize(unreplicate(state.params))
+                save_checkpoint_in_background(args, params_bytes, postfix="last")
+            if valid_dataloader is None:
+                continue
+
+            metrics = evaluate(state, valid_dataloader)
+            if jax.process_index() == 0:
+                if metrics["val/acc1"] > max_val_acc1:
+                    max_val_acc1 = metrics["val/acc1"]
+                    save_checkpoint_in_background(args, params_bytes, postfix="best")
+
+                metrics["val/acc1/best"] = max_val_acc1
+                metrics["processed_samples"] = step * args.train_batch_size
+                wandb.log(metrics, step)
 
 
 if __name__ == "__main__":
@@ -141,5 +160,5 @@ if __name__ == "__main__":
     parser.add_argument("--ipaddr")
     parser.add_argument("--hostname")
     parser.add_argument("--output-dir", default=".")
-    # jax.distributed.initialize()
+    jax.distributed.initialize()
     main(parser.parse_args())
