@@ -19,7 +19,7 @@ import copy
 import itertools
 from collections.abc import Iterator
 from functools import partial
-from typing import Any
+from typing import Any, Tuple
 
 import jax
 import numpy as np
@@ -33,6 +33,7 @@ from timm.data.auto_augment import (
     rand_augment_transform,
 )
 from torch.utils.data import DataLoader, default_collate
+from torchvision.transforms.v2 import Compose
 
 IMAGENET_DEFAULT_MEAN = np.array([0.485, 0.456, 0.406])
 IMAGENET_DEFAULT_STD = np.array([0.229, 0.224, 0.225])
@@ -53,7 +54,7 @@ def auto_augment_factory(args: argparse.Namespace) -> T.Transform:
     return auto_augment_transform(args.auto_augment, aa_hparams)
 
 
-def create_transforms(args: argparse.Namespace) -> tuple[nn.Module, nn.Module]:
+def create_transforms(args: argparse.Namespace) -> tuple[Compose, Compose, Compose]:
     if args.random_crop == "rrc":
         train_transforms = [T.RandomResizedCrop(args.image_size, interpolation=3)]
     elif args.random_crop == "src":
@@ -67,7 +68,7 @@ def create_transforms(args: argparse.Namespace) -> tuple[nn.Module, nn.Module]:
             T.CenterCrop(args.image_size),
         ]
 
-    # train_transforms = [*train_transforms, T.RandomHorizontalFlip(), T.PILToTensor(), ]
+    train_generated_transforms = [*train_transforms, T.RandomHorizontalFlip(), T.PILToTensor(), ]
 
     train_transforms += [
         T.RandomHorizontalFlip(),
@@ -81,7 +82,7 @@ def create_transforms(args: argparse.Namespace) -> tuple[nn.Module, nn.Module]:
         T.CenterCrop(args.image_size),
         T.PILToTensor(),
     ]
-    return T.Compose(train_transforms), T.Compose(valid_transforms)
+    return T.Compose(train_transforms),T.Compose(train_generated_transforms), T.Compose(valid_transforms)
 
 
 def repeat_samples(samples: Iterator[Any], repeats: int = 1) -> Iterator[Any]:
@@ -130,10 +131,10 @@ def mix_dataloader_iter(train_dataloader, train_origin_dataloader):
 def create_dataloaders(
         args: argparse.Namespace,
 ) -> tuple[Any | None, DataLoader | None]:
-    train_dataloader, valid_dataloader,train_origin_dataloader = None, None,None
-    train_transform, valid_transform = create_transforms(args)
+    train_dataloader, valid_dataloader, train_origin_dataloader = None, None, None
+    train_transform,train_generated_transforms, valid_transform = create_transforms(args)
 
-    dataset_mix_ratio = 0.0
+    dataset_mix_ratio = 0.5
     total_batch_size = args.train_batch_size // jax.process_count()
     train_batch_size = int(total_batch_size * dataset_mix_ratio)
     train_origin_batch_size = total_batch_size - train_batch_size
@@ -153,7 +154,7 @@ def create_dataloaders(
                 wds.decode("pil", handler=wds.ignore_and_continue),
                 wds.to_tuple("jpg", "cls", handler=wds.ignore_and_continue),
                 partial(repeat_samples, repeats=args.augment_repeats),
-                wds.map_tuple(train_transform, torch.tensor),
+                wds.map_tuple(train_generated_transforms, torch.tensor),
             )
             train_dataloader = DataLoader(
                 dataset,
@@ -174,7 +175,7 @@ def create_dataloaders(
                 wds.detshuffle(),
                 wds.slice(jax.process_index(), None, jax.process_count()),
                 wds.split_by_worker,
-                wds.tarfile_to_samples(),#handler=wds.ignore_and_continue
+                wds.tarfile_to_samples(),  #handler=wds.ignore_and_continue
                 wds.detshuffle(),
                 wds.decode("pil", handler=wds.ignore_and_continue),
                 wds.to_tuple("jpg", "cls", handler=wds.ignore_and_continue),
