@@ -44,7 +44,7 @@ python3  src/main.py \
     --warmup-steps $((1281167 * 5 / $TRAIN_BATCH_SIZE)) \
     --training-steps $((1281167 * 300 / $TRAIN_BATCH_SIZE)) \
     --log-interval 100 \
-    --eval-interval $((1281167 * 5 / $TRAIN_BATCH_SIZE)) \
+    --eval-interval $((1281167 * 10 / $TRAIN_BATCH_SIZE)) \
     --project deit3-jax \
     --name $(basename $0 .sh) \
     --ipaddr $(curl -s ifconfig.me) \
