@@ -23,9 +23,9 @@ python3  src/main.py \
     --heads 12 \
     --labels 1000 \
     --patch-size 16 \
-    --image-size 256 \
-    --posemb sincos2d \
-    --pooling gap \
+    --image-size 224 \
+    --posemb learnable \
+    --pooling cls \
     --dropout 0.0 \
     --droppath 0.05 \
     --init-seed 1 \

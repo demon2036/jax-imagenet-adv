@@ -134,7 +134,7 @@ def create_dataloaders(
     train_dataloader, valid_dataloader, train_origin_dataloader = None, None, None
     train_transform,train_generated_transforms, valid_transform = create_transforms(args)
 
-    dataset_mix_ratio = 0.5
+    dataset_mix_ratio = 0.0
     total_batch_size = args.train_batch_size // jax.process_count()
     train_batch_size = int(total_batch_size * dataset_mix_ratio)
     train_origin_batch_size = total_batch_size - train_batch_size
@@ -172,7 +172,7 @@ def create_dataloaders(
             dataset = wds.DataPipeline(
                 wds.SimpleShardList(args.train_dataset_shards, seed=args.shuffle_seed),
                 itertools.cycle,
-                wds.detshuffle(),
+                wds.detshuffle(seed=1),
                 wds.slice(jax.process_index(), None, jax.process_count()),
                 wds.split_by_worker,
                 wds.tarfile_to_samples(handler=wds.warn_and_stop),  #handler=wds.ignore_and_continue

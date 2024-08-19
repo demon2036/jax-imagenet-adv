@@ -65,6 +65,11 @@ class ViTBase:
         return (self.image_size // self.patch_size,) * 2
 
 
+class MyConv(nn.Module):
+    @nn.compact
+    def __call__(self, x,*args, **kwargs):
+        nn.ConvLocal
+
 class PatchEmbed(ViTBase, nn.Module):
     def setup(self):
         self.wte = Conv(
@@ -73,6 +78,9 @@ class PatchEmbed(ViTBase, nn.Module):
             strides=(self.patch_size, self.patch_size),
             padding="VALID",
         )
+
+
+
         if self.pooling == "cls":
             self.cls_token = self.param(
                 "cls_token", init.truncated_normal(0.02), (1, 1, self.dim)
