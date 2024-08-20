@@ -29,6 +29,7 @@ from flax.training.common_utils import shard_prng_key
 from jax.tree_util import tree_map_with_path
 
 from modeling import ViT
+from convnext import ConvNeXt
 from utils import Mixup, get_layer_index_fn, load_pretrained_params, modified_lamb
 
 CRITERION_COLLECTION = {
@@ -145,20 +146,24 @@ def validation_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
 
 
 def create_train_state(args: argparse.Namespace) -> TrainState:
-    model = ViT(
-        layers=args.layers,
-        dim=args.dim,
-        heads=args.heads,
-        labels=args.labels,
-        layerscale=args.layerscale,
-        patch_size=args.patch_size,
-        image_size=args.image_size,
-        posemb=args.posemb,
-        pooling=args.pooling,
-        dropout=args.dropout,
-        droppath=args.droppath,
-        grad_ckpt=args.grad_ckpt,
-    )
+    # model = ViT(
+    #     layers=args.layers,
+    #     dim=args.dim,
+    #     heads=args.heads,
+    #     labels=args.labels,
+    #     layerscale=args.layerscale,
+    #     patch_size=args.patch_size,
+    #     image_size=args.image_size,
+    #     posemb=args.posemb,
+    #     pooling=args.pooling,
+    #     dropout=args.dropout,
+    #     droppath=args.droppath,
+    #     grad_ckpt=args.grad_ckpt,
+    # )
+
+    model=ConvNeXt()
+
+
     module = TrainModule(
         model=model,
         mixup=Mixup(args.mixup, args.cutmix),
