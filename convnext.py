@@ -12,7 +12,6 @@ import einops
 
 from dataset import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 
-
 Dense = functools.partial(nn.Dense, kernel_init=nn.initializers.truncated_normal(0.02))
 Conv = functools.partial(nn.Conv, kernel_init=nn.initializers.truncated_normal(0.02))
 
@@ -44,13 +43,14 @@ class ConvNeXtBlock(nn.Module):
     # kernel_size:int=7
     stride: int = 1
     ls_init_value: float = 1e-6
+    drop_path_rate: float = 0.0
 
     def setup(self) -> None:
         self.conv_dw = Conv(self.out_channels, (7, 7),
-                               # use_bias=use_bias,
-                               feature_group_count=self.in_channels,
-                               # precision='highest',
-                               padding=[(3, 3), (3, 3)], )
+                            # use_bias=use_bias,
+                            feature_group_count=self.in_channels,
+                            # precision='highest',
+                            padding=[(3, 3), (3, 3)], )
 
         self.norm = nn.LayerNorm(epsilon=1e-6, use_fast_variance=True)
         self.mlp = Mlp(self.out_channels * 4, self.out_channels)
@@ -62,14 +62,18 @@ class ConvNeXtBlock(nn.Module):
 
         self.shortcut = Identity()
 
-    def __call__(self, x, *args, **kwargs):
+        self.drop_path = nn.Dropout(self.drop_path_rate, broadcast_dims=(1, 2, 3))
+
+        # self.drop_path = DropPath(drop_path) if drop_path > 0. else Identity()
+
+    def __call__(self, x, det=True):
         shortcut = x
         x = self.conv_dw(x)
         x = self.norm(x)
         x = self.mlp(x)
         if self.gamma is not None:
             x = x * self.gamma
-        x = self.shortcut(shortcut) + x
+        x = self.shortcut(shortcut) + self.drop_path(x, det)
         return x
 
 
@@ -79,6 +83,7 @@ class ConvNeXtStage(nn.Module):
     # kernel_size:int=7
     stride: int = 1
     depth: int = 2
+    drop_path_rates: Tuple[float] = None
 
     def setup(self) -> None:
         if self.in_channels != self.out_channels or self.stride > 1:
@@ -96,7 +101,7 @@ class ConvNeXtStage(nn.Module):
 
         for i in range(self.depth):
             stage_blocks.append(
-                ConvNeXtBlock(in_chs, self.out_channels)
+                ConvNeXtBlock(in_chs, self.out_channels,drop_path_rate=self.drop_path_rates[i])
             )
 
             in_chs = self.out_channels
@@ -104,12 +109,12 @@ class ConvNeXtStage(nn.Module):
         # self.blocks = nn.Sequential(stage_blocks)
         self.blocks = stage_blocks
 
-    def __call__(self, x):
+    def __call__(self, x,det=True):
 
         x = self.downsample(x)
 
         for block in self.blocks:
-            x = block(x)
+            x = block(x,det)
         return x
 
 
@@ -121,6 +126,7 @@ class ConvNeXt(nn.Module):
     dims: Tuple[int, ...] = (96, 192, 384, 768)
     num_classed: int = 1000
     labels: int | None = 1000
+    drop_path_rate:float =0.1
 
     def setup(self) -> None:
         self.stem = nn.Sequential([
@@ -129,8 +135,8 @@ class ConvNeXt(nn.Module):
         ])
 
         stages = []
-
         prev_chs = self.dims[0]
+        dp_rates = [x.tolist() for x in torch.linspace(0, self.drop_path_rate, sum(self.depths)).split(self.depths)]
         for i in range(4):
             stride = 2 if i > 0 else 1
 
@@ -141,7 +147,8 @@ class ConvNeXt(nn.Module):
                     prev_chs,
                     out_chs,
                     stride=stride,
-                    depth=self.depths[i]
+                    depth=self.depths[i],
+                    drop_path_rates=dp_rates[i],
                 )
             )
 
@@ -152,7 +159,7 @@ class ConvNeXt(nn.Module):
         self.norm = nn.LayerNorm(epsilon=1e-6, use_fast_variance=True)
         self.head = Dense(self.num_classed)
 
-    def __call__(self, x,det=True):
+    def __call__(self, x, det=True):
         x = (x - IMAGENET_DEFAULT_MEAN) / IMAGENET_DEFAULT_STD
         x = self.stem(x)
         for stage in self.stages:
@@ -161,5 +168,3 @@ class ConvNeXt(nn.Module):
         x = self.norm(x)
         x = self.head(x)
         return x
-
-
