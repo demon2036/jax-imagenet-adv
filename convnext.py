@@ -10,10 +10,7 @@ import torch
 import torch.nn as tnn
 import einops
 
-
-
-
-
+from dataset import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 
 
 class Identity(nn.Module):
@@ -42,6 +39,7 @@ class ConvNeXtBlock(nn.Module):
     out_channels: int
     # kernel_size:int=7
     stride: int = 1
+    ls_init_value: float = 1e-6
 
     def setup(self) -> None:
         self.conv_dw = nn.Conv(self.out_channels, (7, 7),
@@ -53,9 +51,11 @@ class ConvNeXtBlock(nn.Module):
         self.norm = nn.LayerNorm(epsilon=1e-6, use_fast_variance=True)
         self.mlp = Mlp(self.out_channels * 4, self.out_channels)
 
-        # if self.stride!=1 or self.in_channels!=self.out_channels:
-        #     self.shortcut=
-        # else:
+        if self.ls_init_value is not None:
+            self.gamma = self.param("gamma", nn.initializers.constant(self.ls_init_value), (self.out_channels,))
+        else:
+            self.gamma = None
+
         self.shortcut = Identity()
 
     def __call__(self, x, *args, **kwargs):
@@ -63,6 +63,8 @@ class ConvNeXtBlock(nn.Module):
         x = self.conv_dw(x)
         x = self.norm(x)
         x = self.mlp(x)
+        if self.gamma is not None:
+            x = x * self.gamma
         x = self.shortcut(shortcut) + x
         return x
 
@@ -147,6 +149,7 @@ class ConvNeXt(nn.Module):
         self.head = nn.Dense(self.num_classed)
 
     def __call__(self, x,det=True):
+        x = (x - IMAGENET_DEFAULT_MEAN) / IMAGENET_DEFAULT_STD
         x = self.stem(x)
         for stage in self.stages:
             x = stage(x)
