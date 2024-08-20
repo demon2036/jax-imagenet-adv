@@ -75,7 +75,6 @@ class ConvNeXtStage(nn.Module):
     depth: int = 2
 
     def setup(self) -> None:
-        # print(self.in_channels)
         if self.in_channels != self.out_channels or self.stride > 1:
             ds_ks = 2
             self.downsample = nn.Sequential([
@@ -124,7 +123,6 @@ class ConvNeXt(nn.Module):
         ])
 
         stages = []
-        print(self.depths)
 
         prev_chs = self.dims[0]
         for i in range(4):
