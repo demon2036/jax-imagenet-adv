@@ -143,7 +143,7 @@ class ConvNeXt(nn.Module):
         self.norm = nn.LayerNorm(epsilon=1e-6, use_fast_variance=False)
         self.head = nn.Dense(self.num_classed)
 
-    def __call__(self, x):
+    def __call__(self, x,det=True):
         x = self.stem(x)
         for stage in self.stages:
             x = stage(x)
@@ -152,11 +152,4 @@ class ConvNeXt(nn.Module):
         x = self.head(x)
         return x
 
-    def test(self, x):
-        x = self.stem(x)
-        for stage in self.stages:
-            x = stage(x)
-        x = jnp.mean(x, axis=[1, 2])
-        x = self.norm(x)
-        x = self.head(x)
-        return x
+
