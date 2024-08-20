@@ -110,6 +110,7 @@ class ConvNeXt(nn.Module):
     depths: Tuple[int, ...] = (3, 3, 9, 3)
     dims: Tuple[int, ...] = (96, 192, 384, 768)
     num_classed: int = 1000
+    labels: int | None = 1000
 
     def setup(self) -> None:
         self.stem = nn.Sequential([
