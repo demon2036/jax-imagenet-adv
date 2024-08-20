@@ -13,6 +13,10 @@ import einops
 from dataset import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 
 
+Dense = functools.partial(nn.Dense, kernel_init=nn.initializers.truncated_normal(0.02))
+Conv = functools.partial(nn.Conv, kernel_init=nn.initializers.truncated_normal(0.02))
+
+
 class Identity(nn.Module):
     def __call__(self, x):
         return x
@@ -24,8 +28,8 @@ class Mlp(nn.Module):
     act_layer: Any = functools.partial(nn.gelu, approximate=True)
 
     def setup(self) -> None:
-        self.fc1 = nn.Dense(self.hidden_features, )
-        self.fc2 = nn.Dense(self.out_features, )
+        self.fc1 = Dense(self.hidden_features, )
+        self.fc2 = Dense(self.out_features, )
 
     def __call__(self, x):
         x = self.fc1(x)
@@ -42,7 +46,7 @@ class ConvNeXtBlock(nn.Module):
     ls_init_value: float = 1e-6
 
     def setup(self) -> None:
-        self.conv_dw = nn.Conv(self.out_channels, (7, 7),
+        self.conv_dw = Conv(self.out_channels, (7, 7),
                                # use_bias=use_bias,
                                feature_group_count=self.in_channels,
                                # precision='highest',
@@ -81,7 +85,7 @@ class ConvNeXtStage(nn.Module):
             ds_ks = 2
             self.downsample = nn.Sequential([
                 nn.LayerNorm(epsilon=1e-6, use_fast_variance=True),
-                nn.Conv(self.out_channels, kernel_size=(2, 2), strides=(2, 2), padding=(0, 0))
+                Conv(self.out_channels, kernel_size=(2, 2), strides=(2, 2), padding=(0, 0))
             ])
             in_chs = self.out_channels
         else:
@@ -120,7 +124,7 @@ class ConvNeXt(nn.Module):
 
     def setup(self) -> None:
         self.stem = nn.Sequential([
-            nn.Conv(self.dims[0], kernel_size=(4, 4), strides=(4, 4)),
+            Conv(self.dims[0], kernel_size=(4, 4), strides=(4, 4)),
             nn.LayerNorm(epsilon=1e-6, use_fast_variance=True),
         ])
 
@@ -146,7 +150,7 @@ class ConvNeXt(nn.Module):
         self.stages = stages
 
         self.norm = nn.LayerNorm(epsilon=1e-6, use_fast_variance=True)
-        self.head = nn.Dense(self.num_classed)
+        self.head = Dense(self.num_classed)
 
     def __call__(self, x,det=True):
         x = (x - IMAGENET_DEFAULT_MEAN) / IMAGENET_DEFAULT_STD
