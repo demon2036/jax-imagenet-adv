@@ -163,7 +163,7 @@ class ConvNeXt(nn.Module):
         x = (x - IMAGENET_DEFAULT_MEAN) / IMAGENET_DEFAULT_STD
         x = self.stem(x)
         for stage in self.stages:
-            x = stage(x)
+            x = stage(x,det)
         x = jnp.mean(x, axis=[1, 2])
         x = self.norm(x)
         x = self.head(x)
