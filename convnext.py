@@ -11,6 +11,11 @@ import torch.nn as tnn
 import einops
 
 
+
+
+
+
+
 class Identity(nn.Module):
     def __call__(self, x):
         return x
@@ -19,7 +24,7 @@ class Identity(nn.Module):
 class Mlp(nn.Module):
     hidden_features: int
     out_features: int
-    act_layer: Any = functools.partial(nn.gelu, approximate=False)
+    act_layer: Any = functools.partial(nn.gelu, approximate=True)
 
     def setup(self) -> None:
         self.fc1 = nn.Dense(self.hidden_features, )
@@ -45,7 +50,7 @@ class ConvNeXtBlock(nn.Module):
                                # precision='highest',
                                padding=[(3, 3), (3, 3)], )
 
-        self.norm = nn.LayerNorm(epsilon=1e-6, use_fast_variance=False)
+        self.norm = nn.LayerNorm(epsilon=1e-6, use_fast_variance=True)
         self.mlp = Mlp(self.out_channels * 4, self.out_channels)
 
         # if self.stride!=1 or self.in_channels!=self.out_channels:
@@ -74,7 +79,7 @@ class ConvNeXtStage(nn.Module):
         if self.in_channels != self.out_channels or self.stride > 1:
             ds_ks = 2
             self.downsample = nn.Sequential([
-                nn.LayerNorm(epsilon=1e-6, use_fast_variance=False),
+                nn.LayerNorm(epsilon=1e-6, use_fast_variance=True),
                 nn.Conv(self.out_channels, kernel_size=(2, 2), strides=(2, 2), padding=(0, 0))
             ])
             in_chs = self.out_channels
@@ -115,7 +120,7 @@ class ConvNeXt(nn.Module):
     def setup(self) -> None:
         self.stem = nn.Sequential([
             nn.Conv(self.dims[0], kernel_size=(4, 4), strides=(4, 4)),
-            nn.LayerNorm(epsilon=1e-6, use_fast_variance=False),
+            nn.LayerNorm(epsilon=1e-6, use_fast_variance=True),
         ])
 
         stages = []
@@ -140,7 +145,7 @@ class ConvNeXt(nn.Module):
 
         self.stages = stages
 
-        self.norm = nn.LayerNorm(epsilon=1e-6, use_fast_variance=False)
+        self.norm = nn.LayerNorm(epsilon=1e-6, use_fast_variance=True)
         self.head = nn.Dense(self.num_classed)
 
     def __call__(self, x,det=True):
