@@ -32,7 +32,7 @@ from flax.training.common_utils import shard, shard_prng_key
 from optax import softmax_cross_entropy_with_integer_labels
 from torch.utils.data import DataLoader
 
-from test_dataset import create_dataloaders
+from test_dataset_fork import create_dataloaders
 from test_state import create_train_state
 from training import TrainState, training_step, validation_step
 from utils import AverageMeter, save_checkpoint_in_background, read_yaml, preprocess_config
@@ -68,8 +68,8 @@ def main(configs):
                                training_steps=training_steps).replicate()
 
     train_dataloader, valid_dataloader = create_dataloaders(**configs['dataset'])
-    train_dataloader_iter = iter(train_dataloader)
-    # train_dataloader_iter = train_dataloader
+    # train_dataloader_iter = iter(train_dataloader)
+    train_dataloader_iter = train_dataloader
     average_meter, max_val_acc1 = AverageMeter(use_latest=["learning_rate"]), 0.0
 
     for step in tqdm.trange(1, training_steps + 1, dynamic_ncols=True):
