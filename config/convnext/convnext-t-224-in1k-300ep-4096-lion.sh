@@ -32,7 +32,7 @@ python3  main.py \
     --mixup-seed 1 \
     --dropout-seed 1 \
     --shuffle-seed 1 \
-    --optimizer adamw \
+    --optimizer lion \
     --learning-rate 0.001 \
     --weight-decay 0.2 \
     --adam-b1 0.9 \
