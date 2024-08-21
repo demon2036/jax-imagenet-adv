@@ -212,5 +212,5 @@ pyrightconfig.json
 *.zip
 *.msgpack
 *.pth
-models/
+#models/
 run.sh
