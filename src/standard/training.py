@@ -28,7 +28,7 @@ from flax.training import train_state
 from flax.training.common_utils import shard_prng_key
 from jax.tree_util import tree_map_with_path
 
-from modeling import ViT
+from deprecated.modeling import ViT
 from utils import Mixup, get_layer_index_fn, load_pretrained_params, modified_lamb
 
 CRITERION_COLLECTION = {

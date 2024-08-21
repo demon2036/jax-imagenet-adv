@@ -16,22 +16,19 @@ from __future__ import annotations
 
 import argparse
 from functools import partial
-from typing import Callable
 
 import einops
 import flax
-import flax.linen as nn
 import jax
 import jax.numpy as jnp
 import optax
-from chex import Array, ArrayTree, PRNGKey
+from chex import ArrayTree, PRNGKey
 from flax.training import train_state
 from flax.training.common_utils import shard_prng_key
 from jax.tree_util import tree_map_with_path
 
-from dataset import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
-from modeling import ViT
-from utils import Mixup, get_layer_index_fn, load_pretrained_params, modified_lamb
+from deprecated.modeling import ViT
+from utils import get_layer_index_fn, load_pretrained_params, modified_lamb
 
 from attacks.pgd import pgd_attack
 

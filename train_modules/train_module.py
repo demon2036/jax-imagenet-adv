@@ -8,8 +8,8 @@ import jax.numpy as jnp
 import optax
 from chex import Array, ArrayTree
 
-from modeling import ViT
-from utils import Mixup, modified_lamb
+from deprecated.modeling import ViT
+from utils import Mixup
 
 CRITERION_COLLECTION = {
     "ce": optax.softmax_cross_entropy,

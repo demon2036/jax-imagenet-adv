@@ -1,16 +1,11 @@
 import functools
 from typing import Any, Tuple
 
-import flax
 import flax.linen as nn
-import jax
 import jax.numpy as jnp
-import numpy as np
 import torch
-import torch.nn as tnn
-import einops
 
-from dataset import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
+from deprecated.dataset import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 
 Dense = functools.partial(nn.Dense, kernel_init=nn.initializers.truncated_normal(0.02))
 Conv = functools.partial(nn.Conv, kernel_init=nn.initializers.truncated_normal(0.02))

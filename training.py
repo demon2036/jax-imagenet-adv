@@ -17,19 +17,17 @@ from __future__ import annotations
 import argparse
 import copy
 from functools import partial
-from typing import Callable, Any
+from typing import Any
 
 import flax
-import flax.linen as nn
 import jax
 import jax.numpy as jnp
 import optax
-from chex import Array, ArrayTree, PRNGKey
+from chex import ArrayTree, PRNGKey
 from flax.training import train_state
 from flax.training.common_utils import shard_prng_key
 from jax.tree_util import tree_map_with_path
 
-from modeling import ViT
 from convnext import ConvNeXt
 from train_module import TrainModule
 from utils import Mixup, get_layer_index_fn, load_pretrained_params, modified_lamb

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Callable
+from typing import Callable, Any
 
 import flax.linen as nn
 import jax
@@ -8,8 +8,8 @@ import jax.numpy as jnp
 import optax
 from chex import Array, ArrayTree
 
-from modeling import ViT
-from utils import Mixup, modified_lamb
+
+from utils import Mixup
 
 CRITERION_COLLECTION = {
     "ce": optax.softmax_cross_entropy,
@@ -18,7 +18,7 @@ CRITERION_COLLECTION = {
 
 
 class TrainModule(nn.Module):
-    model: ViT
+    model: Any
     mixup: Mixup
     label_smoothing: float = 0.0
     criterion: Callable[[Array, Array], Array] = CRITERION_COLLECTION["ce"]
