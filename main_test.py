@@ -56,9 +56,9 @@ def evaluate(state: TrainState, dataloader: DataLoader) -> dict[str, float]:
 
 
 def main(configs):
-    if jax.process_index() == 0:
-        os.environ['WANDB_API_KEY']='ec6aa52f09f51468ca407c0c00e136aaaa18a445'
-        wandb.init(name=configs['name'], project=configs['project'],  config=configs)
+    # if jax.process_index() == 0:
+    # os.environ['WANDB_API_KEY'] = 'ec6aa52f09f51468ca407c0c00e136aaaa18a445'
+    # wandb.init(name=configs['name'], project=configs['project'], config=configs)
 
     training_steps = configs['steps'] * configs['training_epoch'] // configs['dataset']['train_batch_size']
     warmup_steps = configs['steps'] * configs['warmup_epoch'] // configs['dataset']['train_batch_size']
@@ -71,9 +71,6 @@ def main(configs):
     train_dataloader, valid_dataloader = create_dataloaders(**configs['dataset'])
     train_dataloader_iter = iter(train_dataloader)
     # train_dataloader_iter = train_dataloader
-
-
-
     average_meter, max_val_acc1 = AverageMeter(use_latest=["learning_rate"]), 0.0
 
     for step in tqdm.trange(1, training_steps + 1, dynamic_ncols=True):

@@ -61,12 +61,12 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     ) -> optax.GradientTransformation:
         tx = OPTIMIZER_COLLECTION[optimizer_config['target']](
             learning_rate=learning_rate,
-            **optimizer_config['optimizer_kwargs']
+            **optimizer_config['optimizer_kwargs'],
             # b1=args.adam_b1,
             # b2=args.adam_b2,
             # eps=args.adam_eps,
             # weight_decay=args.weight_decay,
-            # mask=partial(tree_map_with_path, lambda kp, *_: kp[-1].key == "kernel"),
+            mask=partial(jax.tree_util.tree_map_with_path, lambda kp, *_: kp[-1].key == "kernel"),
         )
         # if args.lr_decay < 1.0:
         #     layerwise_scales = {

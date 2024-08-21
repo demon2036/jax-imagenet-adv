@@ -122,6 +122,24 @@ def create_dataloaders(
         test_crop_ratio,
         grad_accum=1,
 ) -> tuple[DataLoader | None, DataLoader | None]:
+    print(train_dataset_shards,
+          valid_dataset_shards,
+          train_batch_size,
+          valid_batch_size,
+          train_loader_workers,
+          valid_loader_workers,
+          augment_repeats,
+          shuffle_seed,
+          random_crop,
+          image_size,
+          auto_augment,
+          color_jitter,
+          random_erasing,
+          test_crop_ratio,
+          grad_accum)
+
+
+
     train_dataloader, valid_dataloader = None, None
     train_transform, valid_transform = create_transforms(random_crop,
                                                          image_size,
