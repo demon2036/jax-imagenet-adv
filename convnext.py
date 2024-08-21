@@ -101,7 +101,7 @@ class ConvNeXtStage(nn.Module):
 
         for i in range(self.depth):
             stage_blocks.append(
-                ConvNeXtBlock(in_chs, self.out_channels,drop_path_rate=self.drop_path_rates[i])
+                ConvNeXtBlock(in_chs, self.out_channels, drop_path_rate=self.drop_path_rates[i])
             )
 
             in_chs = self.out_channels
@@ -109,12 +109,12 @@ class ConvNeXtStage(nn.Module):
         # self.blocks = nn.Sequential(stage_blocks)
         self.blocks = stage_blocks
 
-    def __call__(self, x,det=True):
+    def __call__(self, x, det=True):
 
         x = self.downsample(x)
 
         for block in self.blocks:
-            x = block(x,det)
+            x = block(x, det)
         return x
 
 
@@ -126,7 +126,7 @@ class ConvNeXt(nn.Module):
     dims: Tuple[int, ...] = (96, 192, 384, 768)
     num_classed: int = 1000
     labels: int | None = 1000
-    drop_path_rate:float =0.1
+    drop_path_rate: float = 0.1
 
     def setup(self) -> None:
         self.stem = nn.Sequential([
@@ -163,7 +163,7 @@ class ConvNeXt(nn.Module):
         x = (x - IMAGENET_DEFAULT_MEAN) / IMAGENET_DEFAULT_STD
         x = self.stem(x)
         for stage in self.stages:
-            x = stage(x,det)
+            x = stage(x, det)
         x = jnp.mean(x, axis=[1, 2])
         x = self.norm(x)
         x = self.head(x)
