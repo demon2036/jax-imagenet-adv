@@ -56,9 +56,8 @@ def evaluate(state: TrainState, dataloader: DataLoader) -> dict[str, float]:
 
 
 def main(configs):
-    # if jax.process_index() == 0:
-    # os.environ['WANDB_API_KEY'] = 'ec6aa52f09f51468ca407c0c00e136aaaa18a445'
-    # wandb.init(name=configs['name'], project=configs['project'], config=configs)
+    if jax.process_index() == 0:
+        wandb.init(name=configs['name'], project=configs['project'], config=configs)
 
     training_steps = configs['steps'] * configs['training_epoch'] // configs['dataset']['train_batch_size']
     warmup_steps = configs['steps'] * configs['warmup_epoch'] // configs['dataset']['train_batch_size']
