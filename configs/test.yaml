@@ -8,7 +8,7 @@ log_interval: 100
 eval_epoch: 10
 
 dataset:
-  train_batch_size: 1024
+  train_batch_size: 4096
   valid_batch_size: 2048
   train_loader_workers: 40
   valid_loader_workers: 10
