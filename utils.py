@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import os
 import re
@@ -29,6 +30,7 @@ import jax.numpy as jnp
 import numpy as np
 import optax
 import webdataset as wds
+import yaml
 from chex import Array, ArrayTree
 from jax.tree_util import DictKey
 
@@ -53,7 +55,7 @@ class AverageMeter:
 
 
 def save_checkpoint_in_background(
-    args: argparse.Namespace, params_bytes: bytes, postfix: str = "last"
+        args: argparse.Namespace, params_bytes: bytes, postfix: str = "last"
 ):
     def thread_fn():
         filename = os.path.join(args.output_dir, f"{args.name}-{postfix}.msgpack")
@@ -122,13 +124,13 @@ def fixed_sincos2d_embeddings(ncols: int, nrows: int, dim: int) -> Array:
 
 
 def modified_lamb(
-    learning_rate: optax.ScalarOrSchedule,
-    b1: float = 0.9,
-    b2: float = 0.999,
-    eps: float = 1e-6,
-    eps_root: float = 0.0,
-    weight_decay: float = 0.0,
-    mask: optax.MaskOrFn = None,
+        learning_rate: optax.ScalarOrSchedule,
+        b1: float = 0.9,
+        b2: float = 0.999,
+        eps: float = 1e-6,
+        eps_root: float = 0.0,
+        weight_decay: float = 0.0,
+        mask: optax.MaskOrFn = None,
 ) -> optax.GradientTransformation:
     return optax.chain(
         optax.scale_by_adam(b1=b1, b2=b2, eps=eps, eps_root=eps_root),
@@ -154,9 +156,9 @@ def load_pretrained_params(args: argparse.Namespace, params: ArrayTree) -> Array
     # The positional embeddings will be resized when there is a difference in image
     # resolutions between pretraining and finetuning stage.
     if (
-        args.posemb == "learnable"
-        and new_params["model"]["embed"]["wpe"].shape
-        != params["model"]["embed"]["wpe"].shape
+            args.posemb == "learnable"
+            and new_params["model"]["embed"]["wpe"].shape
+            != params["model"]["embed"]["wpe"].shape
     ):
         new_params["model"]["embed"]["wpe"] = jax.image.resize(
             new_params["model"]["embed"]["wpe"],
@@ -167,10 +169,10 @@ def load_pretrained_params(args: argparse.Namespace, params: ArrayTree) -> Array
     # Reinitialize the classifier head if the model was pretrained on different dataset
     # and `args.label_mapping` is not specified.
     if (
-        "head" not in new_params["model"]
-        or args.label_mapping is None
-        and new_params["model"]["head"]["kernel"].shape
-        != params["model"]["head"]["kernel"].shape
+            "head" not in new_params["model"]
+            or args.label_mapping is None
+            and new_params["model"]["head"]["kernel"].shape
+            != params["model"]["head"]["kernel"].shape
     ):
         new_params["model"]["head"] = params["model"]["head"]
 
@@ -189,3 +191,34 @@ def load_pretrained_params(args: argparse.Namespace, params: ArrayTree) -> Array
 
         new_params["model"]["head"] = {"kernel": kernel, "bias": bias}
     return new_params
+
+
+def read_yaml(config_path):
+    with open(config_path, 'r') as f:
+        res = yaml.safe_load(f, )
+        return res
+
+
+def get_obj_from_str(string: str):
+    module, cls = string.rsplit('.', 1)
+    return getattr(importlib.import_module(module), cls)
+
+
+def preprocess_config(yaml):
+
+
+    yaml['dataset']['train_dataset_shards'] = yaml['dataset']['train_dataset_shards'].replace("$GCS_DATASET_DIR",
+                                                                                              os.environ.get(
+                                                                                                  'GCS_DATASET_DIR',
+                                                                                                  ''))
+
+    yaml['dataset']['valid_dataset_shards'] = yaml['dataset']['train_dataset_shards'].replace("$GCS_DATASET_DIR",
+                                                                                              os.environ.get(
+                                                                                                  'GCS_DATASET_DIR',
+                                                                                                  ''))
+    yaml['output_dir'] = yaml['output_dir'].replace("$GCS_MODEL_DIR",
+                                                    os.environ.get(
+                                                        'GCS_DATASET_DIR',
+                                                        ''))
+
+    return yaml
