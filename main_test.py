@@ -60,12 +60,15 @@ def main(configs):
     eval_interval = configs['steps'] * configs['eval_epoch'] // configs['dataset']['train_batch_size']
     log_interval = configs['log_interval']
 
+
+    state = create_train_state(configs['train_state'], warmup_steps=warmup_steps,
+                               training_steps=training_steps).replicate()
+
     train_dataloader, valid_dataloader = create_dataloaders(**configs['dataset'])
     train_dataloader_iter = iter(train_dataloader)
     # train_dataloader_iter = train_dataloader
 
-    state = create_train_state(configs['train_state'], warmup_steps=warmup_steps,
-                               training_steps=training_steps).replicate()
+
 
     if jax.process_index() == 0:
         wandb.init(name=configs['name'], project=configs['project'],  #config=args
