@@ -205,14 +205,12 @@ def get_obj_from_str(string: str):
 
 
 def preprocess_config(yaml):
-
-
     yaml['dataset']['train_dataset_shards'] = yaml['dataset']['train_dataset_shards'].replace("$GCS_DATASET_DIR",
                                                                                               os.environ.get(
                                                                                                   'GCS_DATASET_DIR',
                                                                                                   ''))
 
-    yaml['dataset']['valid_dataset_shards'] = yaml['dataset']['train_dataset_shards'].replace("$GCS_DATASET_DIR",
+    yaml['dataset']['valid_dataset_shards'] = yaml['dataset']['valid_dataset_shards'].replace("$GCS_DATASET_DIR",
                                                                                               os.environ.get(
                                                                                                   'GCS_DATASET_DIR',
                                                                                                   ''))
