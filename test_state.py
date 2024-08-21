@@ -27,7 +27,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         label_smoothing=train_module_config['label_smoothing'] if train_module_config['criterion'] == "ce" else 0,
         criterion=CRITERION_COLLECTION[train_module_config['criterion']],
     )
-    if jax.process_index()===0:
+    if jax.process_index()==0:
         print(module)
 
     # Initialize the model weights with dummy inputs. Using the init RNGS and inputs, we
