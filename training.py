@@ -54,8 +54,7 @@ class TrainState(train_state.TrainState):
     grad_accum: ArrayTree | None = None
 
     ema_params: Any = None
-    ema_decay:float =0.9998
-
+    ema_decay: float = 0.9998
 
     def split_rngs(self) -> tuple[ArrayTree, ArrayTree]:
         mixup_rng, new_mixup_rng = jax.random.split(self.mixup_rng)
@@ -70,9 +69,6 @@ class TrainState(train_state.TrainState):
             mixup_rng=shard_prng_key(self.mixup_rng),
             dropout_rng=shard_prng_key(self.dropout_rng),
         )
-
-
-
 
 
 @partial(jax.pmap, axis_name="batch", donate_argnums=0)
@@ -112,10 +108,10 @@ def training_step(state: TrainState, batch: ArrayTree) -> tuple[TrainState, Arra
 
     # if state.ema_params is not None:
 
-    new_ema_params = jax.tree_util.tree_map(
-        lambda ema, normal: ema * state.ema_decay + (1 - state.ema_decay) * normal,
-        state.ema_params, state.params)
-    state = state.replace(ema_params=new_ema_params)
+    # new_ema_params = jax.tree_util.tree_map(
+    #     lambda ema, normal: ema * state.ema_decay + (1 - state.ema_decay) * normal,
+    #     state.ema_params, state.params)
+    # state = state.replace(ema_params=new_ema_params)
 
     return state.replace(**updates), metrics | state.opt_state.hyperparams
 
