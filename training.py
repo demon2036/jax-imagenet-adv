@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import argparse
 from functools import partial
-from typing import Callable
+from typing import Callable, Any
 
 import flax
 import flax.linen as nn
@@ -39,7 +39,7 @@ CRITERION_COLLECTION = {
 OPTIMIZER_COLLECTION = {
     "adamw": optax.adamw,
     "lamb": modified_lamb,
-    'lion':optax.lion
+    'lion': optax.lion
 }
 
 
@@ -50,6 +50,10 @@ class TrainState(train_state.TrainState):
     micro_step: int = 0
     micro_in_mini: int = 1
     grad_accum: ArrayTree | None = None
+
+    ema_params: Any = None
+    ema_decay:float =0.9998
+
 
     def split_rngs(self) -> tuple[ArrayTree, ArrayTree]:
         mixup_rng, new_mixup_rng = jax.random.split(self.mixup_rng)
@@ -130,13 +134,21 @@ def training_step(state: TrainState, batch: ArrayTree) -> tuple[TrainState, Arra
         state = jax.lax.cond(
             state.micro_step == state.micro_in_mini, update_fn, lambda x: x, state
         )
+
+    # if state.ema_params is not None:
+
+    new_ema_params = jax.tree_util.tree_map(
+        lambda ema, normal: ema * state.ema_decay + (1 - state.ema_decay) * normal,
+        state.ema_params, state.params)
+    state = state.replace(ema_params=new_ema_params)
+
     return state.replace(**updates), metrics | state.opt_state.hyperparams
 
 
 @partial(jax.pmap, axis_name="batch")
 def validation_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
     metrics = state.apply_fn(
-        {"params": state.params},
+        {"params": state.ema_params},
         images=batch[0],
         labels=jnp.where(batch[1] != -1, batch[1], 0),
         det=True,
@@ -162,8 +174,7 @@ def create_train_state(args: argparse.Namespace) -> TrainState:
     #     grad_ckpt=args.grad_ckpt,
     # )
 
-    model=ConvNeXt()
-
+    model = ConvNeXt()
 
     module = TrainModule(
         model=model,
@@ -230,4 +241,5 @@ def create_train_state(args: argparse.Namespace) -> TrainState:
         micro_step=0,
         micro_in_mini=args.grad_accum,
         grad_accum=grad_accum if args.grad_accum > 1 else None,
+        ema_params=params
     )
