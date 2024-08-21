@@ -39,6 +39,7 @@ CRITERION_COLLECTION = {
 OPTIMIZER_COLLECTION = {
     "adamw": optax.adamw,
     "lamb": modified_lamb,
+    'lion':optax.lion
 }
 
 
