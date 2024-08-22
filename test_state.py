@@ -102,7 +102,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
 
 
 if __name__ == "__main__":
-    yaml = read_yaml('configs/test.yaml')
+    yaml = read_yaml('configs/convnext-s.yaml')
     yaml = preprocess_config(yaml)
 
     print(os.environ.get('GCS_DATASET_DIR'))
