@@ -34,14 +34,15 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     # will tabulate the summary of model and its parameters. Furthermore, empty gradient
     # accumulation arrays will be prepared if the gradient accumulation is enabled.
     example_inputs = {
-        "images": jnp.zeros((1, 3, image_size, image_size), dtype=jnp.uint8),
-        "labels": jnp.zeros((1,), dtype=jnp.int32),
+        "images": jnp.zeros((2, 3, image_size, image_size), dtype=jnp.uint8),
+        # "labels": jnp.zeros((1,), dtype=jnp.int32),
+        "labels": jnp.array([1,2], dtype=jnp.int32),
     }
 
     init_rngs = {"params": jax.random.PRNGKey(train_state_config['init_seed'])}
     # print(module.tabulate(init_rngs, **example_inputs))
 
-    params = module.init(init_rngs, **example_inputs)["params"]
+    params = module.init(init_rngs, **example_inputs,det=False)["params"]
     # if args.pretrained_ckpt is not None:
     #     params = load_pretrained_params(args, params)
     # if args.grad_accum > 1:
