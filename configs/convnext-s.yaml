@@ -38,7 +38,7 @@ train_state:
     model_kwargs:
       labels: 1000
       drop_path_rate: 0.1
-      dims: [3,3,27,3]
+#      dims: [3,3,27,3]
 
   optimizer:
     target: 'adamw'
