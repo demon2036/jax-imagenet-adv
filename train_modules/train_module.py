@@ -8,6 +8,7 @@ import jax.numpy as jnp
 import optax
 from chex import Array, ArrayTree
 
+from attacks import pgd_attack
 from utils import Mixup
 
 CRITERION_COLLECTION = {
@@ -52,7 +53,7 @@ class TrainAdvModule(nn.Module):
     label_smoothing: float = 0.0
     criterion: Callable[[Array, Array], Array] = CRITERION_COLLECTION["ce"]
 
-    def __call__(self, images: Array, labels: Array, det: bool = True) -> ArrayTree:
+    def __call__(self, images: Array, labels: Array, det: bool = True, use_pgd=True) -> ArrayTree:
         # Normalize the pixel values in TPU devices, instead of copying the normalized
         # float values from CPU. This may reduce both memory usage and latency.
         images = jnp.moveaxis(images, 1, 3).astype(jnp.float32) / 0xFF
@@ -63,6 +64,9 @@ class TrainAdvModule(nn.Module):
         if not det:
             labels = optax.smooth_labels(labels, self.label_smoothing)
             images, labels = self.mixup(images, labels)
+
+        if use_pgd:
+            images = pgd_attack(images, labels, self.model, self.make_rng('adv'))
 
         loss = self.criterion((logits := self.model(images, det=det)), labels)
         labels = labels == labels.max(-1, keepdims=True)

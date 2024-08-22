@@ -138,8 +138,6 @@ def create_dataloaders(
           test_crop_ratio,
           grad_accum)
 
-
-
     train_dataloader, valid_dataloader = None, None
     train_transform, valid_transform = create_transforms(random_crop,
                                                          image_size,

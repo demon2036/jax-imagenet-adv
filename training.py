@@ -31,6 +31,7 @@ from flax.training.common_utils import shard_prng_key
 class TrainState(train_state.TrainState):
     mixup_rng: PRNGKey
     dropout_rng: PRNGKey
+    adv_rng: PRNGKey
 
     micro_step: int = 0
     micro_in_mini: int = 1
@@ -42,9 +43,10 @@ class TrainState(train_state.TrainState):
     def split_rngs(self) -> tuple[ArrayTree, ArrayTree]:
         mixup_rng, new_mixup_rng = jax.random.split(self.mixup_rng)
         dropout_rng, new_dropout_rng = jax.random.split(self.dropout_rng)
+        adv_rng, new_adv_rng = jax.random.split(self.adv_rng)
 
-        rngs = {"mixup": mixup_rng, "dropout": dropout_rng}
-        updates = {"mixup_rng": new_mixup_rng, "dropout_rng": new_dropout_rng}
+        rngs = {"mixup": mixup_rng, "dropout": dropout_rng, 'adv': adv_rng}
+        updates = {"mixup_rng": new_mixup_rng, "dropout_rng": new_dropout_rng, 'adv_rng': new_adv_rng}
         return rngs, updates
 
     def replicate(self) -> TrainState:
@@ -107,6 +109,30 @@ def validation_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
         labels=jnp.where(batch[1] != -1, batch[1], 0),
         det=True,
     )
+    metrics["num_samples"] = batch[1] != -1
+    metrics = jax.tree_map(lambda x: (x * (batch[1] != -1)).sum(), metrics)
+    return jax.lax.psum(metrics, axis_name="batch")
+
+
+@partial(jax.pmap, axis_name="batch")
+def validation_adv_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
+    metrics = state.apply_fn(
+        {"params": state.ema_params},
+        images=batch[0],
+        labels=jnp.where(batch[1] != -1, batch[1], 0),
+        det=True, use_pgd=False
+    )
+
+    metrics_adv = state.apply_fn(
+        {"params": state.ema_params},
+        images=batch[0],
+        labels=jnp.where(batch[1] != -1, batch[1], 0),
+        det=True, use_pgd=True
+    )
+
+    metrics_adv = {'adv' + k: v for k, v in metrics_adv.items()}
+    metrics_adv.update(metrics)
+
     metrics["num_samples"] = batch[1] != -1
     metrics = jax.tree_map(lambda x: (x * (batch[1] != -1)).sum(), metrics)
     return jax.lax.psum(metrics, axis_name="batch")

@@ -6,7 +6,7 @@ import jax
 import optax
 
 from pre_define import CRITERION_COLLECTION, OPTIMIZER_COLLECTION
-from deprecated.training import TrainState
+from training import TrainState
 from utils import read_yaml, get_obj_from_str, Mixup, preprocess_config
 import os
 import jax.numpy as jnp
@@ -89,6 +89,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         tx=create_optimizer_fn(learning_rate),
         mixup_rng=jax.random.PRNGKey(train_state_config['mixup_seed'] + jax.process_index()),
         dropout_rng=jax.random.PRNGKey(train_state_config['dropout_seed'] + jax.process_index()),
+        adv_rng=jax.random.PRNGKey(2036 + jax.process_index()),
         micro_step=0,
         # micro_in_mini=args.grad_accum,
         # grad_accum=grad_accum if args.grad_accum > 1 else None,
