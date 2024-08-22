@@ -20,13 +20,15 @@ import numpy as np
 import tqdm
 import wandb
 from flax.jax_utils import unreplicate
+from flax.serialization import msgpack_serialize
 from flax.training.common_utils import shard
 from torch.utils.data import DataLoader
 
 from test_dataset_fork import create_dataloaders
 from test_state import create_train_state
 from training import TrainState, training_step, validation_adv_step
-from utils import AverageMeter, read_yaml, preprocess_config
+from utils import AverageMeter, read_yaml, preprocess_config, save_checkpoint_in_background, \
+    save_checkpoint_in_background2
 
 
 # from dataset import create_dataloaders
@@ -81,9 +83,9 @@ def main(configs):
         if eval_interval > 0 and (
                 step % eval_interval == 0 or step == training_steps
         ):
-            # if jax.process_index() == 0:
-            #     params_bytes = msgpack_serialize(unreplicate(state.params))
-            #     save_checkpoint_in_background(args, params_bytes, postfix="last")
+            if jax.process_index() == 0:
+                params_bytes = msgpack_serialize(unreplicate(state.params))
+                save_checkpoint_in_background2(configs['output_dir'],configs['name'], params_bytes, postfix="last")
             if valid_dataloader is None:
                 continue
 

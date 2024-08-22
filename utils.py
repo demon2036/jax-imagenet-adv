@@ -65,6 +65,18 @@ def save_checkpoint_in_background(
     threading.Thread(target=thread_fn).start()
 
 
+
+def save_checkpoint_in_background2(
+        output_dir,name, params_bytes: bytes, postfix: str = "last"
+):
+    def thread_fn():
+        filename = os.path.join(output_dir, f"{name}-{postfix}.msgpack")
+        with wds.gopen(filename, "wb") as fp:
+            fp.write(params_bytes)
+
+    threading.Thread(target=thread_fn).start()
+
+
 class Mixup(nn.Module):
     mixup_alpha: float = 0.8
     cutmix_alpha: float = 1.0
@@ -218,5 +230,8 @@ def preprocess_config(yaml):
                                                     os.environ.get(
                                                         'GCS_DATASET_DIR',
                                                         ''))
+
+
+
 
     return yaml

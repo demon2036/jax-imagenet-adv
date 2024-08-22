@@ -1,4 +1,5 @@
 
+output_dir: $GCS_MODEL_DIR
 name: test
 project: deit3-jax
 steps: 1281167
@@ -55,7 +56,6 @@ train_state:
 
 
 
-output_dir: $GCS_MODEL_DIR
 
 
 #    --init-seed 1 \

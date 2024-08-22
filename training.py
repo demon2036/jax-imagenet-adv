@@ -132,8 +132,8 @@ def validation_adv_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
     )
 
     metrics_adv = {'adv' + k: v for k, v in metrics_adv.items()}
-    metrics_adv.update(metrics)
+    metrics.update(metrics_adv)
 
     metrics["num_samples"] = batch[1] != -1
-    metrics = jax.tree_map(lambda x: (x * (batch[1] != -1)).sum(), metrics)
+    metrics = jax.tree_util.tree_map(lambda x: (x * (batch[1] != -1)).sum(), metrics)
     return jax.lax.psum(metrics, axis_name="batch")
