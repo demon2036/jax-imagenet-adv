@@ -116,6 +116,7 @@ def validation_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
 
 @partial(jax.pmap, axis_name="batch")
 def validation_adv_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
+    rngs, updates = state.split_rngs()
     metrics = state.apply_fn(
         {"params": state.ema_params},
         images=batch[0],
@@ -127,7 +128,7 @@ def validation_adv_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
         {"params": state.ema_params},
         images=batch[0],
         labels=jnp.where(batch[1] != -1, batch[1], 0),
-        det=True, use_pgd=True
+        det=True, use_pgd=True,rngs=rngs
     )
 
     metrics_adv = {'adv' + k: v for k, v in metrics_adv.items()}
