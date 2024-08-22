@@ -33,7 +33,7 @@ def pgd_attack(image, label, model, epsilon=4 / 255, step_size=4 / 255, maxiter=
 
     # image = einops.rearrange(image, 'b c h w->b h w c')
     # image = image.astype(jnp.float32)
-    label = label.astype(jnp.int32)
+    # label = label.astype(jnp.int32)
 
     # image_perturbation = jnp.zeros_like(image)
     image_perturbation = jax.random.uniform(key, image.shape, minval=-epsilon, maxval=epsilon)
