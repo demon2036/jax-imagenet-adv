@@ -84,7 +84,7 @@ def main(configs):
                 step % eval_interval == 0 or step == training_steps
         ):
             if jax.process_index() == 0:
-                params_bytes = msgpack_serialize(unreplicate(state.params))
+                params_bytes = msgpack_serialize(unreplicate(state.ema_params))
                 save_checkpoint_in_background2(configs['output_dir'],configs['name'], params_bytes, postfix="last")
             if valid_dataloader is None:
                 continue
