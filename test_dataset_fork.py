@@ -212,10 +212,10 @@ def create_dataloaders(
             wds.detshuffle(),
             wds.slice(jax.process_index(), None, jax.process_count()),
             wds.split_by_worker,
-            wds.tarfile_to_samples(handler=wds.warn_and_stop),
+            wds.tarfile_to_samples(handler=wds.ignore_and_continue),
             wds.detshuffle(),
-            wds.decode("pil", handler=wds.warn_and_stop),
-            wds.to_tuple("jpg", "cls", handler=wds.warn_and_stop),
+            wds.decode("pil", handler=wds.ignore_and_continue),
+            wds.to_tuple("jpg", "cls", handler=wds.ignore_and_continue),
             partial(repeat_samples, repeats=augment_repeats),
             wds.map_tuple(train_transform, torch.tensor),
         )
