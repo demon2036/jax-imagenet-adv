@@ -1,1 +1,1 @@
-from convnext import ConvNeXt
+from .convnext import ConvNeXt

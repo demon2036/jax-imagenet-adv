@@ -1,1 +1,1 @@
-from train_module import TrainAdvModule, TrainModule
+from .train_module import TrainAdvModule, TrainModule
