@@ -66,7 +66,8 @@ class TrainAdvModule(nn.Module):
             images, labels = self.mixup(images, labels)
 
         if use_pgd:
-            images = pgd_attack(images, labels, self.model, key=self.make_rng('adv'))
+            images=pgd_attack(images,labels,self.model,key=self.make_rng('adv'))
+
 
         loss = self.criterion((logits := self.model(images, det=det)), labels)
         labels = labels == labels.max(-1, keepdims=True)

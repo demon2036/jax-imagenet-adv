@@ -31,11 +31,8 @@ def pgd_attack(image, label, model, epsilon=4 / 255, step_size=4 / 255, maxiter=
     :param step_size:
   """
 
-
-
-    image = einops.rearrange(image, 'b c h w->b h w c')
+    # image = einops.rearrange(image, 'b c h w->b h w c')
     image = image.astype(jnp.float32)
-
     label = label.astype(jnp.int32)
 
     # image_perturbation = jnp.zeros_like(image)
@@ -43,7 +40,8 @@ def pgd_attack(image, label, model, epsilon=4 / 255, step_size=4 / 255, maxiter=
 
     def adversarial_loss(perturbation):
         logits = model(image + perturbation)
-        loss_value = jnp.mean(softmax_cross_entropy_with_integer_labels(logits, label))
+        # print(logits.shape,label.shape)
+        loss_value = jnp.mean(optax.softmax_cross_entropy(logits, label))
         # loss_value = logits
         return loss_value
 
@@ -51,7 +49,7 @@ def pgd_attack(image, label, model, epsilon=4 / 255, step_size=4 / 255, maxiter=
     #     # compute gradient of the loss wrt to the image
     #     sign_grad = jnp.sign(adversarial_loss(image_perturbation))
 
-    grad_adversarial = jax.jit(jax.grad(adversarial_loss))
+    grad_adversarial = jax.grad(adversarial_loss)
     for _ in range(maxiter):
         # compute gradient of the loss wrt to the image
         sign_grad = jnp.sign(grad_adversarial(image_perturbation))
