@@ -17,8 +17,8 @@ dataset:
   valid_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-validation-{00..63}.tar"
   random_crop: rrc
   color_jitter: 0.0
-  auto_augment: "rand-m9-mstd0.5-inc1"
-  random_erasing: 0.25
+  auto_augment: "none"
+  random_erasing: 0.0
   augment_repeats: 3
   test_crop_ratio: 0.875
   shuffle_seed: 1
@@ -28,8 +28,8 @@ dataset:
 train_state:
   train_module:
     target: 'train_modules.TrainAdvModule'
-    mixup: 0.8
-    cutmix: 1.0
+    mixup: 0.0
+    cutmix: 0.0
     criterion: ce
     label_smoothing: 0.1
 
