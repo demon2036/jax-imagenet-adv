@@ -25,7 +25,7 @@ from torch.utils.data import DataLoader
 
 from test_dataset_fork import create_dataloaders
 from test_state import create_train_state
-from deprecated.training import TrainState, training_step, validation_step
+from training import TrainState, training_step, validation_step
 from utils import AverageMeter, read_yaml, preprocess_config
 
 
