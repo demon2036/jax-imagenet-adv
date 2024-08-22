@@ -15,27 +15,18 @@
 
 from __future__ import annotations
 
-import argparse
-import functools
-import os
-import random
-import warnings
-
-import einops
 import jax
 import numpy as np
 import tqdm
 import wandb
 from flax.jax_utils import unreplicate
-from flax.serialization import msgpack_serialize
-from flax.training.common_utils import shard, shard_prng_key
-from optax import softmax_cross_entropy_with_integer_labels
+from flax.training.common_utils import shard
 from torch.utils.data import DataLoader
 
 from test_dataset_fork import create_dataloaders
 from test_state import create_train_state
-from training import TrainState, training_step, validation_step
-from utils import AverageMeter, save_checkpoint_in_background, read_yaml, preprocess_config
+from deprecated.training import TrainState, training_step, validation_step
+from utils import AverageMeter, read_yaml, preprocess_config
 
 
 # from dataset import create_dataloaders

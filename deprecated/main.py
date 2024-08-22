@@ -25,7 +25,7 @@ import wandb
 from flax.jax_utils import unreplicate
 from flax.training.common_utils import shard
 from torch.utils.data import DataLoader
-from training import TrainState, create_train_state, training_step, validation_step
+from deprecated.training import TrainState, create_train_state, training_step, validation_step
 from utils import AverageMeter
 
 from deprecated.dataset import create_dataloaders

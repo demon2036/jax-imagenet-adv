@@ -6,7 +6,7 @@ import jax
 import optax
 
 from pre_define import CRITERION_COLLECTION, OPTIMIZER_COLLECTION
-from training import TrainState
+from deprecated.training import TrainState
 from utils import read_yaml, get_obj_from_str, Mixup, preprocess_config
 import os
 import jax.numpy as jnp
@@ -33,11 +33,6 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     # Initialize the model weights with dummy inputs. Using the init RNGS and inputs, we
     # will tabulate the summary of model and its parameters. Furthermore, empty gradient
     # accumulation arrays will be prepared if the gradient accumulation is enabled.
-    # example_inputs = {
-    #     "images": jnp.zeros((1, 3, args.image_size, args.image_size), dtype=jnp.uint8),
-    #     "labels": jnp.zeros((1,), dtype=jnp.int32),
-    # }
-
     example_inputs = {
         "images": jnp.zeros((1, 3, image_size, image_size), dtype=jnp.uint8),
         "labels": jnp.zeros((1,), dtype=jnp.int32),
