@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR
-name: test
+name: test-6step
 project: deit3-jax
 steps: 1281167
 training_epoch: 300
