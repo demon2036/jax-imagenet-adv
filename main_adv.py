@@ -164,7 +164,7 @@ if __name__ == "__main__":
     # jax.distributed.initialize()
     # main(parser.parse_args())
 
-    yaml = read_yaml('configs/adv/convnext-t.yaml')
+    yaml = read_yaml('configs/adv/convnext-t-6step.yaml')
     yaml = preprocess_config(yaml)
 
     main(yaml)
