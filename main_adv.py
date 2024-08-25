@@ -15,12 +15,16 @@
 
 from __future__ import annotations
 
+import os
+
+import orbax.checkpoint as ocp
 import jax
 import numpy as np
 import tqdm
 import wandb
 from flax.jax_utils import unreplicate
 from flax.serialization import msgpack_serialize
+from flax.training import orbax_utils
 from flax.training.common_utils import shard
 from torch.utils.data import DataLoader
 
@@ -58,7 +62,17 @@ def main(configs):
     log_interval = configs['log_interval']
 
     state = create_train_state(configs['train_state'], warmup_steps=warmup_steps,
-                               training_steps=training_steps).replicate()
+                               training_steps=training_steps)
+
+    checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
+    ckpt = {'model': state}
+    postfix = "ema"
+    name = configs['name']
+    output_dir = configs['output_dir']
+    filename = os.path.join(output_dir, f"{name}-{postfix}")
+    print(filename)
+
+    state = state.replicate()
 
     train_dataloader, valid_dataloader = create_dataloaders(**configs['dataset'])
     # train_dataloader_iter = iter(train_dataloader)
@@ -83,9 +97,15 @@ def main(configs):
         if eval_interval > 0 and (
                 step % eval_interval == 0 or step == training_steps
         ):
-            if jax.process_index() == 0:
-                params_bytes = msgpack_serialize(unreplicate(state.ema_params))
-                save_checkpoint_in_background2(configs['output_dir'],configs['name'], params_bytes, postfix="last")
+
+            ckpt = {'model': jax.device_get(jax.tree_util.tree_map(lambda x: x[0], state))}
+            # orbax_checkpointer = ocp.PyTreeCheckpointer()
+            save_args = orbax_utils.save_args_from_target(ckpt)
+            checkpointer.save(filename, ckpt, save_args=save_args, force=True)
+
+            # if jax.process_index() == 0:
+            #     params_bytes = msgpack_serialize(unreplicate(state.ema_params))
+            #     save_checkpoint_in_background2(configs['output_dir'], configs['name'], params_bytes, postfix="last")
             if valid_dataloader is None:
                 continue
 
