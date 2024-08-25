@@ -33,6 +33,7 @@ from timm.data.auto_augment import (
     rand_augment_transform,
 )
 from torch.utils.data import DataLoader, default_collate
+from webdataset.shardlists import expand_urls
 
 from utils import read_yaml, preprocess_config
 
@@ -178,7 +179,9 @@ def create_dataloaders(
     total_batch_size = train_batch_size // jax.process_count()
     train_batch_size = int(total_batch_size * dataset_mix_ratio)
     train_origin_batch_size = total_batch_size - train_batch_size
-    generated_dataset_shards = 'gs://shadow-center-2b/imagenet-generated-100steps/shards-{00000..06399}.tar'
+    generated_dataset_shards = ['gs://shadow-center-2b/imagenet-generated-100steps/shards-{00000..06399}.tar',
+                                'gs://shadow-center-2b/imagenet-generated-100steps-cfg1.75/shards-{00000..06399}.tar']
+    generated_dataset_shards=[expand_urls(url) for url in generated_dataset_shards]
     # generated_dataset_shards = 'gs://shadow-center-2b/imagenet-generated-100steps-annotated/shards-{00000..01500}.tar'
 
     if train_origin_batch_size is not None:
