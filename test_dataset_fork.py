@@ -181,7 +181,11 @@ def create_dataloaders(
     train_origin_batch_size = total_batch_size - train_batch_size
     generated_dataset_shards = ['gs://shadow-center-2b/imagenet-generated-100steps/shards-{00000..06399}.tar',
                                 'gs://shadow-center-2b/imagenet-generated-100steps-cfg1.75/shards-{00000..06399}.tar']
-    generated_dataset_shards=[expand_urls(url) for url in generated_dataset_shards]
+
+    files = []
+    for url in generated_dataset_shards:
+        files.extend(expand_urls(url))
+    generated_dataset_shards=files
     # generated_dataset_shards = 'gs://shadow-center-2b/imagenet-generated-100steps-annotated/shards-{00000..01500}.tar'
 
     if train_origin_batch_size is not None:
