@@ -108,7 +108,7 @@ class TrainAdvModule(nn.Module):
             trade_loss = optax.kl_divergence(nn.log_softmax(logits_adv, axis=1), nn.softmax(logits, axis=1)).mean()
             preds = jax.lax.top_k(logits, k=5)[1]
             accs = jnp.take_along_axis(labels, preds, axis=-1)
-            return {"loss": loss_ce+8*trade_loss, "loss_ce":loss_ce,"trade_loss":trade_loss,    "acc1": accs[:, 0], "acc5": accs.any(-1)}
+            return {"loss": loss_ce+6*trade_loss, "loss_ce":loss_ce,"trade_loss":trade_loss,    "acc1": accs[:, 0], "acc5": accs.any(-1)}
         else:
 
             if use_pgd:
