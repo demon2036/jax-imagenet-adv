@@ -64,6 +64,7 @@ def main(configs):
     average_meter, max_val_acc1 = AverageMeter(use_latest=["learning_rate"]), 0.0
 
     metrics = evaluate(state, valid_dataloader)
+    print(metrics)
     """
 
     for step in tqdm.trange(1, training_steps + 1, dynamic_ncols=True):
