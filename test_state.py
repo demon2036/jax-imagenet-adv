@@ -2,14 +2,28 @@ import copy
 import json
 from functools import partial
 
+import flax
 import jax
 import optax
+import timm
 
 from pre_define import CRITERION_COLLECTION, OPTIMIZER_COLLECTION
 from training import TrainState
 from utils import read_yaml, get_obj_from_str, Mixup, preprocess_config
 import os
 import jax.numpy as jnp
+from convert_model_pytorch import convert_torch_to_flax_conv_next
+
+
+def load_pretrain():
+    model_torch = timm.create_model('convnext_tiny.fb_in1k', pretrained=True)
+
+    params = {k: v.numpy() for k, v in model_torch.state_dict().items()}
+    params = flax.traverse_util.unflatten_dict(params, sep=".")
+    model_jax_params = convert_torch_to_flax_conv_next(params, sep='')
+    model_jax_params=jax.tree_util.tree_map(jnp.asarray,model_jax_params)
+    return {'model':model_jax_params}
+
 
 
 def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1, training_steps=10):  # -> TrainState:
@@ -42,7 +56,12 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     init_rngs = {"params": jax.random.PRNGKey(train_state_config['init_seed'])}
     # print(module.tabulate(init_rngs, **example_inputs))
 
-    params = module.init(init_rngs, **example_inputs,det=False)["params"]
+    # params = module.init(init_rngs, **example_inputs,det=False)["params"]
+    params=load_pretrain()
+    # print(params['model'].keys())
+    # while True:
+    #     1
+
     # if args.pretrained_ckpt is not None:
     #     params = load_pretrained_params(args, params)
     # if args.grad_accum > 1:

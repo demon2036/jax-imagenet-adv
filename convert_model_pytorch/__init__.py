@@ -1,1 +1,1 @@
-from .test import convert_flax_to_torch_conv_next
+from .test import convert_flax_to_torch_conv_next,convert_torch_to_flax_conv_next
