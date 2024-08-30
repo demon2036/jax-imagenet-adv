@@ -125,4 +125,4 @@ if __name__ == "__main__":
     # print(yaml)
     print(json.dumps(yaml, indent=5))
 
-    create_train_state(yaml['train_state'])
+    state=create_train_state(yaml['train_state'])
