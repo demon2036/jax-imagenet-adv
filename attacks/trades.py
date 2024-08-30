@@ -16,7 +16,7 @@ def loss_fun_trade(model, data):
     return optax.kl_divergence(nn.log_softmax(logits_adv, axis=1), nn.softmax(logits, axis=1)).mean()
 
 
-def trade(image, model, epsilon=4/255, maxiter=10, step_size=1/255, key=None):
+def trade(image, model, epsilon=4/255, maxiter=3, step_size=4/3/255, key=None):
     logits = jax.lax.stop_gradient(model(image))
 
     # x_adv = 0.001 * jax.random.normal(key, shape=image.shape) + image
