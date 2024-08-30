@@ -41,7 +41,7 @@ def pgd_attack(image, label, model, epsilon=4 / 255, step_size=4/3 / 255, maxite
     # print(label)
 
     def adversarial_loss(perturbation):
-        logits = model(image + perturbation)
+        logits = model(jnp.clip(image + perturbation, 0, 1))
         # print(logits.shape,label.shape)
         loss_value = jnp.mean(optax.softmax_cross_entropy(logits, label))
         # loss_value = logits
