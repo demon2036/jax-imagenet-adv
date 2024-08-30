@@ -63,6 +63,9 @@ def main(configs):
     train_dataloader_iter = train_dataloader
     average_meter, max_val_acc1 = AverageMeter(use_latest=["learning_rate"]), 0.0
 
+    metrics = evaluate(state, valid_dataloader)
+    """
+
     for step in tqdm.trange(1, training_steps + 1, dynamic_ncols=True):
         for _ in range(1):
             batch = shard(jax.tree_util.tree_map(np.asarray, next(train_dataloader_iter)))
@@ -96,7 +99,7 @@ def main(configs):
                 metrics["val/acc1/best"] = max_val_acc1
                 metrics["processed_samples"] = step * configs['dataset']['train_batch_size']
                 wandb.log(metrics, step)
-
+        """
 
 if __name__ == "__main__":
     # parser = argparse.ArgumentParser()
