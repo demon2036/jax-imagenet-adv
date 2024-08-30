@@ -9,7 +9,7 @@ from deprecated.dataset import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 
 Dense = functools.partial(nn.Dense, kernel_init=nn.initializers.truncated_normal(0.02))
 Conv = functools.partial(nn.Conv, kernel_init=nn.initializers.truncated_normal(0.02))
-use_fast_variance=False
+use_fast_variance=True
 
 class Identity(nn.Module):
     def __call__(self, x):
@@ -19,7 +19,7 @@ class Identity(nn.Module):
 class Mlp(nn.Module):
     hidden_features: int
     out_features: int
-    act_layer: Any = functools.partial(nn.gelu, approximate=False)
+    act_layer: Any = functools.partial(nn.gelu, approximate=True)
     # dtype:Any =jnp.float32
 
     def setup(self) -> None:
@@ -161,7 +161,7 @@ class ConvNeXt(nn.Module):
         self.head = Dense(self.num_classed)
 
     def __call__(self, x, det=True):
-        # x = (x - IMAGENET_DEFAULT_MEAN) / IMAGENET_DEFAULT_STD
+        x = (x - IMAGENET_DEFAULT_MEAN) / IMAGENET_DEFAULT_STD
         x = self.stem(x)
         for stage in self.stages:
             x = stage(x, det)
