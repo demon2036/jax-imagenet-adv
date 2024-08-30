@@ -5,7 +5,7 @@ import jax
 import optax
 
 
-def pgd_attack(image, label, model, epsilon=4 / 255, step_size=4/3 / 255, maxiter=3, key=None):
+def pgd_attack(image, label, model, epsilon=4 / 255, step_size=4/3 / 255, maxiter=1, key=None):
     """PGD attack on the L-infinity ball with radius epsilon.
 
   Args:
