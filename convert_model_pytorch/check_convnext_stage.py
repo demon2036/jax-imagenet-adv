@@ -15,7 +15,7 @@ from .check_conv import convert_flax_to_torch_conv,convert_torch_to_flax_conv
 from .check_convnext_block import  convert_flax_to_torch_conv_next_block,convert_torch_to_flax_conv_next_block
 from .check_layernorm import convert_flax_to_torch_layer_norm,convert_torch_to_flax_layer_norm
 
-jax.config.update('jax_platform_name', 'cpu')
+# jax.config.update('jax_platform_name', 'cpu')
 
 
 

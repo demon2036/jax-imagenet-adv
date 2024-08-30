@@ -18,7 +18,7 @@ from .check_layernorm import convert_flax_to_torch_layer_norm,convert_torch_to_f
 from .check_mlp import convert_flax_to_torch_mlp, convert_flax_to_torch_fc,convert_torch_to_flax_fc
 from models import ConvNeXt
 
-jax.config.update('jax_platform_name', 'cpu')
+# jax.config.update('jax_platform_name', 'cpu')
 
 
 

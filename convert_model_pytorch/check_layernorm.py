@@ -7,7 +7,7 @@ import torch
 import torch.nn as tnn
 import einops
 
-jax.config.update('jax_platform_name', 'cpu')
+# jax.config.update('jax_platform_name', 'cpu')
 
 
 def convert_flax_to_torch_layer_norm(flax_params, prefix='', sep='.', ):

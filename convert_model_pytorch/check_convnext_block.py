@@ -15,7 +15,7 @@ from .check_layernorm import convert_flax_to_torch_layer_norm,convert_torch_to_f
 from .check_mlp import convert_flax_to_torch_mlp,convert_torch_to_flax_mlp
 from models.convnext import Identity, ConvNeXtBlock
 
-jax.config.update('jax_platform_name', 'cpu')
+# jax.config.update('jax_platform_name', 'cpu')
 
 
 class ModelTorch(timm.models.convnext.ConvNeXtBlock):
