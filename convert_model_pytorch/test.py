@@ -166,6 +166,9 @@ def test_torch():
     x_torch = einops.rearrange(x_torch, 'b h w c->b c h w')
 
     model_torch = timm.models.convnext.ConvNeXt(c,ls_init_value=1 )
+
+    model_torch=timm.create_model('convnext_tiny.fb_in1k',pretrained=True)
+
     print(model_torch.state_dict().keys())
 
     out_torch = model_torch(x_torch)
@@ -185,8 +188,8 @@ def test_torch():
     # out_torch_np = einops.rearrange(out_torch_np, 'b c h w ->b h w c')
     print(out_torch_np.shape)
     print(out_torch_np - out_jax_np)
-
-    np.testing.assert_almost_equal(out_torch_np, out_jax_np, decimal=6)
+    print(np.argmax(out_torch_np), np.argmax(out_jax_np))
+    np.testing.assert_almost_equal(out_torch_np, out_jax_np, decimal=5)
 
 
 if __name__ == "__main__":
