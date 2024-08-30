@@ -165,7 +165,7 @@ if __name__ == "__main__":
     # parser.add_argument("--output-dir", default=".")
     # jax.distributed.initialize()
     # main(parser.parse_args())
-
+    jax.distributed.initialize()
     yaml = read_yaml('configs/convnext-t.yaml')
     yaml = preprocess_config(yaml)
 

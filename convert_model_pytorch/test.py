@@ -119,7 +119,7 @@ def convert_torch_to_flax_conv_next(torch_params, prefix='', sep=''):
     for k, v in stages.items():
         torch_params[f'stages_{k}'] = v
 
-    print(torch_params.keys(),torch_params['head']['fc'].keys())
+    # print(torch_params.keys(),torch_params['head']['fc'].keys())
 
 
     stem_conv = convert_torch_to_flax_conv(torch_params['stem']['0'], prefix='',sep='')
