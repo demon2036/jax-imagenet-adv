@@ -175,7 +175,7 @@ def create_dataloaders(
                                                          random_erasing,
                                                          test_crop_ratio
                                                          )
-    dataset_mix_ratio = 0.2
+    dataset_mix_ratio = 0.1
     total_batch_size = train_batch_size // jax.process_count()
     train_batch_size = int(total_batch_size * dataset_mix_ratio)
     train_origin_batch_size = total_batch_size - train_batch_size
