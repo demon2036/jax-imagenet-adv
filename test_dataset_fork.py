@@ -182,7 +182,7 @@ def create_dataloaders(
     generated_dataset_shards = [
         # 'gs://shadow-center-2b/imagenet-generated-100steps/shards-{00000..06399}.tar',
         # 'gs://shadow-center-2b/imagenet-generated-100steps-cfg1.75/shards-{00000..06399}.tar',
-        'gs://shadow-center-2b/imagenet-generated-100steps-cfg1.5/shards-{00000..13000}.tar'
+        'gs://shadow-center-2b/imagenet-generated-100steps-cfg1.5/shards-{00000..13000}.tar',
         # 'gs://shadow-center-2b/imagenet-generated-100steps-cfg1.5-eta0.2/shards-{00000..01300}.tar'
         'gs://shadow-center-2b/imagenet-generated-100steps-cfg1.25-eta0.2/shards-{00000..07999}.tar'
     ]
