@@ -114,37 +114,28 @@ def test():
 
 
 
-def convert_torch_to_flax_conv_next(torch_params, prefix='', sep=''):
+def convert_torch_to_flax_conv_next(torch_params, prefix='', sep='',default_params=None):
     stages = torch_params.pop('stages')
     for k, v in stages.items():
         torch_params[f'stages_{k}'] = v
-
-    # print(torch_params.keys(),torch_params['head']['fc'].keys())
-
 
     stem_conv = convert_torch_to_flax_conv(torch_params['stem']['0'], prefix='',sep='')
     stem_layer_norm = convert_torch_to_flax_layer_norm(torch_params['stem']['1'], prefix='',sep='')
 
     stem={'layers_0':stem_conv,'layers_1':stem_layer_norm}
-
-
     state_dict = {'stem':stem}
-
-
-
-
 
     i = 0
     while f'stages_{i}' in torch_params:
-        # state_dict = state_dict | convert_flax_to_torch_conv_next_stage(torch_params[f'stages_{i}'],
-        #                                                                 prefix=f'stages.{i}', sep='.')
         state_dict[f'stages_{i}']=convert_torch_to_flax_conv_next_stage(torch_params[f'stages_{i}'],prefix='',sep='')
         i += 1
 
-
     state_dict['norm'] = convert_torch_to_flax_layer_norm(torch_params['head']['norm'], prefix='',sep='')
-    state_dict['head'] = convert_torch_to_flax_fc(torch_params['head']['fc'], prefix='',sep='')
 
+    if 'fc' in torch_params['head']:
+        state_dict['head'] = convert_torch_to_flax_fc(torch_params['head']['fc'], prefix='',sep='')
+    else:
+        state_dict['head']=default_params['model']['head']
 
     state_dict = {f'{prefix}{sep}{k}': v for k, v in state_dict.items()}
     return state_dict
