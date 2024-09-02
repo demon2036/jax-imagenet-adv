@@ -39,6 +39,7 @@ train_state:
     model_kwargs:
       labels: 1000
       drop_path_rate: 0.0
+      ls_init_value: null
 
   optimizer:
     target: 'adamw'
