@@ -188,6 +188,8 @@ def create_dataloaders(
         'gs://brid-center-2b/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..12799}.tar'
     ]
 
+    generated_train_loader_workers=30
+
     files = []
     for url in generated_dataset_shards:
         files.extend(expand_urls(url))
@@ -235,7 +237,7 @@ def create_dataloaders(
         train_dataloader = DataLoader(
             dataset,
             batch_size=train_batch_size,
-            num_workers=train_loader_workers,
+            num_workers=generated_train_loader_workers,
             collate_fn=partial(collate_and_shuffle, repeats=augment_repeats),
             drop_last=True,
             prefetch_factor=20,
