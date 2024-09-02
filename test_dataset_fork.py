@@ -185,7 +185,7 @@ def create_dataloaders(
         # 'gs://shadow-center-2b/imagenet-generated-100steps-cfg1.5/shards-{00000..13000}.tar',
         # 'gs://shadow-center-2b/imagenet-generated-100steps-cfg1.5-eta0.2/shards-{00000..01300}.tar',
         # 'gs://shadow-center-2b/imagenet-generated-100steps-cfg1.25-eta0.2/shards-{00000..07999}.tar'
-        'gs://brid-center-2b/imagenet-generated-100steps-cfg1.0-eta0.0'
+        'gs://brid-center-2b/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..12799}.tar'
     ]
 
     files = []
