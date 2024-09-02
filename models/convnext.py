@@ -52,6 +52,7 @@ class ConvNeXtBlock(nn.Module):
         self.mlp = Mlp(self.out_channels * 4, self.out_channels)
 
         if self.ls_init_value is not None:
+            print(self.ls_init_value)
             self.gamma = self.param("gamma", nn.initializers.constant(self.ls_init_value), (self.out_channels,))
         else:
             self.gamma = None
