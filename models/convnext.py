@@ -50,9 +50,9 @@ class ConvNeXtBlock(nn.Module):
 
         self.norm = nn.LayerNorm(epsilon=1e-6, use_fast_variance=use_fast_variance)
         self.mlp = Mlp(self.out_channels * 4, self.out_channels)
-
+        # print(f'{self.ls_init_value=}')
         if self.ls_init_value is not None:
-            print(self.ls_init_value)
+
             self.gamma = self.param("gamma", nn.initializers.constant(self.ls_init_value), (self.out_channels,))
         else:
             self.gamma = None

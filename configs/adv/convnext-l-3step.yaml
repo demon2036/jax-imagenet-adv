@@ -41,7 +41,7 @@ train_state:
       depths: [3,3,27,3]
       dims: [192, 384, 768, 1536]
       drop_path_rate: 0.0
-      ls_init_value: None
+      ls_init_value: null
 
   optimizer:
     target: 'adamw'
