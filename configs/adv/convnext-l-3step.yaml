@@ -11,7 +11,7 @@ eval_epoch: 10
 dataset:
   train_batch_size: 4096
   valid_batch_size: 2048
-  train_loader_workers: 40
+  train_loader_workers: 20
   valid_loader_workers: 10
   train_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-train-{0000..1023}.tar"
   valid_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-validation-{00..63}.tar"
