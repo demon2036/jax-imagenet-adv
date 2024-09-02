@@ -15,8 +15,8 @@ import jax.numpy as jnp
 from convert_model_pytorch import convert_torch_to_flax_conv_next
 
 
-def load_pretrain():
-    model_torch = timm.create_model('convnext_tiny.fb_in1k', pretrained=True)
+def load_pretrain(pretrained_model='convnextv2_large.fcmae'):
+    model_torch = timm.create_model('pretrained_model', pretrained=True)
     params = {k: v.numpy() for k, v in model_torch.state_dict().items()}
     params = flax.traverse_util.unflatten_dict(params, sep=".")
     model_jax_params = convert_torch_to_flax_conv_next(params, sep='')
