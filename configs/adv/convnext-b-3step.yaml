@@ -22,7 +22,7 @@ dataset:
   augment_repeats: 3
   test_crop_ratio: 0.875
   shuffle_seed: 1
-  image_size: 128
+  image_size: 224
 
 
 train_state:
