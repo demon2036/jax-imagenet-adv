@@ -15,6 +15,7 @@
 
 from __future__ import annotations
 
+import argparse
 import os
 
 import orbax.checkpoint as ocp
@@ -123,7 +124,8 @@ def main(configs):
 
 
 if __name__ == "__main__":
-    # parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--yaml-path", type=str, default='configs/adv/convnext-b-128-1step.yaml')
     # parser.add_argument("--train-dataset-shards")
     # parser.add_argument("--valid-dataset-shards")
     # parser.add_argument("--train-batch-size", type=int, default=2048)
@@ -185,8 +187,8 @@ if __name__ == "__main__":
     # parser.add_argument("--output-dir", default=".")
     jax.distributed.initialize()
     # main(parser.parse_args())
-
-    yaml = read_yaml('configs/adv/convnext-b-128-1step.yaml')
+    args=parser.parse_args()
+    yaml = read_yaml(args.yaml_path)
     # yaml = read_yaml('configs/adv/convnext-b-3step.yaml')
     # yaml = read_yaml('configs/adv/convnext-t-3step.yaml')
     yaml = preprocess_config(yaml)
