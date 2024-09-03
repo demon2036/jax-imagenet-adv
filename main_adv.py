@@ -107,9 +107,6 @@ def main(configs):
                 continue
 
             metrics = evaluate(state, valid_dataloader)
-            # if metrics["val/advacc1"] > max_val_acc1:
-
-
 
             if metrics["val/advacc1"] > max_val_acc1:
                 ckpt = {'model': jax.device_get(jax.tree_util.tree_map(lambda x: x[0], state))}
@@ -117,7 +114,6 @@ def main(configs):
                 checkpointer.save(filename, ckpt, save_args=save_args, force=True)
 
                 max_val_acc1 = metrics["val/advacc1"]
-
                 # save_checkpoint_in_background(args, params_bytes, postfix="best")
 
             metrics["val/acc1/best"] = max_val_acc1
