@@ -1,9 +1,9 @@
 
 output_dir: $GCS_MODEL_DIR
-name: conv-next-b-128-1step-300ep
+name: conv-next-b-128-1step-1600ep
 project: deit3-jax
 steps: 1281167
-training_epoch: 300
+training_epoch: 1600
 warmup_epoch: 20
 log_interval: 100
 eval_epoch: 10
