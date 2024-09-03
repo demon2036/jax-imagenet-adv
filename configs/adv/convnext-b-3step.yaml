@@ -3,8 +3,8 @@ output_dir: $GCS_MODEL_DIR
 name: conv-next-l-3step
 project: deit3-jax
 steps: 1281167
-training_epoch: 1000
-warmup_epoch: 50
+training_epoch: 800
+warmup_epoch: 20
 log_interval: 100
 eval_epoch: 10
 
@@ -40,7 +40,7 @@ train_state:
       labels: 1000
       depths: [3,3,27,3]
       dims: [128, 256, 512, 1024]
-      drop_path_rate: 0.5
+      drop_path_rate: 0.0
 #      ls_init_value: null
 
   optimizer:

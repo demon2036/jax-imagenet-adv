@@ -108,18 +108,21 @@ def main(configs):
 
             metrics = evaluate(state, valid_dataloader)
             # if metrics["val/advacc1"] > max_val_acc1:
-            ckpt = {'model': jax.device_get(jax.tree_util.tree_map(lambda x: x[0], state))}
-            save_args = orbax_utils.save_args_from_target(ckpt)
-            checkpointer.save(filename, ckpt, save_args=save_args, force=True)
 
+
+
+            if metrics["val/advacc1"] > max_val_acc1:
+                ckpt = {'model': jax.device_get(jax.tree_util.tree_map(lambda x: x[0], state))}
+                save_args = orbax_utils.save_args_from_target(ckpt)
+                checkpointer.save(filename, ckpt, save_args=save_args, force=True)
+
+                max_val_acc1 = metrics["val/advacc1"]
+
+                # save_checkpoint_in_background(args, params_bytes, postfix="best")
+
+            metrics["val/acc1/best"] = max_val_acc1
+            metrics["processed_samples"] = step * configs['dataset']['train_batch_size']
             if jax.process_index() == 0:
-                if metrics["val/advacc1"] > max_val_acc1:
-                    max_val_acc1 = metrics["val/advacc1"]
-
-                    # save_checkpoint_in_background(args, params_bytes, postfix="best")
-
-                metrics["val/acc1/best"] = max_val_acc1
-                metrics["processed_samples"] = step * configs['dataset']['train_batch_size']
                 wandb.log(metrics, step)
 
 
