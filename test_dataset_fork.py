@@ -108,7 +108,7 @@ def collate_and_pad(batch: list[Any], batch_size: int = 1) -> Any:
 
 def mix_dataloader_iter(train_dataloader, train_origin_dataloader):
     if jax.process_index() == 0:
-        print(train_dataloader, train_origin_dataloader)
+        print(f'{train_dataloader=}  {train_origin_dataloader=}', )
 
     if train_dataloader is None:
         if jax.process_index() == 0:
