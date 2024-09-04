@@ -37,7 +37,10 @@ def load_pretrain(pretrained_model='convnext_base.fb_in1k',default_params=None):
 
 
 
-def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1, training_steps=10,pretrained_ckpt='gs://brid-center-2b/conv-next-b-128-3step-2000ep-ema'):  # -> TrainState:
+def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1, training_steps=10,
+                       # pretrained_ckpt='gs://brid-center-2b/conv-next-b-128-3step-2000ep-ema',
+                        pretrained_ckpt=None
+                       ):  # -> TrainState:
     model_config = train_state_config['model']
     optimizer_config = train_state_config['optimizer']
     train_module_config = train_state_config['train_module']
