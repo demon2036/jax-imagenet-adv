@@ -13,6 +13,15 @@ from utils import read_yaml, get_obj_from_str, Mixup, preprocess_config
 import os
 import jax.numpy as jnp
 from convert_model_pytorch import convert_torch_to_flax_conv_next
+import orbax.checkpoint as ocp
+
+
+def load_pretrained_params(pretrained_ckpt):
+    checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
+    state = checkpointer.restore(pretrained_ckpt )['model']
+    params = state['ema_params']
+    return {'model': params}
+
 
 
 def load_pretrain(pretrained_model='convnext_base.fb_in1k',default_params=None):
@@ -25,7 +34,7 @@ def load_pretrain(pretrained_model='convnext_base.fb_in1k',default_params=None):
 
 
 
-def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1, training_steps=10):  # -> TrainState:
+def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1, training_steps=10,pretrained_ckpt='gs://brid-center-2b/conv-next-b-128-3step-2000ep-ema'):  # -> TrainState:
     model_config = train_state_config['model']
     optimizer_config = train_state_config['optimizer']
     train_module_config = train_state_config['train_module']
@@ -58,8 +67,8 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     params = module.init(init_rngs, **example_inputs,det=False)["params"]
     params=load_pretrain(default_params=params)
 
-    # if args.pretrained_ckpt is not None:
-    #     params = load_pretrained_params(args, params)
+    if pretrained_ckpt is not None:
+        params = load_pretrained_params(pretrained_ckpt )
     # if args.grad_accum > 1:
     #     grad_accum = jax.tree_map(jnp.zeros_like, params)
     lr = optimizer_config['optimizer_kwargs'].pop('learning_rate')
