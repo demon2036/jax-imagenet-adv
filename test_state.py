@@ -20,8 +20,10 @@ def load_pretrained_params(pretrained_ckpt):
     checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
     state = checkpointer.restore(pretrained_ckpt )['model']
     params = state['ema_params']
-    print(params.keys())
-    return {'model': params}
+    return params
+    # jax.tree_util.tree_map(jnp.asarray, params)
+    # print(params.keys())
+    # return {'model': params}
 
 
 
