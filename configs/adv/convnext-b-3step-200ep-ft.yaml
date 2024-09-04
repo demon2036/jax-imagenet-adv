@@ -23,6 +23,7 @@ dataset:
   test_crop_ratio: 0.875
   shuffle_seed: 1
   image_size: 224
+  dataset_mix_ratio: 0.0
 
 
 train_state:
@@ -57,6 +58,7 @@ train_state:
   init_seed: 1
   mixup_seed: 1
   dropout_seed: 1
+  pretrained_ckpt: 'gs://brid-center-2b/conv-next-b-128-3step-300ep-ema'
 
 
 

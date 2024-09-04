@@ -44,6 +44,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     model_config = train_state_config['model']
     optimizer_config = train_state_config['optimizer']
     train_module_config = train_state_config['train_module']
+    pretrained_ckpt=train_state_config.pop('pretrained_ckpt',None)
 
     model = get_obj_from_str(model_config['target'])(**model_config['model_kwargs'])
 
