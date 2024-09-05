@@ -40,6 +40,16 @@ class TrainState(train_state.TrainState):
     ema_params: Any = None
     ema_decay: float = 0.9998
 
+
+    train_adv_step:int=10
+    test_adv_step: int = 10
+    eps:float=4/255
+    train_adv_step_size:float=1/255
+    test_adv_step_size: float = 1 / 255
+
+
+
+
     def split_rngs(self) -> tuple[ArrayTree, ArrayTree]:
         mixup_rng, new_mixup_rng = jax.random.split(self.mixup_rng)
         dropout_rng, new_dropout_rng = jax.random.split(self.dropout_rng)
@@ -59,7 +69,8 @@ class TrainState(train_state.TrainState):
 @partial(jax.pmap, axis_name="batch", donate_argnums=0)
 def training_step(state: TrainState, batch: ArrayTree) -> tuple[TrainState, ArrayTree]:
     def loss_fn(params: ArrayTree) -> ArrayTree:
-        metrics = state.apply_fn({"params": params}, *batch, det=False, rngs=rngs,use_trade=False,use_pgd=True)
+        metrics = state.apply_fn({"params": params}, *batch, det=False, rngs=rngs,use_trade=False,use_pgd=True,
+                                 adv_step=state.train_adv_step,adv_step_size=state.train_adv_step_size)
         metrics = jax.tree_map(jnp.mean, metrics)
         return metrics["loss"], metrics
 
@@ -128,7 +139,7 @@ def validation_adv_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
         {"params": state.ema_params},
         images=batch[0],
         labels=jnp.where(batch[1] != -1, batch[1], 0),
-        det=True, use_pgd=True,rngs=rngs
+        det=True, use_pgd=True,rngs=rngs,adv_step=state.test_adv_step,adv_step_size=state.test_adv_step_size
     )
 
     metrics_adv = {'adv' + k: v for k, v in metrics_adv.items()}
