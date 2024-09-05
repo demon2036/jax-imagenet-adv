@@ -58,7 +58,7 @@ train_state:
   init_seed: 1
   mixup_seed: 1
   dropout_seed: 1
-  pretrained_ckpt: 'gs://brid-center-2b/conv-next-b-128-3step-600ep-ema'
+  pretrained_ckpt: 'gs://brid-center-2b/conv-next-b-128-3step-300ep-ema'
 
 
 
