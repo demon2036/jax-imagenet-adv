@@ -3,8 +3,8 @@ output_dir: $GCS_MODEL_DIR
 name: conv-next-b-128-3step-2000ep-ft
 project: deit3-jax
 steps: 1281167
-training_epoch: 300
-warmup_epoch: 20
+training_epoch: 40
+warmup_epoch: 5
 log_interval: 100
 eval_epoch: 10
 
@@ -17,8 +17,8 @@ dataset:
   valid_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-validation-{00..63}.tar"
   random_crop: rrc
   color_jitter: 0.0
-  auto_augment: "rand-m9-mstd0.5-inc1"
-  random_erasing: 0.25
+  auto_augment: "none"
+  random_erasing: 0.0
   augment_repeats: 3
   test_crop_ratio: 0.875
   shuffle_seed: 1
