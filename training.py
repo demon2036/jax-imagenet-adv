@@ -63,6 +63,13 @@ class TrainState(train_state.TrainState):
         return flax.jax_utils.replicate(self).replace(
             mixup_rng=shard_prng_key(self.mixup_rng),
             dropout_rng=shard_prng_key(self.dropout_rng),
+
+        train_adv_step=self.train_adv_step,
+        test_adv_step=self.test_adv_step,
+        eps= self.eps,
+        train_adv_step_size=self.train_adv_step_size,
+        test_adv_step_size=self.test_adv_step_size,
+
         )
 
 
