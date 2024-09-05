@@ -5,6 +5,74 @@ import jax
 import optax
 
 
+# def pgd_attack(image, label, model, epsilon=4 / 255, step_size=4/3 / 255, maxiter=3, key=None):
+#     """PGD attack on the L-infinity ball with radius epsilon.
+#
+#   Args:
+#     image: array-like, input data for the CNN
+#     label: integer, class label corresponding to image
+#     params: tree, parameters of the model to attack
+#     epsilon: float, radius of the L-infinity ball.
+#     maxiter: int, number of iterations of this algorithm.
+#
+#   Returns:
+#     perturbed_image: Adversarial image on the boundary of the L-infinity ball
+#       of radius epsilon and centered at image.
+#
+#   Notes:
+#     PGD attack is described in (Madry et al. 2017),
+#     https://arxiv.org/pdf/1706.06083.pdf
+#     :param state:
+#     :param image:
+#     :param label:
+#     :param params:
+#     :param maxiter:
+#     :param epsilon:
+#     :param step_size:
+#   """
+#
+#     # image = einops.rearrange(image, 'b c h w->b h w c')
+#     # image = image.astype(jnp.float32)
+#     # label = label.astype(jnp.int32)
+#
+#     # image_perturbation = jnp.zeros_like(image)
+#     image_perturbation = jax.random.uniform(key, image.shape, minval=-epsilon, maxval=epsilon)
+#
+#     # print(label)
+#
+#     def adversarial_loss(perturbation):
+#         logits = model(jnp.clip(image + perturbation, 0, 1))
+#         # print(logits.shape,label.shape)
+#         loss_value = jnp.mean(optax.softmax_cross_entropy(logits, label))
+#         # loss_value = logits
+#         return loss_value
+#
+#     # for _ in range(maxiter):
+#     #     # compute gradient of the loss wrt to the image
+#     #     sign_grad = jnp.sign(adversarial_loss(image_perturbation))
+#
+#     grad_adversarial = jax.grad(adversarial_loss)
+#     for _ in range(maxiter):
+#         # compute gradient of the loss wrt to the image
+#         sign_grad = jnp.sign(grad_adversarial(image_perturbation))
+#
+#         # heuristic step-size 2 eps / maxiter
+#         image_perturbation += step_size * sign_grad
+#         # projection step onto the L-infinity ball centered at image
+#         image_perturbation = jnp.clip(image_perturbation, - epsilon, epsilon)
+#
+#     # sign_grad = jnp.sign(grad_adversarial(image_perturbation))
+#     # image_perturbation += step_size * sign_grad
+#     # image_perturbation = jnp.clip(image_perturbation, - epsilon, epsilon)
+#
+#     # clip the image to ensure pixels are between 0 and 1
+#     image_perturbation = jnp.clip(image + image_perturbation, 0, 1)
+#     return jax.lax.stop_gradient(image_perturbation)
+
+
+
+
+
 def pgd_attack(image, label, model, epsilon=4 / 255, step_size=4/3 / 255, maxiter=3, key=None):
     """PGD attack on the L-infinity ball with radius epsilon.
 
@@ -52,22 +120,34 @@ def pgd_attack(image, label, model, epsilon=4 / 255, step_size=4/3 / 255, maxite
     #     sign_grad = jnp.sign(adversarial_loss(image_perturbation))
 
     grad_adversarial = jax.grad(adversarial_loss)
-    for _ in range(maxiter):
-        # compute gradient of the loss wrt to the image
+    # for _ in range(maxiter):
+    #     # compute gradient of the loss wrt to the image
+    #     sign_grad = jnp.sign(grad_adversarial(image_perturbation))
+    #
+    #     # heuristic step-size 2 eps / maxiter
+    #     image_perturbation += step_size * sign_grad
+    #     # projection step onto the L-infinity ball centered at image
+    #     image_perturbation = jnp.clip(image_perturbation, - epsilon, epsilon)
+
+
+    def loop_body(i,image_perturbation):
         sign_grad = jnp.sign(grad_adversarial(image_perturbation))
 
         # heuristic step-size 2 eps / maxiter
         image_perturbation += step_size * sign_grad
         # projection step onto the L-infinity ball centered at image
         image_perturbation = jnp.clip(image_perturbation, - epsilon, epsilon)
+        return image_perturbation
 
-    # sign_grad = jnp.sign(grad_adversarial(image_perturbation))
-    # image_perturbation += step_size * sign_grad
-    # image_perturbation = jnp.clip(image_perturbation, - epsilon, epsilon)
+
+    image_perturbation=jax.lax.fori_loop(0,maxiter,loop_body,init_val=image_perturbation)
 
     # clip the image to ensure pixels are between 0 and 1
     image_perturbation = jnp.clip(image + image_perturbation, 0, 1)
     return jax.lax.stop_gradient(image_perturbation)
+
+
+
 
 #image, label, state, epsilon=8 / 255, step_size=2 / 255, maxiter=10
 # def pgd_attack_l2(image, label, state, epsilon=128 / 255, maxiter=10,  key=None):
