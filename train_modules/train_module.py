@@ -88,12 +88,16 @@ class TrainAdvModule(nn.Module):
     criterion: Callable[[Array, Array], Array] = CRITERION_COLLECTION["ce"]
 
 
-    train_adv_step:int=3
+    # train_adv_step:int=3
+    # train_adv_step_size: float = 4 / 3 / 255
+
+    train_adv_step: int = 10
+    train_adv_step_size: float = 1 / 255
+
     # test_adv_step: int = 10
-    # train_adv_step: int = 10
+    #
     # test_adv_step: int = 10
 
-    train_adv_step_size:float=4/3/255
     # test_adv_step_size: float = 1 / 255
 
     eps: float = 4 / 255
