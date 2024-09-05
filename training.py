@@ -68,9 +68,11 @@ class TrainState(train_state.TrainState):
 
 @partial(jax.pmap, axis_name="batch", donate_argnums=0)
 def training_step(state: TrainState, batch: ArrayTree) -> tuple[TrainState, ArrayTree]:
+    print(state.train_adv_step,state.train_adv_step_size)
     def loss_fn(params: ArrayTree) -> ArrayTree:
         metrics = state.apply_fn({"params": params}, *batch, det=False, rngs=rngs,use_trade=False,use_pgd=True,
-                                 adv_step=state.train_adv_step[0],adv_step_size=state.train_adv_step_size[0])
+                                 adv_step=state.train_adv_step,
+                                 adv_step_size=state.train_adv_step_size)
         metrics = jax.tree_map(jnp.mean, metrics)
         return metrics["loss"], metrics
 
@@ -139,7 +141,7 @@ def validation_adv_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
         {"params": state.ema_params},
         images=batch[0],
         labels=jnp.where(batch[1] != -1, batch[1], 0),
-        det=True, use_pgd=True,rngs=rngs,adv_step=state.test_adv_step[0],adv_step_size=state.test_adv_step_size[0]
+        det=True, use_pgd=True,rngs=rngs,adv_step=state.test_adv_step,adv_step_size=state.test_adv_step_size
     )
 
     metrics_adv = {'adv' + k: v for k, v in metrics_adv.items()}
