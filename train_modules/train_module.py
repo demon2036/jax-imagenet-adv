@@ -88,11 +88,15 @@ class TrainAdvModule(nn.Module):
     criterion: Callable[[Array, Array], Array] = CRITERION_COLLECTION["ce"]
 
 
-    train_adv_step:int=10
-    test_adv_step: int = 10
-    eps:float=4/255
-    train_adv_step_size:float=1/255
-    test_adv_step_size: float = 1 / 255
+    train_adv_step:int=3
+    # test_adv_step: int = 10
+    # train_adv_step: int = 10
+    # test_adv_step: int = 10
+
+    train_adv_step_size:float=4/3/255
+    # test_adv_step_size: float = 1 / 255
+
+    eps: float = 4 / 255
 
 
     def __call__(self, images: Array, labels: Array, det: bool = True, use_pgd=True,use_trade=False,train=False) -> ArrayTree:
@@ -123,8 +127,9 @@ class TrainAdvModule(nn.Module):
 
             if use_pgd:
                 images = pgd_attack(images, labels, self.model, key=self.make_rng('adv'),
-                                    step_size=self.train_adv_step_size if train else self.test_adv_step_size ,
-                                    maxiter=self.train_adv_step if train else self.test_adv_step)
+                                    step_size=self.train_adv_step_size, #if train else self.test_adv_step_size ,
+                                    maxiter=self.train_adv_step #if train else self.test_adv_step
+                )
 
             loss = self.criterion((logits := self.model(images, det=det)), labels)
             labels = labels == labels.max(-1, keepdims=True)
