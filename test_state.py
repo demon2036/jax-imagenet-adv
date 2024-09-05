@@ -140,4 +140,4 @@ if __name__ == "__main__":
 
     state=create_train_state(yaml['train_state'])
     state=state.replace()
-    print(state.train_adv_step,state.train_adv_step_size)
+
