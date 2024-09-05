@@ -3,7 +3,7 @@ output_dir: $GCS_MODEL_DIR
 name: conv-next-b-128-3step-2000ep-ft
 project: deit3-jax
 steps: 1281167
-training_epoch: 40
+training_epoch: 150
 warmup_epoch: 5
 log_interval: 100
 eval_epoch: 10
@@ -23,7 +23,7 @@ dataset:
   test_crop_ratio: 0.875
   shuffle_seed: 1
   image_size: 224
-  dataset_mix_ratio: 0.0
+  dataset_mix_ratio: 0.8
 
 
 train_state:
