@@ -95,7 +95,7 @@ class TrainAdvModule(nn.Module):
     test_adv_step_size: float = 1 / 255
 
 
-    def __call__(self, images: Array, labels: Array, det: bool = True, use_pgd=True,use_trade=False,) -> ArrayTree:
+    def __call__(self, images: Array, labels: Array, det: bool = True, use_pgd=True,use_trade=False,train=False) -> ArrayTree:
         # Normalize the pixel values in TPU devices, instead of copying the normalized
         # float values from CPU. This may reduce both memory usage and latency.
         images = jnp.moveaxis(images, 1, 3).astype(jnp.float32) / 0xFF
@@ -122,7 +122,9 @@ class TrainAdvModule(nn.Module):
         else:
 
             if use_pgd:
-                images = pgd_attack(images, labels, self.model, key=self.make_rng('adv'),step_size=self.train_adv_step_size,maxiter=self.train_adv_step)
+                images = pgd_attack(images, labels, self.model, key=self.make_rng('adv'),
+                                    step_size=self.train_adv_step_size if train else self.test_adv_step_size ,
+                                    maxiter=self.train_adv_step if train else self.test_adv_step)
 
             loss = self.criterion((logits := self.model(images, det=det)), labels)
             labels = labels == labels.max(-1, keepdims=True)

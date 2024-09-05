@@ -115,7 +115,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         end_value=1e-5,
     )
 
-    return TrainState.create(
+    state= TrainState.create(
         apply_fn=module.apply,
         params=params,
         tx=create_optimizer_fn(learning_rate),
@@ -127,6 +127,10 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         # grad_accum=grad_accum if args.grad_accum > 1 else None,
         ema_params=copy.deepcopy(params)
     )
+
+
+
+    return state
 
 
 if __name__ == "__main__":
