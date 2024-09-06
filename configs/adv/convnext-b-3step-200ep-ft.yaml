@@ -9,7 +9,7 @@ log_interval: 100
 eval_epoch: 5
 
 dataset:
-  train_batch_size: 2048
+  train_batch_size: 4096
   valid_batch_size: 2048
   train_loader_workers: 20
   valid_loader_workers: 10
@@ -17,8 +17,8 @@ dataset:
   valid_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-validation-{00..63}.tar"
   random_crop: rrc
   color_jitter: 0.0
-  auto_augment: "rand-m9-mstd0.5-inc1"
-  random_erasing: 0.25
+  auto_augment: "none"
+  random_erasing: 0.0
   augment_repeats: 3
   test_crop_ratio: 0.875
   shuffle_seed: 1
@@ -33,8 +33,8 @@ train_state:
     cutmix: 1.0
     criterion: ce
     label_smoothing: 0.1
-    train_adv_step:  3
-    train_adv_step_size:  4/3 / 255
+    train_adv_step:  10
+    train_adv_step_size:  1 / 255
 
 
   model:
@@ -49,7 +49,7 @@ train_state:
   optimizer:
     target: 'adamw'
     optimizer_kwargs:
-      learning_rate: 2.0e-4
+      learning_rate: 0.0004
       weight_decay: 1.0e-8
       b1: 0.9
       b2: 0.999
