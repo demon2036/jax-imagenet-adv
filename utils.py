@@ -216,20 +216,51 @@ def get_obj_from_str(string: str):
     return getattr(importlib.import_module(module), cls)
 
 
-def preprocess_config(yaml):
-    yaml['dataset']['train_dataset_shards'] = yaml['dataset']['train_dataset_shards'].replace("$GCS_DATASET_DIR",
-                                                                                              os.environ.get(
-                                                                                                  'GCS_DATASET_DIR',
-                                                                                                  ''))
 
-    yaml['dataset']['valid_dataset_shards'] = yaml['dataset']['valid_dataset_shards'].replace("$GCS_DATASET_DIR",
-                                                                                              os.environ.get(
-                                                                                                  'GCS_DATASET_DIR',
-                                                                                                  ''))
-    yaml['output_dir'] = yaml['output_dir'].replace("$GCS_MODEL_DIR",
-                                                    os.environ.get(
-                                                        'GCS_DATASET_DIR',
-                                                        ''))
+def replace_env_variables(text):
+
+    if isinstance(text,str):
+        # 匹配 $VAR_NAME 或 ${VAR_NAME} 格式的环境变量
+        pattern = re.compile(r'\$(\w+|\{(\w+)\})')
+        # 查找并替换所有环境变量
+        def replace_match(match):
+            var_name = match.group(1) if match.group(1) else match.group(2)
+            # 获取环境变量值，如果不存在则返回空字符串
+            return os.environ.get(var_name, '')
+
+        # 使用正则表达式替换所有匹配项
+
+        text=pattern.sub(replace_match, text)
+
+        try:
+            text=eval(text)
+        except Exception as e:
+            pass
+
+
+        return text
+    else:
+        return text
+
+
+def preprocess_config(yaml):
+    # yaml['dataset']['train_dataset_shards'] = yaml['dataset']['train_dataset_shards'].replace("$GCS_DATASET_DIR",
+    #                                                                                           os.environ.get(
+    #                                                                                               'GCS_DATASET_DIR',
+    #                                                                                               ''))
+    #
+    # yaml['dataset']['valid_dataset_shards'] = yaml['dataset']['valid_dataset_shards'].replace("$GCS_DATASET_DIR",
+    #                                                                                           os.environ.get(
+    #                                                                                               'GCS_DATASET_DIR',
+    #                                                                                               ''))
+    # yaml['output_dir'] = yaml['output_dir'].replace("$GCS_MODEL_DIR",
+    #                                                 os.environ.get(
+    #                                                     'GCS_DATASET_DIR',
+    #                                                     ''))
+
+    yaml=jax.tree_util.tree_map(replace_env_variables,yaml)
+
+
 
 
 

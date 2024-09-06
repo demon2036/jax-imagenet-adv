@@ -117,7 +117,10 @@ class TrainAdvModule(nn.Module):
 
 
         if use_trade:
-            x_adv = trade(images, self.model,  key=self.make_rng('adv'))
+            x_adv = trade(images, self.model,  key=self.make_rng('adv'),
+                            step_size = self.train_adv_step_size,  # if train else self.test_adv_step_size ,
+                            maxiter = self.train_adv_step  # if train else self.test_adv_step
+                          )
             logits =self.model(images)
             logits_adv=self.model(x_adv)
             loss_ce= jnp.mean(optax.softmax_cross_entropy(logits=logits, labels=labels))

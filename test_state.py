@@ -48,13 +48,13 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
 
     model = get_obj_from_str(model_config['target'])(**model_config['model_kwargs'])
 
-    train_module = get_obj_from_str(train_module_config['target'])  #(**model_config['model_kwargs'])
+    train_module = get_obj_from_str(train_module_config.pop('target'))  #(**model_config['model_kwargs'])
 
     module = train_module(
         model=model,
-        mixup=Mixup(train_module_config['mixup'], train_module_config['cutmix']),
-        label_smoothing=train_module_config['label_smoothing'] if train_module_config['criterion'] == "ce" else 0,
-        criterion=CRITERION_COLLECTION[train_module_config['criterion']],
+        mixup=Mixup(train_module_config.pop('mixup',), train_module_config.pop('cutmix')),
+        label_smoothing=train_module_config.pop('label_smoothing') if train_module_config['criterion'] == "ce" else 0,
+        criterion=CRITERION_COLLECTION[train_module_config.pop('criterion')],**train_module_config
     )
     if jax.process_index() == 0:
         print(module)
@@ -71,8 +71,8 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     init_rngs = {"params": jax.random.PRNGKey(train_state_config['init_seed'])}
     # print(module.tabulate(init_rngs, **example_inputs))
 
-    params = module.init(init_rngs, **example_inputs,det=False)["params"]
-    params=load_pretrain(default_params=params)
+    params = module.init(init_rngs, **example_inputs,det=False,use_trade=True)["params"]
+    # params=load_pretrain(default_params=params)
 
     if pretrained_ckpt is not None:
         params = load_pretrained_params(pretrained_ckpt )
@@ -134,13 +134,20 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
 
 
 if __name__ == "__main__":
-    yaml = read_yaml('configs/adv/convnext-l-3step.yaml')
+
+    os.environ['GCS_DATASET_DIR']='hello'
+
+    yaml = read_yaml('configs/adv/convnext-b-3step-200ep-ft.yaml')
     yaml = preprocess_config(yaml)
 
-    print(os.environ.get('GCS_DATASET_DIR'))
+    # print(os.environ.get('GCS_DATASET_DIR'))
 
     # print(yaml)
-    print(json.dumps(yaml, indent=5))
+    # print(json.dumps(yaml, indent=5))
+    #
+    # while True:
+    #     pass
+
 
     state=create_train_state(yaml['train_state'])
     state=state.replace()
