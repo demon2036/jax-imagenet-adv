@@ -74,7 +74,8 @@ def main(configs):
     filename = os.path.join(output_dir, f"{name}-{postfix}")
     print(filename)
 
-    if args.pretrained_ckpt is not None:
+    if 'resume' in configs:
+        print(1)
         state = checkpointer.restore(filename, item=ckpt)['model']
         init_step = state.step + 1
     else:
@@ -186,8 +187,8 @@ if __name__ == "__main__":
     # parser.add_argument("--ipaddr")
     # parser.add_argument("--hostname")
     # parser.add_argument("--output-dir", default=".")
-    jax.distributed.initialize()
-    # main(parser.parse_args())
+    # jax.distributed.initialize()
+    main(parser.parse_args())
     args=parser.parse_args()
     yaml = read_yaml(args.yaml_path)
     # yaml = read_yaml('configs/adv/convnext-b-3step.yaml')
