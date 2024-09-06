@@ -74,8 +74,8 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     params = module.init(init_rngs, **example_inputs,det=False,use_trade=True)["params"]
     # params=load_pretrain(default_params=params)
 
-    if pretrained_ckpt is not None:
-        params = load_pretrained_params(pretrained_ckpt )
+    # if pretrained_ckpt is not None:
+    #     params = load_pretrained_params(pretrained_ckpt )
     # if args.grad_accum > 1:
     #     grad_accum = jax.tree_map(jnp.zeros_like, params)
     lr = optimizer_config['optimizer_kwargs'].pop('learning_rate')
@@ -123,6 +123,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         dropout_rng=jax.random.PRNGKey(train_state_config['dropout_seed'] + jax.process_index()),
         adv_rng=jax.random.PRNGKey(2036 + jax.process_index()),
         micro_step=0,
+        ema_decay=train_state_config['ema_decay'],
         # micro_in_mini=args.grad_accum,
         # grad_accum=grad_accum if args.grad_accum > 1 else None,
         ema_params=copy.deepcopy(params)
@@ -150,5 +151,6 @@ if __name__ == "__main__":
 
 
     state=create_train_state(yaml['train_state'])
-    state=state.replace()
+    # print(state)
+    state=state.replicate()
 

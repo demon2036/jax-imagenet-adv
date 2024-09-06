@@ -61,6 +61,7 @@ train_state:
   mixup_seed: 1
   dropout_seed: 1
   pretrained_ckpt: 'gs://brid-center-2b/conv-next-b-128-3step-300ep-ema'
+  ema_decay: 0.99
 
 
 
