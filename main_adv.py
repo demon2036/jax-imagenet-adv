@@ -54,6 +54,7 @@ def evaluate(state: TrainState, dataloader: DataLoader) -> dict[str, float]:
 
 
 def main(configs):
+
     if jax.process_index() == 0:
         wandb.init(name=configs['name'], project=configs['project'], config=configs)
 
@@ -73,6 +74,12 @@ def main(configs):
     filename = os.path.join(output_dir, f"{name}-{postfix}")
     print(filename)
 
+    if args.pretrained_ckpt is not None:
+        state = checkpointer.restore(filename, item=ckpt)['model']
+        init_step = state.step + 1
+    else:
+        init_step = 1
+
     state = state.replicate()
 
     train_dataloader, valid_dataloader = create_dataloaders(**configs['dataset'])
@@ -80,7 +87,7 @@ def main(configs):
     train_dataloader_iter = train_dataloader
     average_meter, max_val_acc1 = AverageMeter(use_latest=["learning_rate"]), 0.0
 
-    for step in tqdm.trange(1, training_steps + 1, dynamic_ncols=True):
+    for step in tqdm.trange(init_step, training_steps + 1, dynamic_ncols=True):
         for _ in range(1):
             batch = shard(jax.tree_util.tree_map(np.asarray, next(train_dataloader_iter)))
             state, metrics = training_step(state, batch)
@@ -98,12 +105,6 @@ def main(configs):
         if eval_interval > 0 and (
                 step % eval_interval == 0 or step == training_steps
         ):
-
-
-
-            # if jax.process_index() == 0:
-            #     params_bytes = msgpack_serialize(unreplicate(state.ema_params))
-            #     save_checkpoint_in_background2(configs['output_dir'], configs['name'], params_bytes, postfix="last")
             if valid_dataloader is None:
                 continue
 
@@ -125,7 +126,7 @@ def main(configs):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--yaml-path", type=str, default='configs/adv/convnext-b-128-1step.yaml')
+    parser.add_argument("--yaml-path", type=str, default='configs/adv/convnext-b-3step-2000ep-0.9.yaml')
     # parser.add_argument("--train-dataset-shards")
     # parser.add_argument("--valid-dataset-shards")
     # parser.add_argument("--train-batch-size", type=int, default=2048)
@@ -185,7 +186,7 @@ if __name__ == "__main__":
     # parser.add_argument("--ipaddr")
     # parser.add_argument("--hostname")
     # parser.add_argument("--output-dir", default=".")
-    jax.distributed.initialize()
+    # jax.distributed.initialize()
     # main(parser.parse_args())
     args=parser.parse_args()
     yaml = read_yaml(args.yaml_path)
