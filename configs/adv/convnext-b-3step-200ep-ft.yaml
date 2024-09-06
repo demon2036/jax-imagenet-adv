@@ -29,8 +29,8 @@ dataset:
 train_state:
   train_module:
     target: 'train_modules.TrainAdvModule'
-    mixup: 0.0
-    cutmix: 0.0
+    mixup: 0.8
+    cutmix: 1.0
     criterion: ce
     label_smoothing: 0.1
     train_adv_step:  3
@@ -60,7 +60,7 @@ train_state:
   init_seed: 1
   mixup_seed: 1
   dropout_seed: 1
-  pretrained_ckpt: 'gs://brid-center-2b/conv-next-b-128-3step-300ep-trade-ema'
+  pretrained_ckpt: 'gs://brid-center-2b/conv-next-b-128-3step-2000ep-ema'
   ema_decay: 0.99
 
 
