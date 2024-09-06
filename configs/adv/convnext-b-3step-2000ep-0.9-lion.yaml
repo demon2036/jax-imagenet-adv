@@ -53,7 +53,7 @@ train_state:
       learning_rate: 4.0e-4
       weight_decay: 0.1
       b1: 0.9
-      b2: 0.999
+      b2: 0.99
 #      eps: 1.0e-8
 #      lr_decay: 1.0
 #      clip_grad: 0.0
