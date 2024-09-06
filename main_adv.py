@@ -86,8 +86,8 @@ def main(configs):
     # train_dataloader_iter = iter(train_dataloader)
     train_dataloader_iter = train_dataloader
     average_meter, max_val_acc1 = AverageMeter(use_latest=["learning_rate"]), 0.0
-
-    for step in tqdm.trange(init_step, training_steps + 1, dynamic_ncols=True):
+    for step in tqdm.tqdm(range(init_step, training_steps + 1), initial=init_step, total=training_steps + 1):
+    # for step in tqdm.trange(init_step, training_steps + 1, dynamic_ncols=True):
         for _ in range(1):
             batch = shard(jax.tree_util.tree_map(np.asarray, next(train_dataloader_iter)))
             state, metrics = training_step(state, batch)
