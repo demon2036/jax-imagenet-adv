@@ -59,7 +59,7 @@ class TrainState(train_state.TrainState):
 @partial(jax.pmap, axis_name="batch", donate_argnums=0)
 def training_step(state: TrainState, batch: ArrayTree) -> tuple[TrainState, ArrayTree]:
     def loss_fn(params: ArrayTree) -> ArrayTree:
-        use_pgd=True
+        use_pgd=False
         metrics = state.apply_fn({"params": params}, *batch, det=False, rngs=rngs,use_trade=not use_pgd,use_pgd=use_pgd,)
         metrics = jax.tree_map(jnp.mean, metrics)
         return metrics["loss"], metrics
