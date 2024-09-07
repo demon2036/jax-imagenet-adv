@@ -43,7 +43,8 @@ train_state:
     model_kwargs:
       labels: 1000
       depths: [3,3,27,3]
-      dims: [192, 384, 768, 1536]
+#      dims: [192, 384, 768, 1536]
+      dims: [256, 512, 1024, 2048]
       drop_path_rate: 0.0
 #      ls_init_value: null
 
@@ -62,7 +63,7 @@ train_state:
   mixup_seed: 1
   dropout_seed: 1
   ema_decay: 0.9998
-  pretrained_ckpt: 'convnext_large.fb_in1k'
+#  pretrained_ckpt: 'convnext_large.fb_in1k'
 
 
 
