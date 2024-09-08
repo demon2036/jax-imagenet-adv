@@ -197,7 +197,11 @@ def create_dataloaders(
     generated_dataset_shards=files
     # generated_dataset_shards = 'gs://shadow-center-2b/imagenet-generated-100steps-annotated/shards-{00000..01500}.tar'
 
-    if train_origin_batch_size is not None:
+
+
+
+
+    if train_origin_batch_size > 0:
         dataset = wds.DataPipeline(
             wds.SimpleShardList(train_dataset_shards, seed=shuffle_seed),
             itertools.cycle,
