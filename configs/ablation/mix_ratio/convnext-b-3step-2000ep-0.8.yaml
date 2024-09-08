@@ -24,7 +24,7 @@ dataset:
   test_crop_ratio: 0.875
   shuffle_seed: 1
   image_size: 128
-  dataset_mix_ratio: 0.9
+  dataset_mix_ratio: 0.8
 
 
 train_state:
