@@ -123,6 +123,8 @@ def main(configs):
             if jax.process_index() == 0:
                 wandb.log(metrics, step)
 
+    checkpointer.wait_until_finished()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
