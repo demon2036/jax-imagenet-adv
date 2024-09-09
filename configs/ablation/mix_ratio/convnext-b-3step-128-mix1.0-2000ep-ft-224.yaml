@@ -1,5 +1,5 @@
 
-output_dir: $GCS_MODEL_DIR
+output_dir: $GCS_MODEL_DIR/ablation/ratio
 name: convnext-b-3step-128-mix1.0-2000ep-ft-224-30ep
 project: deit3-jax
 steps: 1281167
