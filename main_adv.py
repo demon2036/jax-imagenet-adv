@@ -128,7 +128,7 @@ def main(configs):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--yaml-path", type=str, default='configs/adv/convnext-b-3step-2000ep-0.9.yaml')
+    parser.add_argument("--yaml-path", type=str, default='configs/adv/conv-next-b-128-3step-2000ep-mix0.9-adv-step-1.yaml')
     # parser.add_argument("--train-dataset-shards")
     # parser.add_argument("--valid-dataset-shards")
     # parser.add_argument("--train-batch-size", type=int, default=2048)
