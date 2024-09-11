@@ -3,7 +3,7 @@ output_dir: $GCS_MODEL_DIR/ablation/adv_step
 name: conv-next-b-128-3step-2000ep-mix0.9-adv-step-7
 project: deit3-jax-ablation-adv-step
 steps: 1281167
-training_epoch: 4000
+training_epoch: 1000
 warmup_epoch: 20
 log_interval: 100
 eval_epoch: 10
