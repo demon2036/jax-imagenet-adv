@@ -1,7 +1,7 @@
 
 output_dir: $GCS_MODEL_DIR/ablation/adv_step
 name: convnext-b-128-3step-2000ep-mix0.9-adv-step-7-ft-224-30ep
-project: deit3-jax-ablation-ratio
+project: deit3-jax-ablation-adv-step
 steps: 1281167
 training_epoch: 30
 warmup_epoch: 0
