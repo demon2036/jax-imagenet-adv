@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/ablation/augment
-name: conv-next-b-128-3step-2000ep-mix0.9-3a-ft-224
+name: conv-next-b-128-3step-2000ep-mix0.9-aa-ft-224
 project: deit3-jax-ablation-augment
 steps: 1281167
 training_epoch: 30
