@@ -71,7 +71,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     init_rngs = {"params": jax.random.PRNGKey(train_state_config['init_seed'])}
     # print(module.tabulate(init_rngs, **example_inputs))
 
-    params = module.init(init_rngs, **example_inputs,det=False,use_trade=True)["params"]
+    params = module.init(init_rngs, **example_inputs,det=False)["params"]
 
 
     if pretrained_ckpt is  None:
