@@ -105,12 +105,12 @@ def main(configs):
 
             metrics = evaluate(state, valid_dataloader)
 
-            if metrics["val/advacc1"] > max_val_acc1:
+            if metrics["val/acc1"] > max_val_acc1:
                 ckpt = {'model': jax.device_get(jax.tree_util.tree_map(lambda x: x[0], state))}
                 save_args = orbax_utils.save_args_from_target(ckpt)
                 checkpointer.save(filename, ckpt, save_args=save_args, force=True)
 
-                max_val_acc1 = metrics["val/advacc1"]
+                max_val_acc1 = metrics["val/acc1"]
                 # save_checkpoint_in_background(args, params_bytes, postfix="best")
 
             metrics["val/acc1/best"] = max_val_acc1

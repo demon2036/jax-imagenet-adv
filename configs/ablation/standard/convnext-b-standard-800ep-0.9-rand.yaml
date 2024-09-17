@@ -6,7 +6,7 @@ steps: 1281167
 training_epoch: 800
 warmup_epoch: 20
 log_interval: 100
-eval_epoch: 10
+eval_epoch: 1
 #resume: True
 
 dataset:
