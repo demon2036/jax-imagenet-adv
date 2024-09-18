@@ -7,7 +7,7 @@ training_epoch: 2000
 warmup_epoch: 20
 log_interval: 100
 eval_epoch: 20
-resume: True
+#resume: True
 
 dataset:
   train_batch_size: 4096
