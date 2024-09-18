@@ -61,7 +61,7 @@ train_state:
   init_seed: 1
   mixup_seed: 1
   dropout_seed: 1
-  ema_decay: 0.9998
+  ema_decay: 0.9999
   pretrained_ckpt: 'convnext_xxlarge.clip_laion2b_soup_ft_in1k'
 
 
