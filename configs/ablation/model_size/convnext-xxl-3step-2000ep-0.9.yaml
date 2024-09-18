@@ -1,7 +1,7 @@
 
 output_dir: $GCS_MODEL_DIR
 name: conv-next-xxl-128-3step-2000ep
-project: deit3-jax
+project: deit3-jax-ablation-model-size
 steps: 1281167
 training_epoch: 2000
 warmup_epoch: 20
