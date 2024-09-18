@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/ablation/standard
-name: conv-next-b-128-3step-800ep-mix0.9-rand
+name: conv-next-b-128-3step-800ep-0.9-rand
 project: deit3-jax-ablation-standard
 steps: 1281167
 training_epoch: 800
