@@ -23,8 +23,8 @@ dataset:
   augment_repeats: 3
   test_crop_ratio: 0.875
   shuffle_seed: 1
-  image_size: 128
-  dataset_mix_ratio: 0.9
+  image_size: 224
+  dataset_mix_ratio: 0.0
 
 
 train_state:
@@ -49,8 +49,8 @@ train_state:
   optimizer:
     target: 'adamw'
     optimizer_kwargs:
-      learning_rate: 0.004
-      weight_decay: 0.05
+      learning_rate: 0.0004
+      weight_decay: 1.0e-8
       b1: 0.9
       b2: 0.999
 #      eps: 1.0e-8
