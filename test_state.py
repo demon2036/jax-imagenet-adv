@@ -83,6 +83,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     # if args.grad_accum > 1:
     #     grad_accum = jax.tree_map(jnp.zeros_like, params)
     lr = optimizer_config['optimizer_kwargs'].pop('learning_rate')
+    end_lr = optimizer_config['optimizer_kwargs'].pop('end_learning_rate',1e-5)
 
     # Create learning rate scheduler and optimizer with gradient clipping. The learning
     # rate will be recorded at `hyperparams` by `optax.inject_hyperparameters`.
@@ -116,7 +117,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         peak_value=lr,
         warmup_steps=warmup_steps,
         decay_steps=training_steps,
-        end_value=1e-5,
+        end_value=end_lr,
     )
 
     state= TrainState.create(

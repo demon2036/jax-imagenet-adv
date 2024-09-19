@@ -156,9 +156,10 @@ def test_torch():
     x_torch = torch.from_numpy(np.array(x))
     x_torch = einops.rearrange(x_torch, 'b h w c->b c h w')
 
-    model_torch = timm.models.convnext.ConvNeXt(c,ls_init_value=1 )
+    # model_torch = timm.models.convnext.ConvNeXt(c,ls_init_value=1 )
 
-    model_torch=timm.create_model('convnext_tiny.fb_in1k',pretrained=True)
+    # model_torch=timm.create_model('convnext_tiny.fb_in1k',pretrained=False)
+    model_torch = timm.create_model('convnext_xxlarge.clip_laion2b_soup_ft_in1k',pretrained=True)
 
     print(model_torch.state_dict().keys())
 
@@ -166,7 +167,8 @@ def test_torch():
 
     # x = np.asarray(jax.random.normal(rng, shape))
 
-    model_jax = ConvNeXt(  ls_init_value=1)
+    model_jax = ConvNeXt(  depths=[3, 4, 30, 3],
+    dims= [384, 768, 1536, 3072])
     params = {k: v.numpy() for k, v in model_torch.state_dict().items()}
     params = flax.traverse_util.unflatten_dict(params, sep=".")
     model_jax_params = convert_torch_to_flax_conv_next(params, sep='')
