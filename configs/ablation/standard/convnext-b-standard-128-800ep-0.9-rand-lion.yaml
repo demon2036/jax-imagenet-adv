@@ -49,8 +49,8 @@ train_state:
     optimizer_kwargs:
       learning_rate: 0.0004
       weight_decay: 0.005
-      b1: 0.9
-      b2: 0.99
+      b1: 0.95
+      b2: 0.98
       end_learning_rate: 0.0
 #      eps: 1.0e-8
 #      lr_decay: 1.0
