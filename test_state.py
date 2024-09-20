@@ -19,7 +19,8 @@ import orbax.checkpoint as ocp
 def load_pretrained_params(pretrained_ckpt):
     checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
     state = checkpointer.restore(pretrained_ckpt )['model']
-    params = state['ema_params']
+    # params = state['ema_params']
+    params = state['params']
     return params
     # jax.tree_util.tree_map(jnp.asarray, params)
     # print(params.keys())
@@ -73,11 +74,10 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
 
     params = module.init(init_rngs, **example_inputs,det=False)["params"]
 
-    print(f'{pretrained_ckpt=}')
+
     if pretrained_ckpt is  None:
         pass
     elif 'gs://' in pretrained_ckpt:
-        print(1)
         params = load_pretrained_params(pretrained_ckpt )
     else:
         params = load_pretrain(pretrained_model=pretrained_ckpt,default_params=params)
