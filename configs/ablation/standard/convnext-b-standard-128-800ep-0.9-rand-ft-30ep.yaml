@@ -61,7 +61,7 @@ train_state:
   mixup_seed: 1
   dropout_seed: 1
   ema_decay: 0.9998
-  pretrained_ckpt: 'gs://brid-center-2b/ablation/standard/conv-next-b-128-3step-800ep-0.9-rand-ema'
+  pretrained_ckpt: 'gs://brid-center-2b/ablation/standard/conv-next-b-128-3step-800ep-mix0.9-rand-lion-ema'
 
 
 
