@@ -77,6 +77,7 @@ def main(configs):
     if 'resume' in configs:
         state = checkpointer.restore(filename, item=ckpt)['model']
         init_step = state.step + 1
+        del ckpt
     else:
         init_step = 1
 
