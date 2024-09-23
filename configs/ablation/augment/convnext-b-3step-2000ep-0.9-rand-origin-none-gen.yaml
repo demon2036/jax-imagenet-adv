@@ -1,13 +1,13 @@
 
 output_dir: $GCS_MODEL_DIR/ablation/augment
-name: conv-next-b-128-3step-2000ep-mix0.9-rand
+name: convnext-b-3step-2000ep-0.9-rand-origin-none-gen
 project: deit3-jax-ablation-augment
 steps: 1281167
 training_epoch: 2000
 warmup_epoch: 20
 log_interval: 100
 eval_epoch: 10
-resume: True
+#resume: True
 
 dataset:
   train_batch_size: 4096
