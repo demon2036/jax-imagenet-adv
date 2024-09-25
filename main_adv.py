@@ -196,6 +196,10 @@ if __name__ == "__main__":
     # yaml = read_yaml('configs/adv/convnext-t-3step.yaml')
     yaml = preprocess_config(yaml)
 
+    # print(yaml)
+    # while True:
+    #     pass
+
     jax.distributed.initialize()
 
 
