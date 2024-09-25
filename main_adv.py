@@ -129,7 +129,7 @@ def main(configs):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--yaml-path", type=str, default='configs/adv/conv-next-b-128-3step-2000ep-mix0.9-adv-step-1.yaml')
+    parser.add_argument("--yaml-path", type=str, default='configs/ablation/amount_data/conv-next-b-224-3step-300ep-mix0.9-adv-step-3-1m.yaml')
     # parser.add_argument("--train-dataset-shards")
     # parser.add_argument("--valid-dataset-shards")
     # parser.add_argument("--train-batch-size", type=int, default=2048)
@@ -189,12 +189,14 @@ if __name__ == "__main__":
     # parser.add_argument("--ipaddr")
     # parser.add_argument("--hostname")
     # parser.add_argument("--output-dir", default=".")
-    jax.distributed.initialize()
     # main(parser.parse_args())
     args=parser.parse_args()
     yaml = read_yaml(args.yaml_path)
     # yaml = read_yaml('configs/adv/convnext-b-3step.yaml')
     # yaml = read_yaml('configs/adv/convnext-t-3step.yaml')
     yaml = preprocess_config(yaml)
+
+    jax.distributed.initialize()
+
 
     main(yaml)
