@@ -152,8 +152,9 @@ def create_dataloaders(
         color_generated_jitter,
         random_generated_erasing,
         test_crop_ratio,
+        generated_dataset_shards,
         grad_accum=1,
-        dataset_mix_ratio=0.8
+        dataset_mix_ratio=0.8,
 ):
     # print(train_dataset_shards,
     #       valid_dataset_shards,
@@ -191,14 +192,14 @@ def create_dataloaders(
     total_batch_size = train_batch_size // jax.process_count()
     train_batch_size = int(total_batch_size * dataset_mix_ratio)
     train_origin_batch_size = total_batch_size - train_batch_size
-    generated_dataset_shards = [
-        # 'gs://shadow-center-2b/imagenet-generated-100steps/shards-{00000..06399}.tar',
-        # 'gs://shadow-center-2b/imagenet-generated-100steps-cfg1.75/shards-{00000..06399}.tar',
-        # 'gs://shadow-center-2b/imagenet-generated-100steps-cfg1.5/shards-{00000..13000}.tar',
-        # 'gs://shadow-center-2b/imagenet-generated-100steps-cfg1.5-eta0.2/shards-{00000..01300}.tar',
-        # 'gs://shadow-center-2b/imagenet-generated-100steps-cfg1.25-eta0.2/shards-{00000..07999}.tar'
-        'gs://brid-center-2b/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..12799}.tar'
-    ]
+    # generated_dataset_shards = [
+    #     # 'gs://shadow-center-2b/imagenet-generated-100steps/shards-{00000..06399}.tar',
+    #     # 'gs://shadow-center-2b/imagenet-generated-100steps-cfg1.75/shards-{00000..06399}.tar',
+    #     # 'gs://shadow-center-2b/imagenet-generated-100steps-cfg1.5/shards-{00000..13000}.tar',
+    #     # 'gs://shadow-center-2b/imagenet-generated-100steps-cfg1.5-eta0.2/shards-{00000..01300}.tar',
+    #     # 'gs://shadow-center-2b/imagenet-generated-100steps-cfg1.25-eta0.2/shards-{00000..07999}.tar'
+    #     'gs://brid-center-2b/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..12799}.tar'
+    # ]
 
     generated_train_loader_workers = 30
 
