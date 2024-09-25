@@ -28,7 +28,7 @@ dataset:
   shuffle_seed: 1
   image_size: 128
   generated_dataset_shards:
-    $GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..00122}.tar
+    ['$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..00122}.tar']
   dataset_mix_ratio: 0.9
 
 
