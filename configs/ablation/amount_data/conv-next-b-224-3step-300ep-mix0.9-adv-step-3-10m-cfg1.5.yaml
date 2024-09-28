@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/ablation/amount_data
-name: conv-next-b-224-3step-300ep-mix0.9-adv-step-3-50m
+name: conv-next-b-224-3step-300ep-mix0.9-adv-step-3-10m-cfg1.5
 project: deit3-jax-ablation-amount_data
 steps: 1281167
 training_epoch: 300
@@ -28,7 +28,7 @@ dataset:
   shuffle_seed: 1
   image_size: 224
   generated_dataset_shards:
-    ['$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..06100}.tar']
+    ['$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.5-eta0.0/shards-{00000..01220}.tar']
   dataset_mix_ratio: 0.9
 
 
