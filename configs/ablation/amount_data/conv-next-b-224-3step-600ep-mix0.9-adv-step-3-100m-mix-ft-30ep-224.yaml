@@ -3,7 +3,7 @@ output_dir: $GCS_MODEL_DIR/ablation/amount_data
 name: conv-next-b-224-3step-600ep-mix0.9-adv-step-3-100m-mix-ft-30ep-224.yaml
 project: deit3-jax-ablation-amount_data
 steps: 1281167
-training_epoch: 300
+training_epoch: 30
 warmup_epoch: 10
 log_interval: 100
 eval_epoch: 5
