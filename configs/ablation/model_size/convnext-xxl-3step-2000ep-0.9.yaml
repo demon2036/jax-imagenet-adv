@@ -20,10 +20,15 @@ dataset:
   color_jitter: 0.0
   auto_augment: "none"
   random_erasing: 0.0
+  auto_generated_augment: "none"
+  color_generated_jitter: 0.0
+  random_generated_erasing: 0.0
   augment_repeats: 3
   test_crop_ratio: 0.875
   shuffle_seed: 1
-  image_size: 128
+  image_size: 224
+  generated_dataset_shards:
+    ['$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.5-eta0.0/shards-{00000..12799}.tar','$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..12799}.tar']
   dataset_mix_ratio: 0.9
 
 
