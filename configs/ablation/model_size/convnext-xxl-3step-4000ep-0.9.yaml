@@ -1,5 +1,5 @@
 
-output_dir: $GCS_MODEL_DIR
+output_dir: $GCS_MODEL_DIR/ablation/model_size
 name: conv-next-xxl-128-3step-4000ep
 project: deit3-jax-ablation-model-size
 steps: 1281167
