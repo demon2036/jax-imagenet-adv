@@ -55,7 +55,7 @@ train_state:
   optimizer:
     target: 'adamw'
     optimizer_kwargs:
-      learning_rate: 0.004
+      learning_rate: 0.001
       weight_decay: 0.05
       b1: 0.9
       b2: 0.999
