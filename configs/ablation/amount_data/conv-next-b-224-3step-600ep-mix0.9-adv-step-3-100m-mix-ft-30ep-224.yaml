@@ -16,7 +16,7 @@ dataset:
   valid_loader_workers: 10
   train_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-train-{0000..1023}.tar"
   valid_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-validation-{00..63}.tar"
-  random_crop: src
+  random_crop: rrc
   color_jitter: 0.0
   auto_augment: "none"
   random_erasing: 0.0
