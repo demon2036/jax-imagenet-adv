@@ -3,7 +3,7 @@ output_dir: $GCS_MODEL_DIR
 name: convnext-xxl-3step-192-1000ep-0.95
 project: deit3-jax-ablation-model-size
 steps: 1281167
-training_epoch: 2000
+training_epoch: 1000
 warmup_epoch: 20
 log_interval: 100
 eval_epoch: 10
