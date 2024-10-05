@@ -26,10 +26,10 @@ dataset:
   augment_repeats: 3
   test_crop_ratio: 0.875
   shuffle_seed: 1
-  image_size: 128
+  image_size: 192
   generated_dataset_shards:
     ['$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.5-eta0.0/shards-{00000..12799}.tar','$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..12799}.tar']
-  dataset_mix_ratio: 0.9
+  dataset_mix_ratio: 0.95
 
 
 train_state:
