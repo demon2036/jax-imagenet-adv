@@ -53,12 +53,12 @@ train_state:
 #      ls_init_value: null
 
   optimizer:
-    target: 'adamw'
+    target: 'lion'
     optimizer_kwargs:
-      learning_rate: 0.004
-      weight_decay: 0.05
-      b1: 0.9
-      b2: 0.999
+      learning_rate: 0.000
+      weight_decay: 0.5
+      b1: 0.95
+      b2: 0.98
 #      eps: 1.0e-8
 #      lr_decay: 1.0
 #      clip_grad: 0.0
