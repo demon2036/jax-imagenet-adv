@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/ablation/img_size
-name: conv-next-b-192-3step-700ep-mix0.9-adv-step-3
+name: conv-next-b-128-3step-2000ep-mix0.9-adv-step-3
 project: deit3-jax-ablation-img-size
 steps: 1281167
 training_epoch: 2000
