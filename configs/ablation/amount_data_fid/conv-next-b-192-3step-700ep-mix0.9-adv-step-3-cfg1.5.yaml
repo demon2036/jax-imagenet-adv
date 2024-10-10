@@ -1,7 +1,7 @@
 
 output_dir: $GCS_MODEL_DIR/ablation/amount_data_fid
 name: conv-next-b-192-3step-700ep-mix0.9-adv-step-3-cfg1.5
-project: deit3-jax-ablation-img-size
+project: deit3-jax-ablation-amount-data-fid
 steps: 1281167
 training_epoch: 700
 warmup_epoch: 20
