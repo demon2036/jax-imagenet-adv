@@ -1,4 +1,4 @@
-echo $SCRIPT_PATHS[@]
+echo "${SCRIPT_PATHS[@]}"
 
 #for script in "${SCRIPT_PATHS[@]}"; do
 #    echo " $script"
