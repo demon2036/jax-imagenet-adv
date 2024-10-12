@@ -1,5 +1,8 @@
 #echo "${SCRIPT_PATHS[@]}"
-env | grep SCRIPT_PATHS
+SCRIPT_PATHS=$1
+
+echo "Array content: $1"
+
 echo "Array content: ${SCRIPT_PATHS[@]}"
 for script in "${SCRIPT_PATHS[@]}"; do
 #    echo " $script"
