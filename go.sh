@@ -1,5 +1,5 @@
 #echo "${SCRIPT_PATHS[@]}"
-
+echo "hi"
 for script in "${SCRIPT_PATHS[@]}"; do
 #    echo " $script"
     pkill -9 -f python
