@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/ablation/augment_strategies
-name: conv-next-b-192-3step-700ep-mix0.9-adv-step-3-aa
+name: conv-next-b-192-3step-700ep-mix0.9-adv-step-3-3a
 project: deit3-jax-ablation-augment-strategies
 steps: 1281167
 training_epoch: 700
