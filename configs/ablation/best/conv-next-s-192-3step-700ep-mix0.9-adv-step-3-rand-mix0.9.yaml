@@ -10,7 +10,7 @@ eval_epoch: 10
 #resume: True
 
 dataset:
-  train_batch_size: 4096
+  train_batch_size: 2048
   valid_batch_size: 2048
   train_loader_workers: 20
   valid_loader_workers: 10
@@ -48,7 +48,7 @@ train_state:
     model_kwargs:
       labels: 1000
       depths: [3,3,27,3]
-      dims: [128, 256, 512, 1024]
+      dims: [96, 192, 384, 768]
       drop_path_rate: 0.0
 #      ls_init_value: null
 
