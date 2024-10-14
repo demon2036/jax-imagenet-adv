@@ -48,7 +48,7 @@ train_state:
     model_kwargs:
       labels: 1000
       depths: [3,3,27,3]
-      dims: [96, 192, 384, 768]
+      dims: [128, 256, 512, 1024]
       drop_path_rate: 0.0
 #      ls_init_value: null
 
