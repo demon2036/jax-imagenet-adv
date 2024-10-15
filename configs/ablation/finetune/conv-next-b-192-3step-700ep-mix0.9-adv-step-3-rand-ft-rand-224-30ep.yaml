@@ -18,9 +18,9 @@ dataset:
   valid_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-validation-{00..63}.tar"
   random_crop: rrc
   color_jitter: 0.0
-  auto_augment: "and-m9-mstd0.5-inc1"
+  auto_augment: "rand-m9-mstd0.5-inc1"
   random_erasing: 0.0
-  auto_generated_augment: "and-m9-mstd0.5-inc1"
+  auto_generated_augment: "rand-m9-mstd0.5-inc1"
   color_generated_jitter: 0.0
   random_generated_erasing: 0.0
   augment_repeats: 3
