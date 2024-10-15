@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/ablation/data_mix_ratio
-name: conv-next-b-192-3step-700ep-mix0.9-adv-step-3-rand-mix0.8-ft-224-30ep
+name: conv-next-b-192-3step-700ep-mix0.9-adv-step-3-rand-mix1.0-ft-224-30ep
 project: deit3-jax-ablation-data-mix-ratio
 steps: 1281167
 training_epoch: 30
@@ -67,7 +67,7 @@ train_state:
   mixup_seed: 1
   dropout_seed: 1
   ema_decay: 0.9999
-  pretrained_ckpt: 'gs://brid-center-2b/ablation/data_mix_ratio/conv-next-b-192-3step-700ep-mix0.8-adv-step-3-aa-ema'
+  pretrained_ckpt: 'gs://brid-center-2b/ablation/data_mix_ratio/conv-next-b-192-3step-700ep-mix1.0-adv-step-3-aa-ema'
 
 
 
