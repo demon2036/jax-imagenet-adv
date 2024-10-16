@@ -1,13 +1,13 @@
 
 output_dir: $GCS_MODEL_DIR/ablation/best
-name: conv-next-b-192-3step-700ep-mix0.9-adv-step-3-rand-mix0.9
+name: conv-next-l-192-3step-700ep-mix0.9-adv-step-3-rand-mix0.9
 project: deit3-jax-ablation-best
 steps: 1281167
 training_epoch: 700
 warmup_epoch: 20
 log_interval: 100
 eval_epoch: 10
-#resume: True
+resume: True
 
 dataset:
   train_batch_size: 4096
