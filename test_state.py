@@ -1,3 +1,7 @@
+import os
+
+os.environ['GCS_DATASET_DIR' ] ='hello'
+os.environ['JAX_PLATFORMS' ] ='cpu'
 import copy
 import json
 from functools import partial
@@ -10,7 +14,6 @@ import timm
 from pre_define import CRITERION_COLLECTION, OPTIMIZER_COLLECTION
 from training import TrainState
 from utils import read_yaml, get_obj_from_str, Mixup, preprocess_config
-import os
 import jax.numpy as jnp
 from convert_model_pytorch import convert_torch_to_flax_conv_next
 import orbax.checkpoint as ocp
@@ -142,9 +145,10 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
 
 if __name__ == "__main__":
 
-    os.environ['GCS_DATASET_DIR']='hello'
 
-    yaml = read_yaml('configs/adv/convnext-b-3step-200ep-ft.yaml')
+
+
+    yaml = read_yaml('configs/ablation/best/vit-b-192-3step-700ep-mix0.9-adv-step-3-rand-mix0.9.yaml')
     yaml = preprocess_config(yaml)
 
     # print(os.environ.get('GCS_DATASET_DIR'))
@@ -157,6 +161,10 @@ if __name__ == "__main__":
 
 
     state=create_train_state(yaml['train_state'])
+
+
+    print(state.params)
+
     # print(state)
     state=state.replicate()
 

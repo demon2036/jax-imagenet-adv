@@ -36,12 +36,12 @@ class ViTBase:
     dim: int = 768
     heads: int = 12
     labels: int | None = 1000
-    layerscale: bool = False
+    layerscale: bool = True
 
     patch_size: int = 16
     image_size: int = 224
     posemb: Literal["learnable", "sincos2d"] = "learnable"
-    pooling: Literal["cls", "gap"] = "cls"
+    pooling: Literal["cls", "gap"] = "gap"
 
     dropout: float = 0.0
     droppath: float = 0.0
