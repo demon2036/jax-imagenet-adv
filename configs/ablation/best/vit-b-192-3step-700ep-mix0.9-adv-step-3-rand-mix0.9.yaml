@@ -67,7 +67,7 @@ train_state:
   mixup_seed: 1
   dropout_seed: 1
   ema_decay: 0.9998
-  pretrained_ckpt: 'convnext_base.fb_in1k'
+  pretrained_ckpt: null
 
 
 

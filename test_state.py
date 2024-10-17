@@ -150,6 +150,7 @@ if __name__ == "__main__":
 
     yaml = read_yaml('configs/ablation/best/vit-b-192-3step-700ep-mix0.9-adv-step-3-rand-mix0.9.yaml')
     yaml = preprocess_config(yaml)
+    print(yaml)
 
     # print(os.environ.get('GCS_DATASET_DIR'))
 
