@@ -1,0 +1,86 @@
+
+output_dir: $GCS_MODEL_DIR/ablation/augment_strategies
+name: conv-next-s-192-3step-700ep-mix0.9-adv-step-3-rand-ft-224-30ep
+project: deit3-jax-ablation-augment-strategies
+steps: 1281167
+training_epoch: 30
+warmup_epoch: 10
+log_interval: 100
+eval_epoch: 5
+#resume: True
+
+dataset:
+  train_batch_size: 4096
+  valid_batch_size: 2048
+  train_loader_workers: 20
+  valid_loader_workers: 10
+  train_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-train-{0000..1023}.tar"
+  valid_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-validation-{00..63}.tar"
+  random_crop: rrc
+  color_jitter: 0.0
+  auto_augment: "none"
+  random_erasing: 0.0
+  auto_generated_augment: "none"
+  color_generated_jitter: 0.0
+  random_generated_erasing: 0.0
+  augment_repeats: 3
+  test_crop_ratio: 0.875
+  shuffle_seed: 1
+  image_size: 224
+  generated_dataset_shards:
+    ['$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.5-eta0.0/shards-{00000..12799}.tar','$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..12799}.tar']
+  dataset_mix_ratio: 0.0
+
+
+train_state:
+  train_module:
+    target: 'train_modules.TrainAdvModule'
+    mixup: 0.8
+    cutmix: 1.0
+    criterion: ce
+    label_smoothing: 0.1
+    train_adv_step:  10
+    train_adv_step_size:  1 / 255
+
+
+  model:
+    target: 'models.ConvNeXt'
+    model_kwargs:
+      labels: 1000
+      depths: [3,3,27,3]
+      dims: [96, 192, 384, 768]
+      drop_path_rate: 0.0
+#      ls_init_value: null
+
+  optimizer:
+    target: 'adamw'
+    optimizer_kwargs:
+      learning_rate: 0.0004
+      weight_decay: 1.0e-8
+      b1: 0.9
+      b2: 0.999
+#      eps: 1.0e-8
+#      lr_decay: 1.0
+#      clip_grad: 0.0
+
+  init_seed: 1
+  mixup_seed: 1
+  dropout_seed: 1
+  ema_decay: 0.9999
+  pretrained_ckpt: 'gs://brid-center-2b/ablation/best/conv-next-s-192-3step-700ep-mix0.9-adv-step-3-rand-mix0.9-ema'
+
+
+
+
+
+
+#    --init-seed 1 \
+#    --grad-accum 1 \
+#    --warmup-steps $((1281167 * 5 / $TRAIN_BATCH_SIZE)) \
+#    --training-steps $((1281167 * 300 / $TRAIN_BATCH_SIZE)) \
+#    --log-interval 100 \
+#    --eval-interval $((1281167 * 10 / $TRAIN_BATCH_SIZE)) \
+#    --project deit3-jax \
+#    --name $(basename $0 .sh) \
+#    --ipaddr $(curl -s ifconfig.me) \
+#    --hostname $(hostname)
