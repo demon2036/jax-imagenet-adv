@@ -20,12 +20,10 @@ from typing import Any, Literal
 
 import flax.linen as nn
 import flax.linen.initializers as init
-import jax.experimental.pallas.ops.tpu.flash_attention
 import jax.numpy as jnp
 from chex import Array
 
-from pre_define import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
-from .utils2 import fixed_sincos2d_embeddings
+from utils import fixed_sincos2d_embeddings
 
 DenseGeneral = partial(nn.DenseGeneral, kernel_init=init.truncated_normal(0.02))
 Dense = partial(nn.Dense, kernel_init=init.truncated_normal(0.02))
@@ -38,21 +36,16 @@ class ViTBase:
     dim: int = 768
     heads: int = 12
     labels: int | None = 1000
-    layerscale: bool = True
+    layerscale: bool = False
 
     patch_size: int = 16
     image_size: int = 224
     posemb: Literal["learnable", "sincos2d"] = "learnable"
-    pooling: Literal["cls", "gap"] = "gap"
-    qk_norm: bool = False
-    use_fc_norm: bool = True
-    reduce_include_prefix: bool = False
+    pooling: Literal["cls", "gap"] = "cls"
 
     dropout: float = 0.0
     droppath: float = 0.0
     grad_ckpt: bool = False
-    use_kan: bool = False
-    polynomial_degree: int = 8
 
     @property
     def kwargs(self) -> dict[str, Any]:
@@ -79,10 +72,10 @@ class PatchEmbed(ViTBase, nn.Module):
             strides=(self.patch_size, self.patch_size),
             padding="VALID",
         )
-        # if self.pooling == "cls":
-        self.cls_token = self.param(
-            "cls_token", init.truncated_normal(0.02), (1, 1, self.dim)
-        )
+        if self.pooling == "cls":
+            self.cls_token = self.param(
+                "cls_token", init.truncated_normal(0.02), (1, 1, self.dim)
+            )
 
         if self.posemb == "learnable":
             self.wpe = self.param(
@@ -93,21 +86,14 @@ class PatchEmbed(ViTBase, nn.Module):
 
     def __call__(self, x: Array) -> Array:
         x = (self.wte(x) + self.wpe).reshape(x.shape[0], -1, self.dim)
-        # if self.pooling == "cls":
-        cls_token = jnp.repeat(self.cls_token, x.shape[0], axis=0)
-        x = jnp.concatenate((cls_token, x), axis=1)
-        return x
-
-
-class Identity(nn.Module):
-    def __call__(self, x):
+        if self.pooling == "cls":
+            cls_token = jnp.repeat(self.cls_token, x.shape[0], axis=0)
+            x = jnp.concatenate((cls_token, x), axis=1)
         return x
 
 
 class Attention(ViTBase, nn.Module):
     def setup(self):
-        self.q_norm = nn.LayerNorm() if self.qk_norm else Identity()
-        self.k_norm = nn.LayerNorm() if self.qk_norm else Identity()
         self.wq = DenseGeneral((self.heads, self.head_dim))
         self.wk = DenseGeneral((self.heads, self.head_dim))
         self.wv = DenseGeneral((self.heads, self.head_dim))
@@ -115,7 +101,7 @@ class Attention(ViTBase, nn.Module):
         self.drop = nn.Dropout(self.dropout)
 
     def __call__(self, x: Array, det: bool = True) -> Array:
-        z = jnp.einsum("bqhd,bkhd->bhqk", self.q_norm(self.wq(x)) / self.head_dim ** 0.5, self.k_norm(self.wk(x)))
+        z = jnp.einsum("bqhd,bkhd->bhqk", self.wq(x) / self.head_dim**0.5, self.wk(x))
         z = jnp.einsum("bhqk,bkhd->bqhd", self.drop(nn.softmax(z), det), self.wv(x))
         return self.drop(self.wo(z), det)
 
@@ -133,10 +119,7 @@ class FeedForward(ViTBase, nn.Module):
 class ViTLayer(ViTBase, nn.Module):
     def setup(self):
         self.attn = Attention(**self.kwargs)
-        if self.use_kan:
-            self.ff = KANLayer(self.polynomial_degree)
-        else:
-            self.ff = FeedForward(**self.kwargs)
+        self.ff = FeedForward(**self.kwargs)
 
         self.norm1 = nn.LayerNorm()
         self.norm2 = nn.LayerNorm()
@@ -146,8 +129,6 @@ class ViTLayer(ViTBase, nn.Module):
         if self.layerscale:
             self.scale1 = self.param("scale1", init.constant(1e-4), (self.dim,))
             self.scale2 = self.param("scale2", init.constant(1e-4), (self.dim,))
-            # self.scale1 = self.param("scale1", init.constant(1e-6), (self.dim,))
-            # self.scale2 = self.param("scale2", init.constant(1e-6), (self.dim,))
 
     def __call__(self, x: Array, det: bool = True) -> Array:
         x = x + self.drop(self.scale1 * self.attn(self.norm1(x), det), det)
@@ -164,16 +145,10 @@ class ViT(ViTBase, nn.Module):
         layer_fn = nn.remat(ViTLayer) if self.grad_ckpt else ViTLayer
         self.layer = [layer_fn(**self.kwargs) for _ in range(self.layers)]
 
-        # self.norm = nn.LayerNorm()
-
-        self.norm = nn.LayerNorm() if not self.use_fc_norm else Identity()
-        self.fc_norm = nn.LayerNorm() if self.use_fc_norm else Identity()
-
-
-        self.head = nn.Dense(self.labels) if self.labels is not None else None
+        self.norm = nn.LayerNorm()
+        self.head = Dense(self.labels) if self.labels is not None else None
 
     def __call__(self, x: Array, det: bool = True) -> Array:
-        x = (x - IMAGENET_DEFAULT_MEAN) / IMAGENET_DEFAULT_STD
         x = self.drop(self.embed(x), det)
         for layer in self.layer:
             x = layer(x, det)
@@ -183,23 +158,9 @@ class ViT(ViTBase, nn.Module):
         # tokens instead of pooling to a single vector and then calculate class logits.
         if self.head is None:
             return x
-        """
-        if self.pooling == "cls":
-            x = x[:, 0, :]
-        elif self.pooling == "gap":
-            x = x[:, 0:].mean(1)
-        return self.head(x)
-        """
 
         if self.pooling == "cls":
             x = x[:, 0, :]
         elif self.pooling == "gap":
-            x = x if self.reduce_include_prefix else x[:, 1:]
             x = x.mean(1)
-        else:
-            raise NotImplemented()
-
-        x = self.fc_norm(x)
-
         return self.head(x)
-
