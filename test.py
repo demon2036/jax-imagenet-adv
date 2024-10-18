@@ -19,6 +19,17 @@ import argparse
 import os
 
 import jax
+
+
+
+
+
+jax.distributed.initialize()
+
+
+
+
+
 import numpy as np
 import orbax.checkpoint as ocp
 import tqdm
@@ -34,7 +45,7 @@ from training import TrainState
 from training_standard import training_step,validation_step
 from utils import AverageMeter, read_yaml, preprocess_config
 
-jax.distributed.initialize()
+
 
 
 def evaluate(state: TrainState, dataloader: DataLoader) -> dict[str, float]:
