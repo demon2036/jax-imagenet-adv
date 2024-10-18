@@ -40,6 +40,7 @@ train_state:
       layers: 12
       dim:  768
       heads: 12
+      image_size: 192
 
   optimizer:
     target: 'adamw'
