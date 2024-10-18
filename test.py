@@ -27,7 +27,7 @@ jax.config.update('jax_platform_name', 'tpu')
 jax.distributed.initialize()
 print(jax.devices())
 from utils import AverageMeter, read_yaml, preprocess_config
-"""
+
 
 
 
@@ -60,7 +60,7 @@ def evaluate(state: TrainState, dataloader: DataLoader) -> dict[str, float]:
     num_samples = metrics.pop("val/num_samples")
     return jax.tree_util.tree_map(lambda x: x / num_samples, metrics)
 
-"""
+
 def main(configs):
     """
     if jax.process_index() == 0:
