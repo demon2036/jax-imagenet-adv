@@ -25,7 +25,7 @@ eval "$(~/miniconda3/bin/conda shell.bash hook)"
 # 2. Install requirements.
 pip install  jax[tpu]==0.4.31 -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
 
-pip install  torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+#pip install  torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 #orbax-checkpoint
 #pip install  flax==0.9.0
 #pip install einops gcsfs tensorflow matplotlib diffusers
