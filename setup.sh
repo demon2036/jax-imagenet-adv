@@ -28,8 +28,9 @@ pip install -U jax[tpu] -f https://storage.googleapis.com/jax-releases/libtpu_re
 pip install -U torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 pip install -U flax
 pip install -U webdataset timm wandb
+pip install einops gcsfs tensorflow matplotlib diffusers
 #pip install -U flax optax
-#pip install einops gcsfs tensorflow matplotlib diffusers
+
 #
 ## 3. Install Pillow-SIMD.
 #conda install -c conda-forge -y libjpeg-turbo
