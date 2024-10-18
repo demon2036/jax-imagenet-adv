@@ -24,7 +24,7 @@ jax.config.update('jax_platform_name', 'tpu')
 
 
 
-jax.distributed.initialize()
+jax.distributed.initialize(initialization_timeout=1000)
 print(jax.devices())
 from utils import AverageMeter, read_yaml, preprocess_config
 
