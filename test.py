@@ -62,7 +62,7 @@ def evaluate(state: TrainState, dataloader: DataLoader) -> dict[str, float]:
 
 
 def main(configs):
-    """
+
     if jax.process_index() == 0:
         wandb.init(name=configs['name'], project=configs['project'], config=configs)
 
@@ -81,7 +81,7 @@ def main(configs):
     output_dir = configs['output_dir']
     filename = os.path.join(output_dir, f"{name}-{postfix}")
     print(filename)
-
+    """
     if 'resume' in configs:
         state = checkpointer.restore(filename, item=ckpt)['model']
         init_step = state.step + 1
