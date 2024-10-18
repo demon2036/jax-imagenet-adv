@@ -34,7 +34,7 @@ from training import TrainState
 from training_standard import training_step,validation_step
 from utils import AverageMeter, read_yaml, preprocess_config
 
-
+jax.distributed.initialize()
 
 
 def evaluate(state: TrainState, dataloader: DataLoader) -> dict[str, float]:
@@ -183,7 +183,6 @@ if __name__ == "__main__":
     # parser.add_argument("--ipaddr")
     # parser.add_argument("--hostname")
     # parser.add_argument("--output-dir", default=".")
-    # jax.distributed.initialize()
     # main(parser.parse_args())
     args=parser.parse_args()
     yaml = read_yaml(args.yaml_path)
