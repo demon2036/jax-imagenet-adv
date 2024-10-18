@@ -19,8 +19,8 @@ import argparse
 import os
 
 import jax
-
-
+jax.config.update('jax_platform_name', 'tpu')
+print(jax.devices())
 
 
 
