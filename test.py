@@ -25,7 +25,7 @@ import jax
 
 
 jax.distributed.initialize()
-
+from utils import AverageMeter, read_yaml, preprocess_config
 """
 
 
@@ -44,7 +44,7 @@ from test_dataset_fork import create_dataloaders
 from test_state import create_train_state
 from training import TrainState
 from training_standard import training_step,validation_step
-from utils import AverageMeter, read_yaml, preprocess_config
+
 
 
 
