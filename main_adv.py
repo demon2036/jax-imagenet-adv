@@ -63,7 +63,7 @@ def main(configs):
     eval_interval = configs['steps'] * configs['eval_epoch'] // configs['dataset']['train_batch_size']
     log_interval = configs['log_interval']
 
-    state = create_train_state(configs['train_state'], warmup_steps=warmup_steps,
+    state = create_train_state(configs['train_state'], warmup_steps=warmup_steps,image_size=configs['dataset']['image_size'],
                                training_steps=training_steps)
 
     checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
