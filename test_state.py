@@ -51,7 +51,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     pretrained_ckpt=train_state_config.pop('pretrained_ckpt',None)
 
     model = get_obj_from_str(model_config['target'])(**model_config['model_kwargs'])
-
+    print(image_size)
     train_module = get_obj_from_str(train_module_config.pop('target'))  #(**model_config['model_kwargs'])
 
     module = train_module(
