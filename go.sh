@@ -8,7 +8,7 @@ for script in "${SCRIPT_PATHS[@]}"; do
 
        source ~/miniconda3/bin/activate base;
 
-       python3
+
 
 #    echo " $script"
 #    pkill -9 -f python
