@@ -37,6 +37,7 @@ pip install -U torch torchvision torchaudio --index-url https://download.pytorch
 pip install -U webdataset timm wandb
 pip install einops gcsfs tensorflow
 pip install "flax[all]"
+pip install -U jax[tpu] -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
 #pip install -U flax optax
 
 #
