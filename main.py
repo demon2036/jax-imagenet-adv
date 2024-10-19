@@ -85,8 +85,8 @@ def main(configs):
     # for step in tqdm.trange(init_step, training_steps + 1, dynamic_ncols=True):
         for _ in range(1):
             batch = shard(jax.tree_util.tree_map(np.asarray, next(train_dataloader_iter)))
-            state, metrics = training_step(state, batch)
-            average_meter.update(**unreplicate(metrics))
+            # state, metrics = training_step(state, batch)
+            # average_meter.update(**unreplicate(metrics))
 
         if (
                 jax.process_index() == 0
