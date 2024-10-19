@@ -200,6 +200,7 @@ if __name__ == "__main__":
     # while True:
     #     pass
 
+    jax.distributed.shutdown()
     jax.distributed.initialize()
 
 
