@@ -60,7 +60,7 @@ def main(configs):
 
     state = create_train_state(configs['train_state'], warmup_steps=warmup_steps,
                                training_steps=training_steps)
-
+    """
     checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
     ckpt = {'model': state}
     postfix = "ema"
@@ -68,7 +68,7 @@ def main(configs):
     output_dir = configs['output_dir']
     filename = os.path.join(output_dir, f"{name}-{postfix}")
     print(filename)
-
+    """
     if 'resume' in configs:
         state = checkpointer.restore(filename, item=ckpt)['model']
         init_step = state.step + 1
@@ -183,7 +183,7 @@ if __name__ == "__main__":
     # parser.add_argument("--ipaddr")
     # parser.add_argument("--hostname")
     # parser.add_argument("--output-dir", default=".")
-    jax.distributed.initialize()
+    # jax.distributed.initialize()
     # main(parser.parse_args())
     args=parser.parse_args()
     yaml = read_yaml(args.yaml_path)
