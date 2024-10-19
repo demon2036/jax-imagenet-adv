@@ -18,5 +18,5 @@ import jax
 
 
 
-jax.distributed.initialize(initialization_timeout=10000)
-print(jax.devices())
+# jax.distributed.initialize(initialization_timeout=10000)
+# print(jax.devices())
