@@ -27,7 +27,7 @@ dataset:
   image_size: 224
   generated_dataset_shards:
     ['$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..12799}.tar']
-  dataset_mix_ratio: 0.9
+  dataset_mix_ratio: 0.0
 
 
 train_state:
