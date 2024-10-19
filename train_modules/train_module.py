@@ -132,11 +132,11 @@ class TrainAdvModule(nn.Module):
             return {"loss": loss_ce+7*trade_loss, "loss_ce":loss_ce,"trade_loss":trade_loss,    "acc1": accs[:, 0], "acc5": accs.any(-1)}
         else:
 
-            if use_pgd:
-                images = pgd_attack(images, labels, self.model, key=self.make_rng('adv'),
-                                    step_size=self.train_adv_step_size, #if train else self.test_adv_step_size ,
-                                    maxiter=self.train_adv_step #if train else self.test_adv_step
-                )
+            # if use_pgd:
+            #     images = pgd_attack(images, labels, self.model, key=self.make_rng('adv'),
+            #                         step_size=self.train_adv_step_size, #if train else self.test_adv_step_size ,
+            #                         maxiter=self.train_adv_step #if train else self.test_adv_step
+            #     )
 
             loss = self.criterion((logits := self.model(images, det=det)), labels)
             labels = labels == labels.max(-1, keepdims=True)
