@@ -28,9 +28,7 @@ jax.distributed.initialize(initialization_timeout=1000)
 print(jax.devices())
 from utils import AverageMeter, read_yaml, preprocess_config
 
-
-
-
+"""
 
 import numpy as np
 import orbax.checkpoint as ocp
@@ -81,7 +79,7 @@ def main(configs):
     output_dir = configs['output_dir']
     filename = os.path.join(output_dir, f"{name}-{postfix}")
     print(filename)
-    """
+  
     if 'resume' in configs:
         state = checkpointer.restore(filename, item=ckpt)['model']
         init_step = state.step + 1
