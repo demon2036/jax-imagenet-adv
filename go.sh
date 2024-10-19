@@ -13,6 +13,6 @@ for script in "${SCRIPT_PATHS[@]}"; do
 #    source ~/miniconda3/bin/activate base;
 #    python -u main_adv.py --yaml-path $script
 #    python -u main.py --yaml-path $script
-    python -u test.py #--yaml-path $script
+    python -u test.py --yaml-path $script
 
 done
