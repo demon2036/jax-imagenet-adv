@@ -19,13 +19,13 @@ import argparse
 import os
 
 import jax
-jax.config.update('jax_platform_name', 'tpu')
+# jax.config.update('jax_platform_name', 'tpu')
 
 
-
+print(jax.devices())
 
 jax.distributed.initialize(initialization_timeout=1000)
-print(jax.devices())
+
 from utils import AverageMeter, read_yaml, preprocess_config
 
 """
