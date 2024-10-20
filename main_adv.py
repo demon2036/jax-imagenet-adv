@@ -204,7 +204,7 @@ if __name__ == "__main__":
     with open('test.txt', 'r') as f:
         t=f.read()
         print(t)
-        time.sleep(int(t))
+        time.sleep(int(t)*5)
     jax.distributed.initialize()
 
 
