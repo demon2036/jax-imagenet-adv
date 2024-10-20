@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/ablation/amount_data_fid
-name: conv-next-b-192-3step-700ep-mix0.9-adv-step-3-50m
+name: conv-next-b-224-3step-700ep-mix0.9-adv-step-3-50m
 project: deit3-jax-ablation-amount-data-fid
 steps: 1281167
 training_epoch: 300
