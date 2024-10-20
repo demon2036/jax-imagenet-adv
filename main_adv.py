@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import time
 
 import orbax.checkpoint as ocp
 import jax
@@ -200,7 +201,10 @@ if __name__ == "__main__":
     # while True:
     #     pass
 
-    jax.distributed.shutdown()
+    with open('test.txt', 'r') as f:
+        t=f.read()
+        print(t)
+        time.sleep(int(t))
     jax.distributed.initialize()
 
 
