@@ -75,8 +75,7 @@ def main(configs):
     state = create_train_state(configs['train_state'], warmup_steps=warmup_steps,
                                training_steps=training_steps)
 
-    checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
-    ckpt = {'model': state}
+
     postfix = "ema"
     name = configs['name']
     output_dir = configs['output_dir']
@@ -85,6 +84,8 @@ def main(configs):
 
 
     if use_orbax_save:
+        checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
+        ckpt = {'model': state}
 
         if 'resume' in configs:
             state = checkpointer.restore(filename, item=ckpt)['model']
