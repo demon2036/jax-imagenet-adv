@@ -56,13 +56,21 @@ def evaluate(state: TrainState, dataloader: DataLoader) -> dict[str, float]:
 
 def main(configs):
 
-    if jax.process_index() == 0:
-        wandb.init(name=configs['name'], project=configs['project'], config=configs)
-
     training_steps = configs['steps'] * configs['training_epoch'] // configs['dataset']['train_batch_size']
     warmup_steps = configs['steps'] * configs['warmup_epoch'] // configs['dataset']['train_batch_size']
     eval_interval = configs['steps'] * configs['eval_epoch'] // configs['dataset']['train_batch_size']
     log_interval = configs['log_interval']
+
+    use_orbax_save=configs.pop('use_orbax_save',True)
+    if use_orbax_save:
+        jax.distributed.initialize()
+
+
+    if jax.process_index() == 0:
+        wandb.init(name=configs['name'], project=configs['project'], config=configs)
+
+
+
 
     state = create_train_state(configs['train_state'], warmup_steps=warmup_steps,
                                training_steps=training_steps)
@@ -75,10 +83,15 @@ def main(configs):
     filename = os.path.join(output_dir, f"{name}-{postfix}")
     print(filename)
 
-    if 'resume' in configs:
-        state = checkpointer.restore(filename, item=ckpt)['model']
-        init_step = state.step + 1
-        del ckpt
+
+    if use_orbax_save:
+
+        if 'resume' in configs:
+            state = checkpointer.restore(filename, item=ckpt)['model']
+            init_step = state.step + 1
+            del ckpt
+        else:
+            init_step = 1
     else:
         init_step = 1
 
@@ -113,9 +126,14 @@ def main(configs):
             metrics = evaluate(state, valid_dataloader)
 
             if metrics["val/advacc1"] > max_val_acc1:
-                ckpt = {'model': jax.device_get(jax.tree_util.tree_map(lambda x: x[0], state))}
-                save_args = orbax_utils.save_args_from_target(ckpt)
-                checkpointer.save(filename, ckpt, save_args=save_args, force=True)
+                if use_orbax_save:
+                    ckpt = {'model': jax.device_get(jax.tree_util.tree_map(lambda x: x[0], state))}
+                    save_args = orbax_utils.save_args_from_target(ckpt)
+                    checkpointer.save(filename, ckpt, save_args=save_args, force=True)
+                else:
+                    if jax.process_index() == 0:
+                        params_bytes = msgpack_serialize(unreplicate(state.params))
+                        save_checkpoint_in_background(filename, params_bytes, postfix="last")
 
                 max_val_acc1 = metrics["val/advacc1"]
                 # save_checkpoint_in_background(args, params_bytes, postfix="best")
@@ -201,7 +219,7 @@ if __name__ == "__main__":
     # while True:
     #     pass
 
-    jax.distributed.initialize()
+
 
 
     main(yaml)

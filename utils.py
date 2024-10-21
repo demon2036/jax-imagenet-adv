@@ -55,10 +55,10 @@ class AverageMeter:
 
 
 def save_checkpoint_in_background(
-        args: argparse.Namespace, params_bytes: bytes, postfix: str = "last"
+        filename, params_bytes: bytes, postfix: str = "ema"
 ):
+    filename = f"{filename}-{postfix}.msgpack"
     def thread_fn():
-        filename = os.path.join(args.output_dir, f"{args.name}-{postfix}.msgpack")
         with wds.gopen(filename, "wb") as fp:
             fp.write(params_bytes)
 
