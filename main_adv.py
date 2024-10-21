@@ -133,7 +133,7 @@ def main(configs):
                     checkpointer.save(filename, ckpt, save_args=save_args, force=True)
                 else:
                     if jax.process_index() == 0:
-                        params_bytes = msgpack_serialize(unreplicate(state.params))
+                        params_bytes = msgpack_serialize(unreplicate(state.ema_params))
                         save_checkpoint_in_background(filename, params_bytes, postfix="last")
 
                 max_val_acc1 = metrics["val/advacc1"]
