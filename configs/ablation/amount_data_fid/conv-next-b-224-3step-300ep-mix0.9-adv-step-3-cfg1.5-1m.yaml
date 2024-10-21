@@ -6,7 +6,7 @@ steps: 1281167
 training_epoch: 300
 warmup_epoch: 20
 log_interval: 100
-eval_epoch: 1
+eval_epoch: 10
 use_orbax_save: False
 #resume: True
 
