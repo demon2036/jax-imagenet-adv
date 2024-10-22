@@ -145,8 +145,8 @@ def main(configs):
                     wandb.log(metrics, step)
             except Exception as e:
                 print(e)
-
-    checkpointer.wait_until_finished()
+    if use_orbax_save:
+        checkpointer.wait_until_finished()
 
 
 if __name__ == "__main__":
