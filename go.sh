@@ -9,7 +9,7 @@ for script in "${SCRIPT_PATHS[@]}"; do
     pkill -9 -f python
     sudo rm /tmp/libtpu_lockfile
     source ~/miniconda3/bin/activate base;
-#    python -u test.py
-    python -u main_adv.py --yaml-path $script
+    python -u test.py
+#    python -u main_adv.py --yaml-path $script
 
 done
