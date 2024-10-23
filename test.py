@@ -1,5 +1,10 @@
+import time
+from os import times
+
 import jax
 
 
 jax.distributed.initialize()
-print(1)
+for i in range(10):
+    time.sleep(1)
+    print(i)
