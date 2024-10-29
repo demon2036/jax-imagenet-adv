@@ -39,6 +39,7 @@ class TrainState(train_state.TrainState):
 
     ema_params: Any = None
     ema_decay: float = 0.9998
+    use_pgd:bool =False
 
     def split_rngs(self) -> tuple[ArrayTree, ArrayTree]:
         mixup_rng, new_mixup_rng = jax.random.split(self.mixup_rng)
@@ -59,7 +60,8 @@ class TrainState(train_state.TrainState):
 @partial(jax.pmap, axis_name="batch", donate_argnums=0)
 def training_step(state: TrainState, batch: ArrayTree) -> tuple[TrainState, ArrayTree]:
     def loss_fn(params: ArrayTree) -> ArrayTree:
-        use_pgd=True
+        # use_pgd=True
+        use_pgd = state.use_pgd
         metrics = state.apply_fn({"params": params}, *batch, det=False, rngs=rngs,use_trade=not use_pgd,use_pgd=use_pgd,)
         metrics = jax.tree_map(jnp.mean, metrics)
         return metrics["loss"], metrics
