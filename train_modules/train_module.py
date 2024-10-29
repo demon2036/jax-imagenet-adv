@@ -101,7 +101,7 @@ class TrainAdvModule(nn.Module):
     # test_adv_step_size: float = 1 / 255
 
     eps: float = 4 / 255
-
+    use_pgd: bool = False
 
     def __call__(self, images: Array, labels: Array, det: bool = True, use_pgd=True,use_trade=False,train=False) -> ArrayTree:
         # Normalize the pixel values in TPU devices, instead of copying the normalized
