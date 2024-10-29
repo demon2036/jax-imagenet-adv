@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/ablation/trades
-name: conv-next-b-192-3step-700ep-mix0.9-adv-step-3-rand-ft-224-30ep
+name: conv-next-b-192-3step-700ep-mix0.9-adv-step-3-rand-trades-ft-224-30ep-trades
 project: deit3-jax-ablation-augment-strategies
 steps: 1281167
 training_epoch: 30
@@ -68,7 +68,7 @@ train_state:
   mixup_seed: 1
   dropout_seed: 1
   ema_decay: 0.9999
-  pretrained_ckpt: 'gs://brid-center-2b/ablation/augment_strategies/conv-next-b-192-3step-700ep-mix0.9-adv-step-3-rand-ema'
+  pretrained_ckpt: 'gs://brid-center-2b/ablation/trades/conv-next-b-192-3step-700ep-mix0.9-adv-step-3-rand-trades-ema'
 
 
 
