@@ -1,12 +1,12 @@
 
 output_dir: $GCS_MODEL_DIR/ablation/trades
-name: conv-next-l-192-3step-700ep-mix0.9-adv-step-3-rand-mix0.9-trades
+name: conv-next-l-192-3step-700ep-mix0.9-adv-step-3-rand-trades-ft-224-30ep-trades
 project: deit3-jax-ablation-augment-strategies
 steps: 1281167
-training_epoch: 700
-warmup_epoch: 20
+training_epoch: 30
+warmup_epoch: 10
 log_interval: 100
-eval_epoch: 10
+eval_epoch: 5
 #resume: True
 
 dataset:
@@ -16,31 +16,32 @@ dataset:
   valid_loader_workers: 10
   train_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-train-{0000..1023}.tar"
   valid_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-validation-{00..63}.tar"
-  random_crop: src
+  random_crop: rrc
   color_jitter: 0.0
-  auto_augment: "rand-m9-mstd0.5-inc1"
+  auto_augment: "none"
   random_erasing: 0.0
-  auto_generated_augment: "rand-m9-mstd0.5-inc1"
+  auto_generated_augment: "none"
   color_generated_jitter: 0.0
   random_generated_erasing: 0.0
   augment_repeats: 3
   test_crop_ratio: 0.875
   shuffle_seed: 1
-  image_size: 192
+  image_size: 224
   generated_dataset_shards:
-    ['$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..12799}.tar']
-  dataset_mix_ratio: 0.9
+    ['$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.5-eta0.0/shards-{00000..12799}.tar','$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..12799}.tar']
+  dataset_mix_ratio: 0.0
 
 
 train_state:
   train_module:
     target: 'train_modules.TrainAdvModule'
-    mixup: 0.0
-    cutmix: 0.0
+    mixup: 0.8
+    cutmix: 1.0
     criterion: ce
     label_smoothing: 0.1
-    train_adv_step: 3
-    train_adv_step_size: 4/3 / 255
+    train_adv_step:  10
+    train_adv_step_size:  1 / 255
+    use_pgd: False
 
 
   model:
@@ -55,8 +56,8 @@ train_state:
   optimizer:
     target: 'adamw'
     optimizer_kwargs:
-      learning_rate: 0.004
-      weight_decay: 0.05
+      learning_rate: 0.0004
+      weight_decay: 1.0e-8
       b1: 0.9
       b2: 0.999
 #      eps: 1.0e-8
@@ -66,8 +67,8 @@ train_state:
   init_seed: 1
   mixup_seed: 1
   dropout_seed: 1
-  ema_decay: 0.9998
-  pretrained_ckpt: 'convnext_large.fb_in1k'
+  ema_decay: 0.9999
+  pretrained_ckpt: 'gs://roger-center-2b/ablation/trades/conv-next-l-192-3step-700ep-mix0.9-adv-step-3-rand-trades-ema'
 
 
 
