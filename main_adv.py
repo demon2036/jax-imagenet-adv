@@ -19,6 +19,7 @@ import argparse
 import os
 import time
 
+import flax.jax_utils
 import orbax.checkpoint as ocp
 import jax
 import numpy as np
@@ -28,6 +29,7 @@ from flax.jax_utils import unreplicate
 from flax.serialization import msgpack_serialize
 from flax.training import orbax_utils
 from flax.training.common_utils import shard
+from torch.nn.parallel import replicate
 from torch.utils.data import DataLoader
 
 from test_dataset_fork import create_dataloaders
@@ -62,6 +64,10 @@ def main(configs):
     log_interval = configs['log_interval']
 
     use_orbax_save=configs.pop('use_orbax_save',True)
+    use_pgd = configs.pop('use_pgd', True)
+    use_pgd=flax.jax_utils.replicate(jax.numpy.array(use_pgd))
+
+
     if use_orbax_save:
         jax.distributed.initialize()
 
@@ -106,7 +112,7 @@ def main(configs):
     # for step in tqdm.trange(init_step, training_steps + 1, dynamic_ncols=True):
         for _ in range(1):
             batch = shard(jax.tree_util.tree_map(np.asarray, next(train_dataloader_iter)))
-            state, metrics = training_step(state, batch)
+            state, metrics = training_step(state, batch,use_pgd)
             average_meter.update(**unreplicate(metrics))
 
         if (
