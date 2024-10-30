@@ -69,7 +69,7 @@ def main(configs):
         jax.distributed.initialize()
 
     use_pgd = configs.pop('use_pgd', True)
-    use_pgd=flax.jax_utils.replicate(jax.numpy.array(use_pgd))
+    # use_pgd=flax.jax_utils.replicate(jax.numpy.array(use_pgd))
 
 
 
