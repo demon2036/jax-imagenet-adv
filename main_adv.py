@@ -66,7 +66,7 @@ def main(configs):
     use_orbax_save=configs.pop('use_orbax_save',True)
     use_pgd = configs.pop('use_pgd', True)
     use_pgd=flax.jax_utils.replicate(jax.numpy.array(use_pgd))
-
+    print(use_orbax_save)
 
     if use_orbax_save:
         jax.distributed.initialize()
