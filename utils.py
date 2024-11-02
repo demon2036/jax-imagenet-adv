@@ -244,22 +244,8 @@ def replace_env_variables(text):
 
 
 def preprocess_config(yaml):
-    # yaml['dataset']['train_dataset_shards'] = yaml['dataset']['train_dataset_shards'].replace("$GCS_DATASET_DIR",
-    #                                                                                           os.environ.get(
-    #                                                                                               'GCS_DATASET_DIR',
-    #                                                                                               ''))
-    #
-    # yaml['dataset']['valid_dataset_shards'] = yaml['dataset']['valid_dataset_shards'].replace("$GCS_DATASET_DIR",
-    #                                                                                           os.environ.get(
-    #                                                                                               'GCS_DATASET_DIR',
-    #                                                                                               ''))
-    # yaml['output_dir'] = yaml['output_dir'].replace("$GCS_MODEL_DIR",
-    #                                                 os.environ.get(
-    #                                                     'GCS_DATASET_DIR',
-    #                                                     ''))
 
     yaml=jax.tree_util.tree_map(replace_env_variables,yaml)
-
 
 
 
