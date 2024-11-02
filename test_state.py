@@ -120,7 +120,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         decay_steps=training_steps,
         end_value=end_lr,
     )
-
+    print(train_state_config)
     state= TrainState.create(
         apply_fn=module.apply,
         params=params,
