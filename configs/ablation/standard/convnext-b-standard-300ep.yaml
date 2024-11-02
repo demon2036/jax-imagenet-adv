@@ -56,12 +56,12 @@ train_state:
 #      eps: 1.0e-8
 #      lr_decay: 1.0
 #      clip_grad: 0.0
-
+  ema_decay: 0.9998
+  pretrained_ckpt: 'convnext_base.fb_in1k'
   init_seed: 1
   mixup_seed: 1
   dropout_seed: 1
-  ema_decay: 0.9998
-  pretrained_ckpt: 'convnext_base.fb_in1k'
+
 
 
 
