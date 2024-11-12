@@ -39,7 +39,7 @@ train_state:
 
 
   model:
-    target: 'models.ConvNeXt'
+    target: 'models.ViT'
     model_kwargs:
       dim: 384
       heads: 6
