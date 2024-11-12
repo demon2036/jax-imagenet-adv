@@ -7,7 +7,7 @@ training_epoch: 600
 warmup_epoch: 20
 log_interval: 100
 eval_epoch: 10
-resume: True
+#resume: True
 
 dataset:
   train_batch_size: 4096
@@ -35,8 +35,8 @@ dataset:
 train_state:
   train_module:
     target: 'train_modules.TrainAdvModule'
-    mixup: 0.0
-    cutmix: 0.0
+    mixup: 0.8
+    cutmix: 1.0
     criterion: ce
     label_smoothing: 0.1
     train_adv_step: 3
