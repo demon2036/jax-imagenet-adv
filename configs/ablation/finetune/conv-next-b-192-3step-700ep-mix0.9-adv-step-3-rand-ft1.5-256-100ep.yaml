@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/ablation/finetune
-name: conv-next-b-192-3step-700ep-mix0.9-adv-step-3-rand-ft-224-30ep
+name: conv-next-b-192-3step-700ep-mix0.9-adv-step-3-rand-ft1.5-256-100ep
 project: deit3-jax-ablation-finetune
 steps: 1281167
 training_epoch: 100
@@ -39,8 +39,8 @@ train_state:
     cutmix: 1.0
     criterion: ce
     label_smoothing: 0.1
-    train_adv_step:  10
-    train_adv_step_size:  1 / 255
+    train_adv_step:  3
+    train_adv_step_size:  4/3 / 255
 
 
   model:
