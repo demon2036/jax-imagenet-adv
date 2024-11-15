@@ -123,7 +123,7 @@ class TrainAdvModule(nn.Module):
             logits_natural = self.model(images)
             x_adv = trade_lse(images, self.model, key=self.make_rng('adv'),
                               step_size=self.train_adv_step_size,  # if train else self.test_adv_step_size ,
-                              maxiter=self.train_adv_step,logits=logits_natural  # if train else self.test_adv_step
+                              maxiter=self.train_adv_step,logits=jax.lax.stop_gradient(logits_natural)  # if train else self.test_adv_step
                               )
 
             logits_adv = self.model(x_adv)
