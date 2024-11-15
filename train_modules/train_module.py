@@ -83,6 +83,7 @@ class TrainModule(nn.Module):
 
 
 class TrainAdvModule(nn.Module):
+    beta: float
     model: Any
     mixup: Mixup
     label_smoothing: float = 0.0
@@ -103,7 +104,7 @@ class TrainAdvModule(nn.Module):
     eps: float = 4 / 255
     use_pgd: bool = False
 
-    beta: float
+
 
     def __call__(self, images: Array, labels: Array, det: bool = True, use_pgd=True, use_trade=False,
                  train=False) -> ArrayTree:
