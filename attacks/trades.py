@@ -54,8 +54,7 @@ def trade(image, model, epsilon=4/255, maxiter=3, step_size=4/3/255, key=None):
 
 
 
-def trade_lse(image, model, epsilon=4/255, maxiter=3, step_size=4/3/255, key=None):
-    logits = jax.lax.stop_gradient(model(image))
+def trade_lse(image, model, epsilon=4/255, maxiter=3, step_size=4/3/255, key=None,logits=None):
 
     # x_adv = 0.001 * jax.random.normal(key, shape=image.shape) + image
 

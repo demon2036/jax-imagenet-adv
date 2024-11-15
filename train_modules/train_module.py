@@ -120,11 +120,12 @@ class TrainAdvModule(nn.Module):
             images, labels = self.mixup(images, labels)
 
         if use_trade:
+            logits_natural = self.model(images)
             x_adv = trade_lse(images, self.model, key=self.make_rng('adv'),
                               step_size=self.train_adv_step_size,  # if train else self.test_adv_step_size ,
-                              maxiter=self.train_adv_step  # if train else self.test_adv_step
+                              maxiter=self.train_adv_step,logits=logits_natural  # if train else self.test_adv_step
                               )
-            logits_natural = self.model(images)
+
             logits_adv = self.model(x_adv)
 
             loss_natural = jnp.sum((logits_natural - labels) ** 2, axis=-1)
