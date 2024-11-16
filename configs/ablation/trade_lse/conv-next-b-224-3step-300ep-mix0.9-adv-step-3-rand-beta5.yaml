@@ -39,7 +39,7 @@ train_state:
     mixup: 0.0
     cutmix: 0.0
     criterion: ce
-    label_smoothing: 0.1
+    label_smoothing: 0.0
     train_adv_step: 3
     train_adv_step_size: 4/3 / 255
 
