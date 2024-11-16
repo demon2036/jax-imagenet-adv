@@ -65,7 +65,7 @@ def trade_lse(image, model, epsilon=4/255, maxiter=3, step_size=4/3/255, key=Non
     #     return loss_fun_trade(state, (image, adv_image, label))
 
     def adversarial_loss(adv_image, logits):
-        logits_adv = model(adv_image)
+        logits_adv = nn.softmax(model(adv_image),axis=1)
         return jnp.sum((logits_adv-logits)**2)
 
 

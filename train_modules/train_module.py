@@ -123,13 +123,13 @@ class TrainAdvModule(nn.Module):
 
 
 
-            logits_natural = self.model(images)
+            logits_natural = nn.softmax(self.model(images),axis=1)
             x_adv = trade_lse(images, self.model, key=self.make_rng('adv'),
                               step_size=self.train_adv_step_size,  # if train else self.test_adv_step_size ,
                               maxiter=self.train_adv_step,logits=jax.lax.stop_gradient(logits_natural)  # if train else self.test_adv_step
                               )
 
-            logits_adv = self.model(x_adv)
+            logits_adv = nn.softmax(self.model(x_adv),axis=1)
 
             loss_natural = jnp.sum((logits_natural - labels) ** 2, axis=-1)
             loss_robust = jnp.sum((logits_adv - logits_natural) ** 2, axis=-1)
