@@ -120,6 +120,9 @@ class TrainAdvModule(nn.Module):
             images, labels = self.mixup(images, labels)
 
         if use_trade:
+
+            print(1)
+
             logits_natural = self.model(images)
             x_adv = trade_lse(images, self.model, key=self.make_rng('adv'),
                               step_size=self.train_adv_step_size,  # if train else self.test_adv_step_size ,
@@ -137,7 +140,7 @@ class TrainAdvModule(nn.Module):
             #
             preds = jax.lax.top_k(loss_robust, k=5)[1]
             accs = jnp.take_along_axis(labels, preds, axis=-1)
-            return {"loss": loss, "acc1": accs[:, 0], "acc5": accs.any(-1)}
+            return {"loss": loss, "acc1": accs[:, 0], "acc5": accs.any(-1),'loss_natural':loss_natural.mean(),'loss_robust':loss_robust.mean()}
 
 
         elif use_trade:

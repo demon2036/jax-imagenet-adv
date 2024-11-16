@@ -42,7 +42,7 @@ train_state:
     train_adv_step: 3
     train_adv_step_size: 4/3 / 255
     use_pgd: False
-    beta: 8
+    beta: 80
 
   model:
     target: 'models.ConvNeXt'
