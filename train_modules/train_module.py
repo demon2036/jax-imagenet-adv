@@ -138,7 +138,7 @@ class TrainAdvModule(nn.Module):
 
             labels = labels == labels.max(-1, keepdims=True)
             #
-            preds = jax.lax.top_k(loss_robust, k=5)[1]
+            preds = jax.lax.top_k(logits_adv, k=5)[1]
             accs = jnp.take_along_axis(labels, preds, axis=-1)
             return {"loss": loss, "acc1": accs[:, 0], "acc5": accs.any(-1),'loss_natural':loss_natural.mean(),'loss_robust':loss_robust.mean()}
 
