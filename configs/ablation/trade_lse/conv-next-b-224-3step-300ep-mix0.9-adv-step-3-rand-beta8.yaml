@@ -7,6 +7,7 @@ training_epoch: 300
 warmup_epoch: 20
 log_interval: 100
 eval_epoch: 10
+use_pgd: False
 #resume: True
 
 dataset:
@@ -41,8 +42,8 @@ train_state:
     label_smoothing: 0.1
     train_adv_step: 3
     train_adv_step_size: 4/3 / 255
-    use_pgd: False
-    beta: 80
+
+    beta: 8
 
   model:
     target: 'models.ConvNeXt'
