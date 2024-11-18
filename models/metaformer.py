@@ -48,7 +48,6 @@ class Stem(nn.Module):
             padding=((2, 2), (2, 2)),
             name='conv'
         )(x)
-        print(self.out_channels)
         if self.norm_layer:
             x = self.norm_layer(name='norm')(x)
         return x
