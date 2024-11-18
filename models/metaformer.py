@@ -9,7 +9,7 @@ from functools import partial
 from pre_define import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 from .layers import Mlp, DropPath
 
-use_fast_variance = False
+use_fast_variance = True
 
 
 import flax.linen as nn
