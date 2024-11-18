@@ -6,7 +6,7 @@ from flax import linen as nn
 import jax.numpy as jnp
 from functools import partial
 
-from layers import Mlp, DropPath
+from .layers import Mlp, DropPath
 
 use_fast_variance = False
 
