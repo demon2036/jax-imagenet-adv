@@ -320,6 +320,7 @@ class MetaFormer(nn.Module):
     """
     in_chans: int = 3
     num_classes: int = 1000
+    labels: int = 1000
     global_pool: str = 'avg'
     depths: Sequence[int] = (2, 2, 6, 2)
     dims: Sequence[int] = (64, 128, 320, 512)
