@@ -60,6 +60,7 @@ train_state:
   init_seed: 1
   mixup_seed: 1
   dropout_seed: 1
+  ema_decay: 0.9998
   pretrained_ckpt: 'convformer_b36.sail_in1k'
 
 
