@@ -338,6 +338,7 @@ class MetaFormer(nn.Module):
 
     @nn.compact
     def __call__(self, x,det=True):
+        x = (x - IMAGENET_DEFAULT_MEAN) / IMAGENET_DEFAULT_STD
         # Convert input parameters to appropriate format if needed
         depths = list(self.depths)
         dims = list(self.dims)
