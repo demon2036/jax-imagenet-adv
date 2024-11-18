@@ -166,7 +166,7 @@ if __name__ == "__main__":
     # jax.distributed.initialize()
     # main(parser.parse_args())
     jax.distributed.initialize()
-    yaml = read_yaml('configs/convformer-b36.yaml.yaml')
+    yaml = read_yaml('configs/convformer-b36.yaml')
     yaml = preprocess_config(yaml)
 
     main(yaml)
