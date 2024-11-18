@@ -12,9 +12,9 @@ from training import TrainState
 from utils import read_yaml, get_obj_from_str, Mixup, preprocess_config
 import os
 import jax.numpy as jnp
-from convert_model_pytorch import convert_torch_to_flax_conv_next
+from convert_model_pytorch import convert_torch_to_flax_conv_next,convert_torch_to_flax_meta_former
 import orbax.checkpoint as ocp
-
+from timm.models import MetaFormer,ConvNeXt
 
 def load_pretrained_params(pretrained_ckpt):
     checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
@@ -32,7 +32,15 @@ def load_pretrain(pretrained_model='convnext_base.fb_in1k',default_params=None):
     model_torch = timm.create_model(pretrained_model, pretrained=True)
     params = {k: v.numpy() for k, v in model_torch.state_dict().items()}
     params = flax.traverse_util.unflatten_dict(params, sep=".")
-    model_jax_params = convert_torch_to_flax_conv_next(params, sep='',default_params=default_params)
+
+    if isinstance(model_torch,ConvNeXt):
+
+        model_jax_params = convert_torch_to_flax_conv_next(params, sep='',default_params=default_params)
+    elif isinstance(model_torch,MetaFormer):
+        model_jax_params = convert_torch_to_flax_meta_former(params, sep='', )
+    else:
+        raise NotImplemented()
+
     model_jax_params=jax.tree_util.tree_map(jnp.asarray,model_jax_params)
     return {'model':model_jax_params}
 

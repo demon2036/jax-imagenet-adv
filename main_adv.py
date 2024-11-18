@@ -78,8 +78,6 @@ def main(configs):
         wandb.init(name=configs['name'], project=configs['project'], config=configs)
 
 
-
-
     state = create_train_state(configs['train_state'], warmup_steps=warmup_steps,
                                training_steps=training_steps)
 
