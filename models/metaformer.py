@@ -338,7 +338,7 @@ class MetaFormer(nn.Module):
     use_mlp_head: bool = True
 
     @nn.compact
-    def __call__(self, x):
+    def __call__(self, x,det=True):
         # Convert input parameters to appropriate format if needed
         depths = list(self.depths)
         dims = list(self.dims)
