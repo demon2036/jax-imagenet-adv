@@ -1,13 +1,12 @@
 from dataclasses import field
-from typing import Callable, Optional, Sequence, List, Union
-
-import numpy as np
-from flax import linen as nn
-import jax.numpy as jnp
 from functools import partial
+from typing import Callable, Optional, Sequence, Union
 
-from pre_define import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
-from .layers import Mlp, DropPath, Dense, Conv
+import einops
+import numpy as np
+
+# from pre_define import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
+from layers import Mlp, DropPath, Dense, Conv
 
 use_fast_variance = True
 
@@ -102,6 +101,18 @@ class Scale(nn.Module):
         return x * scale
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 class SepConv(nn.Module):
     """
     Flax implementation of Inverted Separable Convolution (MobileNetV2 style).
@@ -141,6 +152,48 @@ class SepConv(nn.Module):
         )(x)
 
         return pwconv2
+
+
+class Attention(nn.Module):
+    dim: int
+    head_dim: int = 32
+    num_heads: int = None
+    qkv_bias: bool = False
+    attn_drop: float = 0.0
+    proj_drop: float = 0.0
+    proj_bias: bool = False
+    fused_attn: bool = False  # Assume the use_fused_attn() logic will be passed explicitly
+
+    @nn.compact
+    def __call__(self, x,det=True):
+        B, N, C = x.shape
+        head_dim = self.head_dim
+        num_heads = self.num_heads or C // head_dim
+        num_heads = max(1, num_heads)
+        attention_dim = num_heads * head_dim
+        scale = head_dim ** -0.5
+
+        qkv = nn.Dense(attention_dim * 3, use_bias=self.qkv_bias, name="qkv")(x)
+        qkv = qkv.reshape(B, N, 3, num_heads, head_dim).transpose((2, 0, 3, 1, 4))
+        q, k, v = qkv[0], qkv[1], qkv[2]
+
+        if self.fused_attn:
+            attn_weights = jnp.einsum("...nd,...md->...nm", q, k) * scale
+            attn_weights = nn.softmax(attn_weights, axis=-1)
+            x = jnp.einsum("...nm,...md->...nd", attn_weights, v)
+        else:
+            attn = jnp.einsum("...nd,...md->...nm", q, k) * scale
+            attn = nn.softmax(attn, axis=-1)
+            x = jnp.einsum("...nm,...md->...nd", attn, v)
+
+        x = x.transpose((0, 2, 1, 3)).reshape(B, N, C)
+        x = nn.Dense(C, use_bias=self.proj_bias, name="proj")(x)
+        x = nn.Dropout(self.proj_drop)(x, deterministic=det)
+
+        # print(B,N,C,x.shape)
+
+        return x
+
 
 
 class MetaFormerBlock(nn.Module):
@@ -186,6 +239,7 @@ class MetaFormerBlock(nn.Module):
         drop_path2 = DropPath(self.drop_path) if self.drop_path > 0. else Identity()
         layer_scale2 = ls_layer() if self.layer_scale_init_value is not None else Identity()
         res_scale2 = rs_layer(name='res_scale2') if self.res_scale_init_value is not None else Identity()
+
 
         # First block (Token Mixer + Layer 1 transformations)
         x = res_scale1(x) + layer_scale1(drop_path1(token_mixer(norm1(x)) ,det ))
@@ -248,6 +302,12 @@ class MetaFormerStage(nn.Module):
 
         x = downsample(x)
 
+        B, H, W,C = x.shape
+        use_nchw = True
+        if  issubclass(self.token_mixer,Attention):
+            use_nchw=False
+            x=einops.rearrange(x,'b  h w c-> b (h w) c')
+
         # Create MetaFormerBlocks
         for i in range(self.depth):
             block = MetaFormerBlock(
@@ -260,9 +320,12 @@ class MetaFormerStage(nn.Module):
                 drop_path=self.dp_rates[i],
                 layer_scale_init_value=self.layer_scale_init_value,
                 res_scale_init_value=self.res_scale_init_value,
-                use_nchw=self.use_nchw,
+                use_nchw=use_nchw,
             )
             x = block(x,det)
+
+        if  issubclass(self.token_mixer,Attention):
+            x=einops.rearrange(x,'b (h w) c->  b  h w c',h=H,w=W)
 
         return x
 
@@ -339,7 +402,7 @@ class MetaFormer(nn.Module):
 
     @nn.compact
     def __call__(self, x,det=True):
-        x = (x - IMAGENET_DEFAULT_MEAN) / IMAGENET_DEFAULT_STD
+        # x = (x - IMAGENET_DEFAULT_MEAN) / IMAGENET_DEFAULT_STD
         # Convert input parameters to appropriate format if needed
         depths = list(self.depths)
         dims = list(self.dims)
@@ -377,9 +440,6 @@ class MetaFormer(nn.Module):
             prev_dim = dims[i]
             x = stage(x,det)
 
-            # if i==2 :
-            #     break
-
         # Output normalization and head
         x = self.output_norm(name='out_norm')(x.mean(axis=(1, 2)))  # Global pooling, assuming (B, H, W, C)
         if self.num_classes > 0:
@@ -388,3 +448,8 @@ class MetaFormer(nn.Module):
             else:
                 x = Dense(self.num_classes)(x)
         return x
+
+
+
+CAFormer=partial(MetaFormer,token_mixers=(SepConv,SepConv,Attention,Attention))
+ConvFormer=partial(MetaFormer,token_mixers=(SepConv,SepConv,SepConv,SepConv))

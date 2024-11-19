@@ -139,6 +139,33 @@ def convert_torch_to_flax_scale(torch_params, prefix='', sep=''):
     return flax_params
 
 
+
+def convert_torch_to_flax_attention(torch_params, prefix='', sep=''):
+    """
+    Converts PyTorch Scale parameters (NumPy format) to Flax-compatible format.
+
+    Args:
+        torch_params (dict): Dictionary containing PyTorch state_dict of Scale.
+        prefix (str): Optional prefix for the Flax parameter names.
+        sep (str): Separator for the Flax parameter names.
+
+    Returns:
+        dict: Flax-compatible parameters for Scale.
+    """
+    flax_params = {
+        f'{prefix}{sep}qkv': convert_torch_to_flax_linear(torch_params['qkv']  ),
+        f'{prefix}{sep}proj': convert_torch_to_flax_linear(torch_params['proj']),
+    }
+
+
+    # print(torch_params['qkv']['weight'].shape,flax_params['qkv']['kernel'].shape)
+    # while True:
+    #     pass
+
+    return flax_params
+
+
+
 def convert_torch_to_flax_meta_former_block(torch_params, prefix='', sep=''):
     """
     Converts PyTorch Scale parameters (NumPy format) to Flax-compatible format.
@@ -158,6 +185,9 @@ def convert_torch_to_flax_meta_former_block(torch_params, prefix='', sep=''):
         'mlp': convert_torch_to_flax_mlp(torch_params['mlp'])
     }
 
+
+
+
     if 'res_scale1' in torch_params:
         flax_params['res_scale1']=convert_torch_to_flax_scale(torch_params['res_scale1'])
 
@@ -167,7 +197,11 @@ def convert_torch_to_flax_meta_former_block(torch_params, prefix='', sep=''):
 
 
     if 'token_mixer' in torch_params:
-        flax_params['token_mixer'] = convert_torch_to_flax_sep_conv(torch_params['token_mixer'])
+
+        if 'qkv' in torch_params['token_mixer']:
+            flax_params['token_mixer'] = convert_torch_to_flax_attention(torch_params['token_mixer'])
+        else:
+            flax_params['token_mixer'] = convert_torch_to_flax_sep_conv(torch_params['token_mixer'])
 
     return flax_params
 

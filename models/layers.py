@@ -1,15 +1,8 @@
 import functools
 from functools import partial
-from os import times
 from typing import Optional, Callable
+
 import flax.linen as nn
-import timm.layers
-from torch.backends.cudnn import deterministic
-
-
-
-
-
 
 Dense = functools.partial(nn.Dense, kernel_init=nn.initializers.truncated_normal(0.02))
 Conv = functools.partial(nn.Conv, kernel_init=nn.initializers.truncated_normal(0.02))

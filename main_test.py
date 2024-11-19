@@ -15,6 +15,8 @@
 
 from __future__ import annotations
 
+import argparse
+
 import jax
 import numpy as np
 import tqdm
@@ -103,7 +105,7 @@ def main(configs):
         """
 
 if __name__ == "__main__":
-    # parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser()
     # parser.add_argument("--train-dataset-shards")
     # parser.add_argument("--valid-dataset-shards")
     # parser.add_argument("--train-batch-size", type=int, default=2048)
@@ -165,8 +167,10 @@ if __name__ == "__main__":
     # parser.add_argument("--output-dir", default=".")
     # jax.distributed.initialize()
     # main(parser.parse_args())
+    args=parser.parse_args()
+    yaml = read_yaml(args.yaml_path)
     jax.distributed.initialize()
-    yaml = read_yaml('configs/convformer-b36.yaml')
+    # yaml = read_yaml('configs/convformer-b36.yaml')
     yaml = preprocess_config(yaml)
 
     main(yaml)
