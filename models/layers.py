@@ -1,7 +1,9 @@
 import functools
 from functools import partial
+from os import times
 from typing import Optional, Callable
 import flax.linen as nn
+import timm.layers
 from torch.backends.cudnn import deterministic
 
 
@@ -58,5 +60,13 @@ class DropPath(nn.Module):
 
     @nn.compact
     def __call__(self, x,det=True):
-        x=nn.Dropout(self.drop_path, broadcast_dims=x.shape[1:])(x,deterministic=det)
+        if x.shape==3:
+            broadcast_dims=(1,2)
+        elif x.shape==4:
+            broadcast_dims=(1,2,3)
+        else:
+            raise NotImplemented()
+
+
+        x=nn.Dropout(self.drop_path, broadcast_dims=broadcast_dims)(x,deterministic=det)
         return x
