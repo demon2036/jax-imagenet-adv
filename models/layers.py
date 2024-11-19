@@ -56,6 +56,7 @@ class Mlp(nn.Module):
 class DropPath(nn.Module):
     drop_path:float =0.0
 
+    @nn.compact
     def __call__(self, x,det=True):
         x=nn.Dropout(self.drop_path, broadcast_dims=x.shape[1:])(x,deterministic=det)
         return x
