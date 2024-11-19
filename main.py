@@ -20,6 +20,7 @@ import os
 
 import jax
 import numpy as np
+import optax
 import orbax.checkpoint as ocp
 import tqdm
 import wandb

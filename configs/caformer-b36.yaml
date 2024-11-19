@@ -1,5 +1,5 @@
 
-name: test
+name: caformer-b36
 project: deit3-jax
 steps: 1281167
 training_epoch: 300
@@ -45,12 +45,13 @@ train_state:
       depths: [3, 12, 18, 3]
       dims: [128, 256, 512, 768]
       drop_path_rate: 0.6
+      drop_rate: 0.5
 
 
   optimizer:
-    target: 'adamw'
+    target: 'lamb'
     optimizer_kwargs:
-      learning_rate: 0.004
+      learning_rate: 8.0e-3
       weight_decay: 0.05
       b1: 0.9
       b2: 0.999
@@ -62,7 +63,8 @@ train_state:
   mixup_seed: 1
   dropout_seed: 1
   ema_decay: 0.9998
-  pretrained_ckpt: 'caformer_b36.sail_in1k'
+  pretrained_ckpt: None
+#  pretrained_ckpt: 'caformer_b36.sail_in1k'
 #  pretrained_ckpt: 'convformer_b36.sail_in1k'
 
 
