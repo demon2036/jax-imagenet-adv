@@ -28,7 +28,7 @@ class SquaredReLU(nn.Module):
 
 
 class Identity(nn.Module):
-    def __call__(self, x):
+    def __call__(self, x,det=True):
         return x
 
 
@@ -161,7 +161,7 @@ class MetaFormerBlock(nn.Module):
     res_scale_init_value: float = None
 
     @nn.compact
-    def __call__(self, x):
+    def __call__(self, x,det=True):
         # Layer scale and residual scale initializers
         ls_layer = partial(Scale, dim=self.dim, init_value=self.layer_scale_init_value, use_nchw=self.use_nchw)
         rs_layer = partial(Scale, dim=self.dim, init_value=self.res_scale_init_value, use_nchw=self.use_nchw)
@@ -188,10 +188,10 @@ class MetaFormerBlock(nn.Module):
         res_scale2 = rs_layer(name='res_scale2') if self.res_scale_init_value is not None else Identity()
 
         # First block (Token Mixer + Layer 1 transformations)
-        x = res_scale1(x) + layer_scale1(drop_path1(token_mixer(norm1(x))))
+        x = res_scale1(x) + layer_scale1(drop_path1(token_mixer(norm1(x)) ,det ))
 
         # Second block (MLP + Layer 2 transformations)
-        x = res_scale2(x) + layer_scale2(drop_path2(mlp(norm2(x))))
+        x = res_scale2(x) + layer_scale2(drop_path2(mlp(norm2(x),det) ,det))
 
         return x
 
@@ -241,7 +241,7 @@ class MetaFormerStage(nn.Module):
     use_nchw: bool = True
 
     @nn.compact
-    def __call__(self, x):
+    def __call__(self, x,det=True):
         # Downsampling layer (identity if in_chs == out_chs)
         downsample = Identity() if self.in_chs == self.out_chs else Downsampling(
             self.out_chs, kernel_size=(3, 3), stride=2, padding=1, norm_layer=self.downsample_norm,name='downsample')
@@ -262,7 +262,7 @@ class MetaFormerStage(nn.Module):
                 res_scale_init_value=self.res_scale_init_value,
                 use_nchw=self.use_nchw,
             )
-            x = block(x)
+            x = block(x,det)
 
         return x
 
@@ -273,7 +273,7 @@ class MlpHead(nn.Module):
     mlp_ratio: float = 4.0
     act_layer: nn.Module = SquaredReLU
     norm_layer: nn.Module = nn.LayerNorm
-    drop_rate: float = 0.0
+    head_dropout: float = 0.0
     bias: bool = True
 
     @nn.compact
@@ -287,7 +287,7 @@ class MlpHead(nn.Module):
         # Normalization
         x = self.norm_layer(name='norm')(x)
         # Dropout
-        x = nn.Dropout(rate=self.drop_rate, deterministic=det)(x)
+        x = nn.Dropout(rate=self.head_dropout, deterministic=det)(x)
 
         # Second fully connected layer
         x = Dense(features=self.num_classes, use_bias=self.bias,name='fc2')(x)
@@ -375,7 +375,7 @@ class MetaFormer(nn.Module):
                 )
 
             prev_dim = dims[i]
-            x = stage(x)
+            x = stage(x,det)
 
             # if i==2 :
             #     break
@@ -384,7 +384,7 @@ class MetaFormer(nn.Module):
         x = self.output_norm(name='out_norm')(x.mean(axis=(1, 2)))  # Global pooling, assuming (B, H, W, C)
         if self.num_classes > 0:
             if self.use_mlp_head:
-                x = MlpHead(dims[-1],self.num_classes,name='fc')(x)
+                x = MlpHead(dims[-1],self.num_classes,name='fc',head_dropout=self.drop_rate)(x,det)
             else:
                 x = Dense(self.num_classes)(x)
         return x

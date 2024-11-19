@@ -44,6 +44,7 @@ train_state:
     model_kwargs:
       depths: [3, 12, 18, 3]
       dims: [128, 256, 512, 768]
+      drop_path_rate: 0.6
 
 
   optimizer:
@@ -61,7 +62,7 @@ train_state:
   mixup_seed: 1
   dropout_seed: 1
   ema_decay: 0.9998
-  pretrained_ckpt: 'convformer_b36.sail_in1k'
+  pretrained_ckpt: None
 
 
 
