@@ -60,11 +60,12 @@ class DropPath(nn.Module):
 
     @nn.compact
     def __call__(self, x,det=True):
-        if x.shape==3:
+        if len(x.shape)==3:
             broadcast_dims=(1,2)
-        elif x.shape==4:
+        elif len(x.shape)==4:
             broadcast_dims=(1,2,3)
         else:
+
             raise NotImplemented()
 
 
