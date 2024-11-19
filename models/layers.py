@@ -1,7 +1,18 @@
+import functools
 from functools import partial
 from typing import Optional, Callable
 import flax.linen as nn
 from torch.backends.cudnn import deterministic
+
+
+
+
+
+
+Dense = functools.partial(nn.Dense, kernel_init=nn.initializers.truncated_normal(0.02))
+Conv = functools.partial(nn.Conv, kernel_init=nn.initializers.truncated_normal(0.02))
+
+
 
 
 class Mlp(nn.Module):
@@ -23,7 +34,7 @@ class Mlp(nn.Module):
         hidden_features = self.hidden_features or self.in_features
 
         # Choose the linear or convolutional layer
-        linear_layer = partial(nn.Conv, kernel_size=(1, 1)) if self.use_conv else nn.Dense
+        linear_layer = partial(Conv, kernel_size=(1, 1)) if self.use_conv else Dense
 
         # First layer
         x = linear_layer(features=hidden_features, use_bias=self.bias,name='fc1')(x)

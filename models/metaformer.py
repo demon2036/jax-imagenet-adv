@@ -7,7 +7,7 @@ import jax.numpy as jnp
 from functools import partial
 
 from pre_define import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
-from .layers import Mlp, DropPath
+from .layers import Mlp, DropPath, Dense, Conv
 
 use_fast_variance = True
 
@@ -42,7 +42,7 @@ class Stem(nn.Module):
 
     @nn.compact
     def __call__(self, x):
-        x = nn.Conv(
+        x = Conv(
             features=self.out_channels,
             kernel_size=(7, 7),
             strides=(4, 4),
@@ -119,13 +119,13 @@ class SepConv(nn.Module):
         mid_channels = int(self.expansion_ratio * self.dim)
 
         # Pointwise Convolution 1
-        pwconv1 = nn.Conv(
+        pwconv1 = Conv(
             features=mid_channels, kernel_size=(1, 1), use_bias=self.bias, name='pwconv1'
         )(x)
         x = self.act1_layer(name='act1')(pwconv1)
 
         # Depthwise Convolution
-        dwconv = nn.Conv(
+        dwconv = Conv(
             features=mid_channels,
             kernel_size=(self.kernel_size, self.kernel_size),
             padding=[(self.padding, self.padding), (self.padding, self.padding)],
@@ -136,7 +136,7 @@ class SepConv(nn.Module):
         x = self.act2_layer()(dwconv)
 
         # Pointwise Convolution 2
-        pwconv2 = nn.Conv(
+        pwconv2 = Conv(
             features=self.dim, kernel_size=(1, 1), use_bias=self.bias, name='pwconv2'
         )(x)
 
@@ -213,7 +213,7 @@ class Downsampling(nn.Module):
             x = self.norm_layer(name='norm')(x)
 
         # Convolution operation
-        x = nn.Conv(
+        x = Conv(
             features=self.out_channels,
             kernel_size=self.kernel_size,
             strides=(self.stride, self.stride),
@@ -281,7 +281,7 @@ class MlpHead(nn.Module):
         hidden_features = int(self.mlp_ratio * self.dim)
 
         # First fully connected layer
-        x = nn.Dense(features=hidden_features, use_bias=self.bias,name='fc1')(x)
+        x = Dense(features=hidden_features, use_bias=self.bias,name='fc1')(x)
         x = self.act_layer()(x)
 
         # Normalization
@@ -290,7 +290,7 @@ class MlpHead(nn.Module):
         x = nn.Dropout(rate=self.drop_rate, deterministic=det)(x)
 
         # Second fully connected layer
-        x = nn.Dense(features=self.num_classes, use_bias=self.bias,name='fc2')(x)
+        x = Dense(features=self.num_classes, use_bias=self.bias,name='fc2')(x)
 
         return x
 
@@ -386,5 +386,5 @@ class MetaFormer(nn.Module):
             if self.use_mlp_head:
                 x = MlpHead(dims[-1],self.num_classes,name='fc')(x)
             else:
-                x = nn.Dense(self.num_classes)(x)
+                x = Dense(self.num_classes)(x)
         return x
