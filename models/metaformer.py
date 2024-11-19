@@ -5,8 +5,8 @@ from typing import Callable, Optional, Sequence, Union
 import einops
 import numpy as np
 
-# from pre_define import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
-from layers import Mlp, DropPath, Dense, Conv
+from pre_define import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
+from .layers import Mlp, DropPath, Dense, Conv
 
 use_fast_variance = True
 
