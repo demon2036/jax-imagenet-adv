@@ -163,7 +163,7 @@ class Attention(nn.Module):
     attn_drop: float = 0.0
     proj_drop: float = 0.0
     proj_bias: bool = False
-    fused_attn: bool = True  # Assume the use_fused_attn() logic will be passed explicitly
+    fused_attn: bool = False  # Assume the use_fused_attn() logic will be passed explicitly
 
     @nn.compact
     def __call__(self, x,det=True):
