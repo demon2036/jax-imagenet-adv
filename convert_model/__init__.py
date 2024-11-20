@@ -1,1 +1,2 @@
 from .test import convert_flax_to_torch_conv_next
+from .convert_flax_to_torch_metaformer import convert_flax_to_torch_meta_former
