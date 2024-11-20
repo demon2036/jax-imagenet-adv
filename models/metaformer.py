@@ -3,6 +3,7 @@ from functools import partial
 from typing import Callable, Optional, Sequence, Union
 
 import einops
+import jax.experimental.pallas.ops.tpu.flash_attention
 import numpy as np
 
 from pre_define import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
@@ -162,7 +163,7 @@ class Attention(nn.Module):
     attn_drop: float = 0.0
     proj_drop: float = 0.0
     proj_bias: bool = False
-    fused_attn: bool = False  # Assume the use_fused_attn() logic will be passed explicitly
+    fused_attn: bool = True  # Assume the use_fused_attn() logic will be passed explicitly
 
     @nn.compact
     def __call__(self, x,det=True):
@@ -178,9 +179,7 @@ class Attention(nn.Module):
         q, k, v = qkv[0], qkv[1], qkv[2]
 
         if self.fused_attn:
-            attn_weights = jnp.einsum("...nd,...md->...nm", q, k) * scale
-            attn_weights = nn.softmax(attn_weights, axis=-1)
-            x = jnp.einsum("...nm,...md->...nd", attn_weights, v)
+            x=jax.experimental.pallas.ops.tpu.flash_attention.flash_attention(q,k,v)
         else:
             attn = jnp.einsum("...nd,...md->...nm", q, k) * scale
             attn = nn.softmax(attn, axis=-1)
