@@ -25,7 +25,7 @@ class TrainModule(nn.Module):
     label_smoothing: float = 0.0
     criterion: Callable[[Array, Array], Array] = CRITERION_COLLECTION["ce"]
 
-    def __call__(self, images: Array, labels: Array, det: bool = True) -> ArrayTree:
+    def __call__(self, images: Array, labels: Array, det: bool = True,*args,**kwargs) -> ArrayTree:
         # Normalize the pixel values in TPU devices, instead of copying the normalized
         # float values from CPU. This may reduce both memory usage and latency.
         images = jnp.moveaxis(images, 1, 3).astype(jnp.float32) / 0xFF
