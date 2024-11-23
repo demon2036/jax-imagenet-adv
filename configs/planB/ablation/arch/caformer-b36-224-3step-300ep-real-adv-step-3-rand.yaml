@@ -29,7 +29,7 @@ dataset:
   image_size: 224
   generated_dataset_shards:
     ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps/shards-{00000..01119}.tar']
-  dataset_mix_ratio: 0.9
+  dataset_mix_ratio: 0.7
 
 
 train_state:
