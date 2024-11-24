@@ -7,6 +7,8 @@ training_epoch: 300
 warmup_epoch: 20
 log_interval: 100
 eval_epoch: 10
+grad_accum_steps: 4
+
 #resume: True
 
 dataset:
@@ -61,6 +63,7 @@ train_state:
 #      eps: 1.0e-8
 #      lr_decay: 1.0
 #      clip_grad: 0.0
+
 
   init_seed: 1
   mixup_seed: 1

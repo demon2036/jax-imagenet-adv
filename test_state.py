@@ -47,13 +47,16 @@ def load_pretrain(pretrained_model='convnext_base.fb_in1k',default_params=None):
 
 
 def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1, training_steps=10,
-                       # pretrained_ckpt='gs://brid-center-2b/conv-next-b-128-3step-2000ep-ema',
-                        pretrained_ckpt=None
+                       grad_accum_steps=1
                        ):  # -> TrainState:
     model_config = train_state_config['model']
     optimizer_config = train_state_config['optimizer']
     train_module_config = train_state_config['train_module']
     pretrained_ckpt=train_state_config.pop('pretrained_ckpt',None)
+
+
+
+
 
     model = get_obj_from_str(model_config['target'])(**model_config['model_kwargs'])
 
@@ -81,6 +84,9 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     # print(module.tabulate(init_rngs, **example_inputs))
 
     params = module.init(init_rngs, **example_inputs,det=False)["params"]
+
+    if grad_accum_steps>1:
+        grad_accum = jax.tree_map(jnp.zeros_like, params)
 
 
     if pretrained_ckpt is  None:
@@ -128,7 +134,6 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         decay_steps=training_steps,
         end_value=end_lr,
     )
-    print(train_state_config)
     state= TrainState.create(
         apply_fn=module.apply,
         params=params,
@@ -138,12 +143,15 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         adv_rng=jax.random.PRNGKey(2036 + jax.process_index()),
         micro_step=0,
         ema_decay=train_state_config['ema_decay'],
-        # micro_in_mini=args.grad_accum,
-        # grad_accum=grad_accum if args.grad_accum > 1 else None,
-        ema_params=copy.deepcopy(params)
+        ema_params=copy.deepcopy(params),
+        micro_step=0,
+        micro_in_mini=grad_accum_steps,
+        grad_accum=grad_accum if grad_accum_steps > 1 else None,
     )
 
-
+    if jax.process_index()==0:
+        print(train_state_config)
+        print(state)
 
     return state
 

@@ -41,6 +41,9 @@ class TrainState(train_state.TrainState):
     ema_decay: float = 0.9998
     use_pgd:bool =False
 
+
+
+
     def split_rngs(self) -> tuple[ArrayTree, ArrayTree]:
         mixup_rng, new_mixup_rng = jax.random.split(self.mixup_rng)
         dropout_rng, new_dropout_rng = jax.random.split(self.dropout_rng)

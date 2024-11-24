@@ -69,7 +69,7 @@ def main(configs):
         jax.distributed.initialize()
 
     use_pgd = configs.pop('use_pgd', True)
-    # use_pgd=flax.jax_utils.replicate(jax.numpy.array(use_pgd))
+    grad_accum_steps = configs.pop('grad_accum_steps', 1)
 
 
 
@@ -78,8 +78,10 @@ def main(configs):
         wandb.init(name=configs['name'], project=configs['project'], config=configs)
 
 
-    state = create_train_state(configs['train_state'], warmup_steps=warmup_steps,
-                               training_steps=training_steps)
+    state = create_train_state(configs['train_state'],
+                               warmup_steps=warmup_steps,
+                               training_steps=training_steps,
+                               grad_accum_steps=grad_accum_steps)
 
 
     postfix = "ema"
@@ -110,7 +112,7 @@ def main(configs):
     average_meter, max_val_acc1 = AverageMeter(use_latest=["learning_rate"]), 0.0
     for step in tqdm.tqdm(range(init_step, training_steps + 1), initial=init_step, total=training_steps + 1):
     # for step in tqdm.trange(init_step, training_steps + 1, dynamic_ncols=True):
-        for _ in range(1):
+        for _ in range(grad_accum_steps):
             batch = shard(jax.tree_util.tree_map(np.asarray, next(train_dataloader_iter)))
             state, metrics = training_step(state, batch,use_pgd)
             average_meter.update(**unreplicate(metrics))

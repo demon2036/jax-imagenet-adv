@@ -416,7 +416,7 @@ class MetaFormer(nn.Module):
             stage = MetaFormerStage(
                 prev_dim,
                     dims[i],
-                    token_mixer=nn.remat(token_mixers[i]),
+                    token_mixer=token_mixers[i],
                     mlp_act=self.mlp_act,
                     mlp_bias=self.mlp_bias,
                     proj_drop=self.proj_drop_rate,
