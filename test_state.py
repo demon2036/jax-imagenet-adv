@@ -54,10 +54,6 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     train_module_config = train_state_config['train_module']
     pretrained_ckpt=train_state_config.pop('pretrained_ckpt',None)
 
-
-
-
-
     model = get_obj_from_str(model_config['target'])(**model_config['model_kwargs'])
 
     train_module = get_obj_from_str(train_module_config.pop('target'))  #(**model_config['model_kwargs'])
@@ -141,7 +137,6 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         mixup_rng=jax.random.PRNGKey(train_state_config['mixup_seed'] + jax.process_index()),
         dropout_rng=jax.random.PRNGKey(train_state_config['dropout_seed'] + jax.process_index()),
         adv_rng=jax.random.PRNGKey(2036 + jax.process_index()),
-        micro_step=0,
         ema_decay=train_state_config['ema_decay'],
         ema_params=copy.deepcopy(params),
         micro_step=0,
