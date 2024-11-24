@@ -146,7 +146,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
 
     if jax.process_index()==0:
         print(train_state_config)
-        print(state)
+        # print(state)
 
     return state
 
