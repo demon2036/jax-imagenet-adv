@@ -106,7 +106,7 @@ def main(configs):
 
     state = state.replicate()
 
-    train_dataloader, valid_dataloader = create_dataloaders(**configs['dataset'])
+    train_dataloader, valid_dataloader = create_dataloaders(**configs['dataset'],grad_accum=grad_accum_steps)
     # train_dataloader_iter = iter(train_dataloader)
     train_dataloader_iter = train_dataloader
     average_meter, max_val_acc1 = AverageMeter(use_latest=["learning_rate"]), 0.0
