@@ -106,14 +106,6 @@ class Scale(nn.Module):
 
 
 
-
-
-
-
-
-
-
-
 class SepConv(nn.Module):
     """
     Flax implementation of Inverted Separable Convolution (MobileNetV2 style).
