@@ -170,7 +170,7 @@ class Attention(nn.Module):
         qkv = qkv.reshape(B, N, 3, num_heads, head_dim).transpose((2, 0, 3, 1, 4))
         q, k, v = qkv[0], qkv[1], qkv[2]
 
-        if self.fused_attn:
+        if N==256:
             x=jax.experimental.pallas.ops.tpu.flash_attention.flash_attention(q,k,v)
         else:
             attn = jnp.einsum("...nd,...md->...nm", q, k) * scale
@@ -416,7 +416,7 @@ class MetaFormer(nn.Module):
             stage = MetaFormerStage(
                 prev_dim,
                     dims[i],
-                    token_mixer=token_mixers[i],
+                    token_mixer=nn.remat(token_mixers[i]),
                     mlp_act=self.mlp_act,
                     mlp_bias=self.mlp_bias,
                     proj_drop=self.proj_drop_rate,
@@ -442,5 +442,5 @@ class MetaFormer(nn.Module):
 
 
 
-CAFormer=partial(MetaFormer,token_mixers=(SepConv,SepConv,nn.remat(Attention),Attention))
+CAFormer=partial(MetaFormer,token_mixers=(SepConv,SepConv,Attention,Attention))
 ConvFormer=partial(MetaFormer,token_mixers=(SepConv,SepConv,SepConv,SepConv))
