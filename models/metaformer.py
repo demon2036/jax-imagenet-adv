@@ -442,5 +442,5 @@ class MetaFormer(nn.Module):
 
 
 
-CAFormer=partial(MetaFormer,token_mixers=(SepConv,SepConv,Attention,Attention))
+CAFormer=partial(MetaFormer,token_mixers=(SepConv,SepConv,nn.remat(Attention),Attention))
 ConvFormer=partial(MetaFormer,token_mixers=(SepConv,SepConv,SepConv,SepConv))
