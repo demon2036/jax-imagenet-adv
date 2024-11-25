@@ -39,10 +39,7 @@ class TrainState(train_state.TrainState):
 
     ema_params: Any = None
     ema_decay: float = 0.9998
-    use_pgd:bool =False
-
-
-
+    use_pgd: bool = False
 
     def split_rngs(self) -> tuple[ArrayTree, ArrayTree]:
         mixup_rng, new_mixup_rng = jax.random.split(self.mixup_rng)
@@ -60,12 +57,13 @@ class TrainState(train_state.TrainState):
         )
 
 
-@partial(jax.pmap, axis_name="batch", donate_argnums=0,static_broadcasted_argnums=(2,))
-def training_step(state: TrainState, batch: ArrayTree,use_pgd) -> tuple[TrainState, ArrayTree]:
+@partial(jax.pmap, axis_name="batch", donate_argnums=0, static_broadcasted_argnums=(2,))
+def training_step(state: TrainState, batch: ArrayTree, use_pgd) -> tuple[TrainState, ArrayTree]:
     def loss_fn(params: ArrayTree) -> ArrayTree:
         # use_pgd=False
         # use_pgd = state.use_pgd
-        metrics = state.apply_fn({"params": params}, *batch, det=False, rngs=rngs,use_trade=not use_pgd,use_pgd=use_pgd,)
+        metrics = state.apply_fn({"params": params}, *batch, det=False, rngs=rngs, use_trade=not use_pgd,
+                                 use_pgd=use_pgd, )
         metrics = jax.tree_map(jnp.mean, metrics)
         return metrics["loss"], metrics
 
@@ -73,11 +71,17 @@ def training_step(state: TrainState, batch: ArrayTree,use_pgd) -> tuple[TrainSta
         # Collect a global gradient from the accumulated gradients and apply actual
         # parameter update with resetting the accumulations to zero.
         grads = jax.tree_map(lambda g: g / state.micro_in_mini, state.grad_accum)
-        return state.apply_gradients(
+        state = state.apply_gradients(
             grads=jax.lax.pmean(grads, axis_name="batch"),
             grad_accum=jax.tree_map(jnp.zeros_like, state.grad_accum),
             micro_step=state.micro_step % state.micro_in_mini,
         )
+        new_ema_params = jax.tree_util.tree_map(
+            lambda ema, normal: ema * state.ema_decay + (1 - state.ema_decay) * normal,
+            state.ema_params, state.params)
+        state = state.replace(ema_params=new_ema_params)
+
+        return state
 
     rngs, updates = state.split_rngs()
     (_, metrics), grads = jax.value_and_grad(loss_fn, has_aux=True)(state.params)
@@ -88,6 +92,12 @@ def training_step(state: TrainState, batch: ArrayTree,use_pgd) -> tuple[TrainSta
     # micro steps, the gradients will be accumulated.
     if state.grad_accum is None:
         state = state.apply_gradients(grads=jax.lax.pmean(grads, axis_name="batch"))
+
+        new_ema_params = jax.tree_util.tree_map(
+            lambda ema, normal: ema * state.ema_decay + (1 - state.ema_decay) * normal,
+            state.ema_params, state.params)
+        state = state.replace(ema_params=new_ema_params)
+
     else:
         state = state.replace(
             grad_accum=jax.tree_map(lambda ga, g: ga + g, state.grad_accum, grads),
@@ -98,11 +108,6 @@ def training_step(state: TrainState, batch: ArrayTree,use_pgd) -> tuple[TrainSta
         )
 
     # if state.ema_params is not None:
-
-    new_ema_params = jax.tree_util.tree_map(
-        lambda ema, normal: ema * state.ema_decay + (1 - state.ema_decay) * normal,
-        state.ema_params, state.params)
-    state = state.replace(ema_params=new_ema_params)
 
     return state.replace(**updates), metrics | state.opt_state.hyperparams
 
@@ -134,7 +139,7 @@ def validation_adv_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
         {"params": state.ema_params},
         images=batch[0],
         labels=jnp.where(batch[1] != -1, batch[1], 0),
-        det=True, use_pgd=True,rngs=rngs,
+        det=True, use_pgd=True, rngs=rngs,
     )
 
     metrics_adv = {'adv' + k: v for k, v in metrics_adv.items()}

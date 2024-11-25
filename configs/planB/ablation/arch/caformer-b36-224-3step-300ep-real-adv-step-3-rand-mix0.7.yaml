@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/planb/ablation/arch
-name: caformer-b36-224-3step-300ep-real-adv-step-3-rand-mix0.7
+name: caformer-b36-224-3step-300ep-real-adv-step-3-rand-mix0.7-pgd-5
 project: deit3-jax-ablation-arch
 steps: 1281167
 training_epoch: 300
@@ -41,7 +41,7 @@ train_state:
     cutmix: 1.0
     criterion: ce
     label_smoothing: 0.1
-    train_adv_step: 3
+    train_adv_step: 5
     train_adv_step_size: 4/3 / 255
 
 
