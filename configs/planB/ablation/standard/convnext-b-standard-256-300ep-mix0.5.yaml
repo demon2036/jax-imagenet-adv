@@ -19,7 +19,7 @@ dataset:
   random_crop: rrc
   color_jitter: 0.0
   auto_augment: "rand-m9-mstd0.5-inc1"
-  random_erasing: 0.0
+  random_erasing: 0.25
   auto_generated_augment: "rand-m9-mstd0.5-inc1"
   color_generated_jitter: 0.0
   random_generated_erasing: 0.0
