@@ -22,13 +22,13 @@ dataset:
   random_erasing: 0.25
   auto_generated_augment: "rand-m9-mstd0.5-inc1"
   color_generated_jitter: 0.0
-  random_generated_erasing: 0.0
+  random_generated_erasing: 0.25
   augment_repeats: 3
   test_crop_ratio: 0.875
   shuffle_seed: 1
   image_size: 256
   generated_dataset_shards:
-    ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps/shards-{00000..01119}.tar',]
+    ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05471}.tar',]
   dataset_mix_ratio: 0.5
 
 train_state:
