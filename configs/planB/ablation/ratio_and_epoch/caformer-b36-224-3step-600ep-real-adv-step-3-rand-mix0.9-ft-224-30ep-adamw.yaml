@@ -4,9 +4,9 @@ name: caformer-b36-224-3step-600ep-real-adv-step-3-rand-mix0.9-ft-224-30ep-admaw
 project: jax-adv-image-net-ablation-ratio-and-epoch
 steps: 1281167
 training_epoch: 30
-warmup_epoch: 0
+warmup_epoch: 10
 log_interval: 100
-eval_epoch: 10
+eval_epoch: 5
 grad_accum_steps: 1
 
 #resume: True
