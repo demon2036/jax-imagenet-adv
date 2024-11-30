@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/planb/ablation/ratio_and_epoch
-name: caformer-b36-224-3step-600ep-real-adv-step-3-rand-mix0.8
+name: caformer-b36-224-3step-600ep-real-adv-step-3-rand-mix0.6
 project: jax-adv-image-net-ablation-ratio-and-epoch
 steps: 1281167
 training_epoch: 600
@@ -8,7 +8,8 @@ warmup_epoch: 20
 log_interval: 100
 eval_epoch: 10
 grad_accum_steps: 1
-resume: True
+
+#resume: True
 
 dataset:
   train_batch_size: 4096
@@ -30,7 +31,7 @@ dataset:
   image_size: 224
   generated_dataset_shards:
     ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps/shards-{00000..05983}.tar']
-  dataset_mix_ratio: 0.8
+  dataset_mix_ratio: 0.6
 
 
 train_state:
