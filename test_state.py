@@ -95,6 +95,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     #     grad_accum = jax.tree_map(jnp.zeros_like, params)
     lr = optimizer_config['optimizer_kwargs'].pop('learning_rate')
     end_lr = optimizer_config['optimizer_kwargs'].pop('end_learning_rate',1e-5)
+    schedule = optimizer_config['optimizer_kwargs'].pop('schedule','cosine')
 
     # Create learning rate scheduler and optimizer with gradient clipping. The learning
     # rate will be recorded at `hyperparams` by `optax.inject_hyperparameters`.
@@ -123,13 +124,17 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         #     tx = optax.chain(optax.clip_by_global_norm(args.clip_grad), tx)
         return tx
 
-    learning_rate = optax.warmup_cosine_decay_schedule(
-        init_value=1e-6,
-        peak_value=lr,
-        warmup_steps=warmup_steps,
-        decay_steps=training_steps,
-        end_value=end_lr,
-    )
+
+    if schedule !='cosine':
+        learning_rate=lr
+    else:
+        learning_rate = optax.warmup_cosine_decay_schedule(
+            init_value=1e-6,
+            peak_value=lr,
+            warmup_steps=warmup_steps,
+            decay_steps=training_steps,
+            end_value=end_lr,
+        )
     state= TrainState.create(
         apply_fn=module.apply,
         params=params,
