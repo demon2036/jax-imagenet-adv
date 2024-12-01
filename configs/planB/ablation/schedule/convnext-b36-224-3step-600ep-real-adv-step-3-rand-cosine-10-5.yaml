@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/planb/ablation/schedule
-name: convnext-b36-224-3step-600ep-real-adv-step-3-rand-cosine-10-3
+name: convnext-b36-224-3step-600ep-real-adv-step-3-rand-cosine-10-5
 project: jax-adv-image-net-ablation-schedule
 steps: 1281167
 training_epoch: 600
