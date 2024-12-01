@@ -34,7 +34,7 @@ dataset:
   dataset_mix_ratio: 0.7
   max_syn_ratio: 0.7
   min_syn_ratio: 0.5
-  scheduler: 'linear'
+  scheduler: 'stable'
 
 
 train_state:
