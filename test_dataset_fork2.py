@@ -86,9 +86,9 @@ class DynamicMixRatioState:
 
 
 
-        x=torch.cat([*syn_x,*x])
+        x=torch.stack([*syn_x,*x])
         print(x.shape)
-        y=torch.cat([*syn_y,*y])
+        y=torch.stack([*syn_y,*y])
 
 
         print(x.shape,y.shape)
