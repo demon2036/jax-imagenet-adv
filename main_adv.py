@@ -32,7 +32,6 @@ from flax.training.common_utils import shard
 from torch.nn.parallel import replicate
 from torch.utils.data import DataLoader
 
-from test import total_epoch
 from test_dataset_fork2 import create_dataloaders, DynamicMixRatioState
 # from test_dataset_fork import create_dataloaders
 from test_state import create_train_state
