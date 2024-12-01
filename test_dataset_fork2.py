@@ -86,13 +86,13 @@ class DynamicMixRatioState:
 
 
 
-        x=torch.stack([*syn_x,*x])
-        y=torch.stack([*syn_y,*y])
+        x_s=torch.stack([*syn_x,*x])
+        y_s=torch.stack([*syn_y,*y])
 
         if jax.process_index()==0:
             print(x.shape,torch.stack(syn_x).shape,torch.stack(x).shape)
 
-        return x, y
+        return x_s, y_s
 
 def auto_augment_factory(image_size, auto_augment) -> T.Transform:
     aa_hparams = {
