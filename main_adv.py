@@ -31,6 +31,8 @@ from flax.training import orbax_utils
 from flax.training.common_utils import shard
 from torch.nn.parallel import replicate
 from torch.utils.data import DataLoader
+
+from test import total_epoch
 from test_dataset_fork2 import create_dataloaders, DynamicMixRatioState
 # from test_dataset_fork import create_dataloaders
 from test_state import create_train_state
@@ -96,9 +98,8 @@ def main(configs):
         init_step = 1
 
     state = state.replicate()
-    mix_ratio_state=DynamicMixRatioState()
 
-    train_dataloader, valid_dataloader = create_dataloaders(**configs['dataset'],
+    train_dataloader, valid_dataloader,mix_ratio_state = create_dataloaders(**configs['dataset'],
                                                                              grad_accum=grad_accum_steps)
     # train_dataloader_iter = iter(train_dataloader)
     train_dataloader_iter = train_dataloader
@@ -113,8 +114,7 @@ def main(configs):
 
         if step%epoch_per_step==0:
             epoch=step//epoch_per_step
-
-
+            mix_ratio_state.update_mix_ratio(epoch,configs['training_epoch'])
 
         if (
                 jax.process_index() == 0
