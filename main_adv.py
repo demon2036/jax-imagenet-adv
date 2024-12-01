@@ -39,9 +39,6 @@ from utils import AverageMeter, read_yaml, preprocess_config, save_checkpoint_in
     save_checkpoint_in_background2
 
 
-# from dataset import create_dataloaders
-
-
 # warnings.filterwarnings("ignore")
 
 
@@ -71,7 +68,8 @@ def main(configs):
     use_pgd = configs.pop('use_pgd', True)
     grad_accum_steps = configs.pop('grad_accum_steps', 1)
 
-
+    train_dataloader, valid_dataloader = create_dataloaders(**configs['dataset'], grad_accum=grad_accum_steps)
+    next(train_dataloader)
 
 
     if jax.process_index() == 0:
