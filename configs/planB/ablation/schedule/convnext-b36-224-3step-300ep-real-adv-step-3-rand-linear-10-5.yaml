@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/planb/ablation/schedule
-name: caformer-b36-224-3step-300ep-real-adv-step-3-rand-linear-10-5
+name: convnext-b36-224-3step-300ep-real-adv-step-3-rand-linear-10-5
 project: jax-adv-image-net-ablation-schedule
 steps: 1281167
 training_epoch: 300
@@ -49,30 +49,27 @@ train_state:
 
 
   model:
-    target: 'models.CAFormer'
+    target: 'models.ConvNeXt'
     model_kwargs:
-      depths: [3, 12, 18, 3]
-      dims: [128, 256, 512, 768]
-#      drop_path_rate: 0.6
-#      drop_rate: 0.5
+      labels: 1000
+      depths: [3,3,27,3]
+      dims: [128, 256, 512, 1024]
+      drop_path_rate: 0.0
+#      ls_init_value: null
 
   optimizer:
-    target: 'lamb'
+    target: 'adamw'
     optimizer_kwargs:
-      learning_rate: 8.0e-3
+      learning_rate: 0.004
       weight_decay: 0.05
       b1: 0.9
       b2: 0.999
-#      eps: 1.0e-8
-#      lr_decay: 1.0
-#      clip_grad: 0.0
-
 
   init_seed: 1
   mixup_seed: 1
   dropout_seed: 1
   ema_decay: 0.9998
-  pretrained_ckpt: 'caformer_b36.sail_in1k'
+  pretrained_ckpt: 'convnext_base.fb_in1k'
 
 
 
