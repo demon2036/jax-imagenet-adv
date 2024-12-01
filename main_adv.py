@@ -31,7 +31,7 @@ from flax.training import orbax_utils
 from flax.training.common_utils import shard
 from torch.nn.parallel import replicate
 from torch.utils.data import DataLoader
-from test_dataset_fork2 import create_dataloaders
+from test_dataset_fork2 import create_dataloaders, DynamicMixRatioState
 # from test_dataset_fork import create_dataloaders
 from test_state import create_train_state
 from training import TrainState, training_step, validation_adv_step
@@ -54,13 +54,13 @@ def evaluate(state: TrainState, dataloader: DataLoader) -> dict[str, float]:
 
 
 def main(configs):
-
     training_steps = configs['steps'] * configs['training_epoch'] // configs['dataset']['train_batch_size']
     warmup_steps = configs['steps'] * configs['warmup_epoch'] // configs['dataset']['train_batch_size']
     eval_interval = configs['steps'] * configs['eval_epoch'] // configs['dataset']['train_batch_size']
+    epoch_per_step = configs['steps'] // configs['dataset']['train_batch_size']
     log_interval = configs['log_interval']
 
-    use_orbax_save=configs.pop('use_orbax_save',True)
+    use_orbax_save = configs.pop('use_orbax_save', True)
 
     if use_orbax_save:
         jax.distributed.initialize()
@@ -68,29 +68,19 @@ def main(configs):
     use_pgd = configs.pop('use_pgd', True)
     grad_accum_steps = configs.pop('grad_accum_steps', 1)
 
-    train_dataloader, valid_dataloader,state = create_dataloaders(**configs['dataset'], grad_accum=grad_accum_steps)
-    next(train_dataloader)
-    state.ratio=0.4
-    next(train_dataloader)
-
-
-
     if jax.process_index() == 0:
         wandb.init(name=configs['name'], project=configs['project'], config=configs)
-
 
     state = create_train_state(configs['train_state'],
                                warmup_steps=warmup_steps,
                                training_steps=training_steps,
                                grad_accum_steps=grad_accum_steps)
 
-
     postfix = "ema"
     name = configs['name']
     output_dir = configs['output_dir']
     filename = os.path.join(output_dir, f"{name}-{postfix}")
     print(filename)
-
 
     if use_orbax_save:
         checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
@@ -106,17 +96,25 @@ def main(configs):
         init_step = 1
 
     state = state.replicate()
+    mix_ratio_state=DynamicMixRatioState()
 
-    train_dataloader, valid_dataloader = create_dataloaders(**configs['dataset'],grad_accum=grad_accum_steps)
+    train_dataloader, valid_dataloader = create_dataloaders(**configs['dataset'],
+                                                                             grad_accum=grad_accum_steps)
     # train_dataloader_iter = iter(train_dataloader)
     train_dataloader_iter = train_dataloader
     average_meter, max_val_acc1 = AverageMeter(use_latest=["learning_rate"]), 0.0
     for step in tqdm.tqdm(range(init_step, training_steps + 1), initial=init_step, total=training_steps + 1):
-    # for step in tqdm.trange(init_step, training_steps + 1, dynamic_ncols=True):
+        # for step in tqdm.trange(init_step, training_steps + 1, dynamic_ncols=True):
         for _ in range(grad_accum_steps):
             batch = shard(jax.tree_util.tree_map(np.asarray, next(train_dataloader_iter)))
-            state, metrics = training_step(state, batch,use_pgd)
+            state, metrics = training_step(state, batch, use_pgd)
             average_meter.update(**unreplicate(metrics))
+
+
+        if step%epoch_per_step==0:
+            epoch=step//epoch_per_step
+
+
 
         if (
                 jax.process_index() == 0
@@ -160,7 +158,8 @@ def main(configs):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--yaml-path", type=str, default='configs/ablation/amount_data/conv-next-b-224-3step-300ep-mix0.9-adv-step-3-1m.yaml')
+    parser.add_argument("--yaml-path", type=str,
+                        default='configs/ablation/amount_data/conv-next-b-224-3step-300ep-mix0.9-adv-step-3-1m.yaml')
     # parser.add_argument("--train-dataset-shards")
     # parser.add_argument("--valid-dataset-shards")
     # parser.add_argument("--train-batch-size", type=int, default=2048)
@@ -221,7 +220,7 @@ if __name__ == "__main__":
     # parser.add_argument("--hostname")
     # parser.add_argument("--output-dir", default=".")
     # main(parser.parse_args())
-    args=parser.parse_args()
+    args = parser.parse_args()
     yaml = read_yaml(args.yaml_path)
     # yaml = read_yaml('configs/adv/convnext-b-3step.yaml')
     # yaml = read_yaml('configs/adv/convnext-t-3step.yaml')
@@ -230,8 +229,5 @@ if __name__ == "__main__":
     # print(yaml)
     # while True:
     #     pass
-
-
-
 
     main(yaml)

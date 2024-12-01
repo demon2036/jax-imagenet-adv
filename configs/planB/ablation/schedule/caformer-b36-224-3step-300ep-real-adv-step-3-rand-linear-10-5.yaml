@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/planb/ablation/schedule
-name: caformer-b36-224-3step-300ep-real-adv-step-3-rand-mix0.7
+name: caformer-b36-224-3step-300ep-real-adv-step-3-rand-linear-10-5
 project: jax-adv-image-net-ablation-schedule
 steps: 1281167
 training_epoch: 300
@@ -32,6 +32,9 @@ dataset:
   generated_dataset_shards:
     ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar']
   dataset_mix_ratio: 0.7
+  max_syn_ratio: 1.0
+  min_syn_ratio: 0.5
+  scheduler: 'linear'
 
 
 train_state:
