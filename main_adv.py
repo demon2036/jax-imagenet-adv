@@ -122,6 +122,7 @@ def main(configs):
         ):
             metrics = average_meter.summary(prefix="train/")
             metrics["processed_samples"] = step * configs['dataset']['train_batch_size']
+            metrics["mix_ratio"] = mix_ratio_state.ratio
             wandb.log(metrics, step)
 
         if eval_interval > 0 and (
