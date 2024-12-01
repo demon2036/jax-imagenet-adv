@@ -68,8 +68,11 @@ def main(configs):
     use_pgd = configs.pop('use_pgd', True)
     grad_accum_steps = configs.pop('grad_accum_steps', 1)
 
-    train_dataloader, valid_dataloader = create_dataloaders(**configs['dataset'], grad_accum=grad_accum_steps)
+    train_dataloader, valid_dataloader,state = create_dataloaders(**configs['dataset'], grad_accum=grad_accum_steps)
     next(train_dataloader)
+    state.ratio=0.4
+    next(train_dataloader)
+
 
 
     if jax.process_index() == 0:

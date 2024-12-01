@@ -214,7 +214,8 @@ def mix_dataloader_iter(train_dataloader, train_origin_dataloader,state:DynamicM
 
 
         while True:
-           x,y=state.get_data(origin_dataloader_iter=train_origin_dataloader_iter,syn_dataloader_iter=train_dataloader_iter)
+            x,y=state.get_data(origin_dataloader_iter=train_origin_dataloader_iter,syn_dataloader_iter=train_dataloader_iter)
+            yield x,y
 
 
 
@@ -342,7 +343,7 @@ def create_dataloaders(
             prefetch_factor=20,
             persistent_workers=True,
         )
-    return mix_dataloader_iter(train_dataloader, train_origin_dataloader,state), valid_dataloader
+    return mix_dataloader_iter(train_dataloader, train_origin_dataloader,state), valid_dataloader,state
     # return train_dataloader, valid_dataloader
 
 
