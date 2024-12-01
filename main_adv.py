@@ -102,6 +102,9 @@ def main(configs):
     # train_dataloader_iter = iter(train_dataloader)
     train_dataloader_iter = train_dataloader
     average_meter, max_val_acc1 = AverageMeter(use_latest=["learning_rate"]), 0.0
+
+    epoch = init_step // epoch_per_step
+    mix_ratio_state.update_mix_ratio(epoch, configs['training_epoch'])
     for step in tqdm.tqdm(range(init_step, training_steps + 1), initial=init_step, total=training_steps + 1):
         # for step in tqdm.trange(init_step, training_steps + 1, dynamic_ncols=True):
         for _ in range(grad_accum_steps):
