@@ -97,7 +97,6 @@ def main(configs):
         init_step = 1
 
     state = state.replicate()
-
     train_dataloader, valid_dataloader,mix_ratio_state = create_dataloaders(**configs['dataset'],
                                                                              grad_accum=grad_accum_steps)
     # train_dataloader_iter = iter(train_dataloader)

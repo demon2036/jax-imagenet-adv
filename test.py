@@ -167,3 +167,9 @@
 # plt.plot(x,y)
 # plt.show()
 # print(y)
+
+
+x=[2,4,1]
+
+print(type(sorted(x,key=lambda i:i)))
+
