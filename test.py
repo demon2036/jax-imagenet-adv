@@ -167,6 +167,9 @@
 # plt.plot(x,y)
 # plt.show()
 # print(y)
+import queue
 
-x=set((0,-1))
-print(x)
+x=[1,2,3]
+print(len(x[:1]))
+
+queue.Queue().
