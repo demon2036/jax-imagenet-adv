@@ -53,13 +53,13 @@ def cyclic_schedule(epoch, total_epochs, max_syn_ratio=0.7, min_syn_ratio=0.3, c
     return min_syn_ratio + (max_syn_ratio - min_syn_ratio) * (1 + math.sin(2 * math.pi * (epoch % cycle_length) / cycle_length)) / 2
 
 
-def step_schedule(epoch, total_epochs):
+def step_schedule(epoch, total_epochs,max_syn_ratio=0.7, min_syn_ratio=0.3, ):
     if epoch < 0.3 * total_epochs:
-        return 0.7  # 70% synthetic
+        return max_syn_ratio*0.7  # 70% synthetic
     elif epoch < 0.6 * total_epochs:
-        return 0.5  # 50% synthetic
+        return max_syn_ratio*0.5  # 50% synthetic
     else:
-        return 0.3  # 30% synthetic
+        return max_syn_ratio*0.3  # 30% synthetic
 
 
 
@@ -125,6 +125,8 @@ class DynamicMixRatioState:
             schedule=sigmoid_schedule
         elif schedule=='stable':
             schedule=stable_schedule
+        elif schedule=='step_schedule':
+            schedule=stable_schedule
         else:
             raise NotImplemented()
 
@@ -159,8 +161,8 @@ class DynamicMixRatioState:
         x_s=torch.stack([*syn_x,*x])
         y_s=torch.stack([*syn_y,*y])
 
-        # if jax.process_index()==0:
-        #     print(x_s.shape,torch.stack(syn_x).shape,torch.stack(x).shape)
+        if jax.process_index()==0:
+            print(x_s.shape,torch.stack(syn_x).shape,torch.stack(x).shape)
 
         return x_s, y_s
 
@@ -257,6 +259,17 @@ def mix_dataloader_iter(train_dataloader, train_origin_dataloader,state:DynamicM
             yield [torch.cat([x, y], dim=0) for x, y in
                    zip(next(train_dataloader_iter), next(train_origin_dataloader_iter))]
     """
+
+    if jax.process_index() == 0:
+        print('use generate and origin')
+    train_dataloader_iter = iter(train_dataloader)
+    train_origin_dataloader_iter = iter(train_origin_dataloader)
+    while True:
+        x, y = state.get_data(origin_dataloader_iter=train_origin_dataloader_iter,
+                              syn_dataloader_iter=train_dataloader_iter)
+        yield x, y
+    """
+    
     ratio=state.ratio
     if ratio==1.0:
         if jax.process_index() == 0:
@@ -280,7 +293,7 @@ def mix_dataloader_iter(train_dataloader, train_origin_dataloader,state:DynamicM
         while True:
             x,y=state.get_data(origin_dataloader_iter=train_origin_dataloader_iter,syn_dataloader_iter=train_dataloader_iter)
             yield x,y
-
+    """
 
 
 
