@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/planb/ablation/schedule
-name: convnext-b36-224-3step-600ep-real-adv-step-3-rand-linear-10-1
+name: convnext-b36-224-3step-600ep-real-adv-step-3-rand-linear-9-6
 project: jax-adv-image-net-ablation-schedule
 steps: 1281167
 training_epoch: 600
@@ -9,7 +9,7 @@ log_interval: 100
 eval_epoch: 10
 grad_accum_steps: 1
 
-resume: True
+#resume: True
 
 dataset:
   train_batch_size: 4096
