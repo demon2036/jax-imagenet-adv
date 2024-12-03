@@ -161,8 +161,8 @@ class DynamicMixRatioState:
         x_s=torch.stack([*syn_x,*x])
         y_s=torch.stack([*syn_y,*y])
 
-        if jax.process_index()==0:
-            print(x_s.shape,torch.stack(syn_x).shape,torch.stack(x).shape)
+        # if jax.process_index()==0:
+        #     print(x_s.shape,torch.stack(syn_x).shape,torch.stack(x).shape)
 
         return x_s, y_s
 
