@@ -127,6 +127,8 @@ class DynamicMixRatioState:
             schedule=stable_schedule
         elif schedule=='step_schedule':
             schedule=stable_schedule
+        elif schedule=='cyclic_schedule':
+            schedule=cyclic_schedule
         else:
             raise NotImplemented()
 
