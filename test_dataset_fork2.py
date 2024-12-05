@@ -102,8 +102,14 @@ def sigmoid_schedule(epoch, total_epochs, max_syn_ratio=0.7, min_syn_ratio=0.3, 
     return max_syn_ratio - (max_syn_ratio - min_syn_ratio) / (1 + math.exp(-k * (epoch - midpoint) / total_epochs))
 
 
-def stable_schedule(epoch, total_epochs, max_syn_ratio=0.7, min_syn_ratio=0.3):
-    return max_syn_ratio
+def stable_schedule(epoch, total_epochs, warmup_epochs=20, max_syn_ratio=0.7, min_syn_ratio=0.3):
+    if epoch < warmup_epochs:
+        # Warmup阶段，线性增加syn_ratio
+        return min_syn_ratio + (max_syn_ratio - min_syn_ratio) * (epoch / warmup_epochs)
+    else:
+        # 稳定阶段，保持为max_syn_ratio
+        return max_syn_ratio
+
 
 
 
