@@ -102,7 +102,7 @@ def sigmoid_schedule(epoch, total_epochs, max_syn_ratio=0.7, min_syn_ratio=0.3, 
     return max_syn_ratio - (max_syn_ratio - min_syn_ratio) / (1 + math.exp(-k * (epoch - midpoint) / total_epochs))
 
 
-def stable_schedule(epoch, total_epochs, warmup_epochs=20, max_syn_ratio=0.7, min_syn_ratio=0.3):
+def stable_schedule(epoch, total_epochs, warmup_epochs=0, max_syn_ratio=0.7, min_syn_ratio=0.3):
     if epoch < warmup_epochs:
         # Warmup阶段，线性增加syn_ratio
         return min_syn_ratio + (max_syn_ratio - min_syn_ratio) * (epoch / warmup_epochs)
@@ -329,7 +329,7 @@ def create_dataloaders(
         dataset_mix_ratio=0.8,
         max_syn_ratio=1.0,
         min_syn_ratio=0.3,
-        scheduler='linear'
+        scheduler='stable'
 
 ):
 
