@@ -56,7 +56,7 @@ train_state:
   optimizer:
     target: 'lamb'
     optimizer_kwargs:
-      learning_rate: 1.0e-3
+      learning_rate: 8.0e-4
       weight_decay: 0.05
       b1: 0.9
       b2: 0.999
