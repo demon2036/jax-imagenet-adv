@@ -1,7 +1,7 @@
 
-output_dir: $GCS_MODEL_DIR/planb/ablation/adv_step
+output_dir: $GCS_MODEL_DIR/planb/ablation/best
 name: caformer-b36-224-3step-600ep-real-adv-step-3-rand-mix0.9-pgd-3
-project: jax-adv-image-net-ablation-adv-step
+project: jax-adv-image-net-best
 steps: 1281167
 training_epoch: 600
 warmup_epoch: 20
@@ -69,7 +69,7 @@ train_state:
   mixup_seed: 1
   dropout_seed: 1
   ema_decay: 0.9998
-  pretrained_ckpt: 'caformer_b36.sail_in1k'
+  pretrained_ckpt: None #'caformer_b36.sail_in1k'
 
 
 
