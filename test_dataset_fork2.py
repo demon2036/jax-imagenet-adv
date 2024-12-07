@@ -327,7 +327,7 @@ def create_dataloaders(
         generated_dataset_shards,
         grad_accum=1,
         dataset_mix_ratio=0.8,
-        max_syn_ratio=1.0,
+        max_syn_ratio=0.9,
         min_syn_ratio=0.3,
         scheduler='stable'
 
