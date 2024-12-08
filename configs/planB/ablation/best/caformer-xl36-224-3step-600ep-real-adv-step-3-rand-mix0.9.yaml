@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/planb/ablation/best
-name: caformer-xl36-224-3step-600ep-real-adv-step-3-rand-mix0.9-pgd-5
+name: caformer-xl36-224-3step-600ep-real-adv-step-3-rand-mix0.9
 project: jax-adv-image-net-best
 steps: 1281167
 training_epoch: 600
