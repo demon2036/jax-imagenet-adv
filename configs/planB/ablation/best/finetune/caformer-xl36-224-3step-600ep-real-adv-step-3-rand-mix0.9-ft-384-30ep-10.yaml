@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/planb/ablation/best
-name: caformer-b36-224-3step-600ep-real-adv-step-3-rand-mix0.9-pgd-3
+name: caformer-xl36-224-3step-600ep-real-adv-step-3-rand-mix0.9-ft-384-30ep-10
 project: jax-adv-image-net-best
 steps: 1281167
 training_epoch: 600
@@ -12,8 +12,8 @@ grad_accum_steps: 1
 #resume: True
 
 dataset:
-  train_batch_size: 4096
-  valid_batch_size: 2048
+  train_batch_size: 1024
+  valid_batch_size: 1024
   train_loader_workers: 20
   valid_loader_workers: 10
   train_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-train-{0000..1023}.tar"
@@ -28,10 +28,13 @@ dataset:
   augment_repeats: 3
   test_crop_ratio: 0.875
   shuffle_seed: 1
-  image_size: 224
+  image_size: 384
   generated_dataset_shards:
     ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar']
-  dataset_mix_ratio: 0.9
+  dataset_mix_ratio: 0.0
+  max_syn_ratio: 0.0
+  min_syn_ratio: 0.0
+  scheduler: 'stable'
 
 
 train_state:
@@ -41,22 +44,23 @@ train_state:
     cutmix: 1.0
     criterion: ce
     label_smoothing: 0.1
-    train_adv_step: 1
-    train_adv_step_size: 4/3 / 255
+    train_adv_step: 10
+    train_adv_step_size: 1 / 255
 
 
   model:
     target: 'models.CAFormer'
     model_kwargs:
       depths: [3, 12, 18, 3]
-      dims: [128, 256, 512, 768]
+      dims: [ 256, 512, 768,1536]
 #      drop_path_rate: 0.6
 #      drop_rate: 0.5
 
   optimizer:
     target: 'lamb'
     optimizer_kwargs:
-      learning_rate: 8.0e-3
+      schedule: 'stable'
+      learning_rate: 1.0e-4
       weight_decay: 0.05
       b1: 0.9
       b2: 0.999
@@ -69,7 +73,7 @@ train_state:
   mixup_seed: 1
   dropout_seed: 1
   ema_decay: 0.9998
-  pretrained_ckpt: None #'caformer_b36.sail_in1k'
+  pretrained_ckpt: '$GCS_MODEL_DIR/planb/ablation/best/caformer-xl36-224-3step-600ep-real-adv-step-3-rand-mix0.9-ema'
 
 
 
