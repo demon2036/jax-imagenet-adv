@@ -7,13 +7,13 @@ training_epoch: 30
 warmup_epoch: 0
 log_interval: 100
 eval_epoch: 5
-grad_accum_steps: 1
+grad_accum_steps: 2
 
 #resume: True
 
 dataset:
   train_batch_size: 1024
-  valid_batch_size: 1024
+  valid_batch_size: 512
   train_loader_workers: 20
   valid_loader_workers: 10
   train_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-train-{0000..1023}.tar"
