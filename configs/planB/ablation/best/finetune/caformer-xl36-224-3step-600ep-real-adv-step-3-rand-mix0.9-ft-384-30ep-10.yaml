@@ -6,7 +6,7 @@ steps: 1281167
 training_epoch: 30
 warmup_epoch: 0
 log_interval: 100
-eval_epoch: 5
+eval_epoch: 1
 grad_accum_steps: 2
 
 #resume: True
