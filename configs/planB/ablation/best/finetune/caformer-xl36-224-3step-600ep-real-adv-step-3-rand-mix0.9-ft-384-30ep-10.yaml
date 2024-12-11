@@ -32,8 +32,8 @@ dataset:
   generated_dataset_shards:
     ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar']
   dataset_mix_ratio: 0.0
-  max_syn_ratio: 0.0
-  min_syn_ratio: 0.0
+  max_syn_ratio: 0.1
+  min_syn_ratio: 0.1
   scheduler: 'stable'
 
 
