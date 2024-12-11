@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/planb/ablation/best/ft
-name: caformer-xl36-224-3step-600ep-real-adv-step-3-rand-mix0.9-ft-384-30ep-10
+name: caformer-xl36-224-3step-600ep-real-adv-step-3-rand-mix0.9-ft-336-30ep-10
 project: jax-adv-image-net-best
 steps: 1281167
 training_epoch: 30
@@ -12,13 +12,13 @@ grad_accum_steps: 1
 #resume: True
 
 dataset:
-  train_batch_size: 4096
-  valid_batch_size: 2048
+  train_batch_size: 1024
+  valid_batch_size: 1024
   train_loader_workers: 40
   valid_loader_workers: 40
   train_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-train-{0000..1023}.tar"
   valid_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-validation-{00..63}.tar"
-  random_crop: src
+  random_crop: rrc
   color_jitter: 0.0
   auto_augment: "rand-m9-mstd0.5-inc1"
   random_erasing: 0.0
@@ -31,7 +31,10 @@ dataset:
   image_size: 336
   generated_dataset_shards:
     ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar']
-  dataset_mix_ratio: 0.9
+  dataset_mix_ratio: 0.0
+  max_syn_ratio: 0.0
+  min_syn_ratio: 0.0
+  scheduler: 'stable'
 
 
 train_state:
