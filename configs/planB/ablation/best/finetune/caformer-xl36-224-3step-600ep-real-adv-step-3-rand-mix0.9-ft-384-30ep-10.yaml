@@ -7,18 +7,18 @@ training_epoch: 30
 warmup_epoch: 0
 log_interval: 100
 eval_epoch: 1
-grad_accum_steps: 2
+grad_accum_steps: 1
 
 #resume: True
 
 dataset:
-  train_batch_size: 1024
-  valid_batch_size: 512
+  train_batch_size: 4096
+  valid_batch_size: 2048
   train_loader_workers: 20
   valid_loader_workers: 10
   train_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-train-{0000..1023}.tar"
   valid_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-validation-{00..63}.tar"
-  random_crop: rrc
+  random_crop: src
   color_jitter: 0.0
   auto_augment: "rand-m9-mstd0.5-inc1"
   random_erasing: 0.0
@@ -28,13 +28,10 @@ dataset:
   augment_repeats: 3
   test_crop_ratio: 0.875
   shuffle_seed: 1
-  image_size: 384
+  image_size: 224
   generated_dataset_shards:
     ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar']
-  dataset_mix_ratio: 0.0
-  max_syn_ratio: 0.1
-  min_syn_ratio: 0.1
-  scheduler: 'stable'
+  dataset_mix_ratio: 0.9
 
 
 train_state:
@@ -45,7 +42,7 @@ train_state:
     criterion: ce
     label_smoothing: 0.1
     train_adv_step: 1
-    train_adv_step_size: 1 / 255
+    train_adv_step_size: 4/3 / 255
 
 
   model:
@@ -59,8 +56,7 @@ train_state:
   optimizer:
     target: 'lamb'
     optimizer_kwargs:
-      schedule: 'stable'
-      learning_rate: 1.0e-4
+      learning_rate: 8.0e-4
       weight_decay: 0.05
       b1: 0.9
       b2: 0.999
