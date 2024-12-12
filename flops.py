@@ -18,7 +18,7 @@ input_tensor = torch.randn(1, 3, 224, 224)
 dims= [128, 256, 512, 768]
 
 for i,dim in enumerate(dims):
-    dims[i]=int(dims[i]*3)
+    dims[i]=int(dims[i]*2)
 
 
 # net=MetaFormer(token_mixers=SepConv,depths=(3,12,18,3),dims=(128,256,512,768))

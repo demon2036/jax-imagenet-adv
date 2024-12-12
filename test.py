@@ -28,8 +28,6 @@ IMAGENET_DEFAULT_MEAN = np.array([0.485, 0.456, 0.406])
 IMAGENET_DEFAULT_STD = np.array([0.229, 0.224, 0.225])
 
 
-
-
 def linear_schedule(epoch, total_epochs, max_syn_ratio=0.7, min_syn_ratio=0.3):
     return max_syn_ratio - (max_syn_ratio - min_syn_ratio) * (epoch / total_epochs)
 
@@ -39,13 +37,13 @@ def cyclic_schedule(epoch, total_epochs, max_syn_ratio=0.7, min_syn_ratio=0.3, c
     return min_syn_ratio + (max_syn_ratio - min_syn_ratio) * (1 + math.sin(2 * math.pi * (epoch % cycle_length) / cycle_length)) / 2
 
 
-def step_schedule(epoch, total_epochs):
+def step_schedule(epoch, total_epochs,max_syn_ratio=0.7, min_syn_ratio=0.3, ):
     if epoch < 0.3 * total_epochs:
-        return 0.7  # 70% synthetic
+        return max_syn_ratio*0.7  # 70% synthetic
     elif epoch < 0.6 * total_epochs:
-        return 0.5  # 50% synthetic
+        return max_syn_ratio*0.5  # 50% synthetic
     else:
-        return 0.3  # 30% synthetic
+        return max_syn_ratio*0.3  # 30% synthetic
 
 
 
@@ -88,13 +86,14 @@ def sigmoid_schedule(epoch, total_epochs, max_syn_ratio=0.7, min_syn_ratio=0.3, 
     return max_syn_ratio - (max_syn_ratio - min_syn_ratio) / (1 + math.exp(-k * (epoch - midpoint) / total_epochs))
 
 
-
+def stable_schedule(epoch, total_epochs, max_syn_ratio=0.7, min_syn_ratio=0.3):
+    return max_syn_ratio
 
 
 
 
 class DynamicMixRatioState:
-    def __init__(self, total_batch_size,schedule:str='sigmoid',max_syn_ratio=1.0,min_syn_ratio=0.3):
+    def __init__(self, total_batch_size,schedule:str,max_syn_ratio=1.0,min_syn_ratio=0.3):
         self.ratio = max_syn_ratio
         self.total_batch_size = total_batch_size
         self.buffer_syn_x = []
@@ -108,6 +107,12 @@ class DynamicMixRatioState:
             schedule=cosine_schedule
         elif schedule=='sigmoid':
             schedule=sigmoid_schedule
+        elif schedule=='stable':
+            schedule=stable_schedule
+        elif schedule=='step':
+            schedule=stable_schedule
+        elif schedule=='cyclic':
+            schedule=cyclic_schedule
         else:
             raise NotImplemented()
 
@@ -139,63 +144,65 @@ class DynamicMixRatioState:
         x, self.buffer_x = self.buffer_x[:origin_batch_size], self.buffer_x[origin_batch_size:]
         y, self.buffer_y = self.buffer_y[:origin_batch_size], self.buffer_y[origin_batch_size:]
 
-
-
         x_s=torch.stack([*syn_x,*x])
         y_s=torch.stack([*syn_y,*y])
 
         # if jax.process_index()==0:
-        #     print(x_s.shape,torch.stack(syn_x).shape,torch.stack(x).shape)
+        #     print(x)
+            # print(x_s.shape,torch.stack(syn_x).shape,torch.stack(x).shape)
 
         return x_s, y_s
+
 
 epoch=0
 total_epoch=300
 
-state=DynamicMixRatioState(4096)
-state.update_mix_ratio(epoch,total_epoch)
-import matplotlib.pyplot as plt
+# state=DynamicMixRatioState(4096)
+# state.update_mix_ratio(epoch,total_epoch)
+# import matplotlib.pyplot as plt
+#
+# x=[]
+# y=[]
+#
+# for i in range(epoch,total_epoch):
+#    x.append(i)
+#    state.update_mix_ratio(i,total_epoch)
+#    y.append(state.ratio)
+#
+# plt.plot(x,y)
 
-x=[]
-y=[]
-
-for i in range(epoch,total_epoch):
-   x.append(i)
-   state.update_mix_ratio(i,total_epoch)
-   y.append(state.ratio)
-
-plt.plot(x,y)
 
 
+# state=DynamicMixRatioState(4096,schedule='cosine')
+# state.update_mix_ratio(epoch,total_epoch,)
+# import matplotlib.pyplot as plt
+#
+# x=[]
+# y=[]
+#
+# for i in range(epoch,total_epoch):
+#    x.append(i)
+#    state.update_mix_ratio(i,total_epoch)
+#    y.append(state.ratio)
+#
+# plt.plot(x,y)
+#
+# state=DynamicMixRatioState(4096,schedule='cyclic',max_syn_ratio=1.0,min_syn_ratio=0.0)
+# state.update_mix_ratio(epoch,total_epoch,)
+# import matplotlib.pyplot as plt
+#
+# x=[]
+# y=[]
+#
+# for i in range(epoch,total_epoch):
+#    x.append(i)
+#    state.update_mix_ratio(i,total_epoch)
+#    y.append(state.ratio)
+#
+# plt.plot(x,y)
+#
+# plt.show()
+# print(y)
 
-state=DynamicMixRatioState(4096,schedule='cosine')
-state.update_mix_ratio(epoch,total_epoch,)
-import matplotlib.pyplot as plt
-
-x=[]
-y=[]
-
-for i in range(epoch,total_epoch):
-   x.append(i)
-   state.update_mix_ratio(i,total_epoch)
-   y.append(state.ratio)
-
-plt.plot(x,y)
-
-state=DynamicMixRatioState(4096,schedule='linear')
-state.update_mix_ratio(epoch,total_epoch,)
-import matplotlib.pyplot as plt
-
-x=[]
-y=[]
-
-for i in range(epoch,total_epoch):
-   x.append(i)
-   state.update_mix_ratio(i,total_epoch)
-   y.append(state.ratio)
-
-plt.plot(x,y)
-
-plt.show()
-print(y)
-
+x=[128, 256, 512, 768]
+print(np.array(x)*1.5)
