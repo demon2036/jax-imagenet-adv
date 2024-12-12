@@ -46,7 +46,7 @@ def load_pretrain(pretrained_model='convnext_base.fb_in1k',default_params=None):
 
 
 
-def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1, training_steps=10,
+def create_train_state(train_state_config, image_size: int = 32, warmup_steps=1, training_steps=10,
                        grad_accum_steps=1
                        ):  # -> TrainState:
     model_config = train_state_config['model']
