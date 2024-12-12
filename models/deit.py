@@ -24,8 +24,22 @@ import jax.experimental.pallas.ops.tpu.flash_attention
 import jax.numpy as jnp
 from chex import Array
 
-from datasets import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
-from utils2 import fixed_sincos2d_embeddings
+# from datasets import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
+# from utils2 import fixed_sincos2d_embeddings
+
+
+
+
+def fixed_sincos2d_embeddings(ncols: int, nrows: int, dim: int) -> Array:
+    freqs = 1 / (10000 ** jnp.linspace(0, 1, dim // 4))
+    x = jnp.outer(jnp.arange(0, nrows, dtype=jnp.float32), freqs)
+    y = jnp.outer(jnp.arange(0, ncols, dtype=jnp.float32), freqs)
+
+    x = jnp.broadcast_to(x[None, :, :], (ncols, nrows, dim // 4))
+    y = jnp.broadcast_to(y[:, None, :], (ncols, nrows, dim // 4))
+    return jnp.concatenate((jnp.sin(x), jnp.cos(x), jnp.sin(y), jnp.cos(y)), axis=2)
+
+
 
 DenseGeneral = partial(nn.DenseGeneral, kernel_init=init.truncated_normal(0.02))
 Dense = partial(nn.Dense, kernel_init=init.truncated_normal(0.02))
@@ -134,10 +148,7 @@ class FeedForward(ViTBase, nn.Module):
 class ViTLayer(ViTBase, nn.Module):
     def setup(self):
         self.attn = Attention(**self.kwargs)
-        if self.use_kan:
-            self.ff = KANLayer(self.polynomial_degree)
-        else:
-            self.ff = FeedForward(**self.kwargs)
+        self.ff = FeedForward(**self.kwargs)
 
         self.norm1 = nn.LayerNorm()
         self.norm2 = nn.LayerNorm()
