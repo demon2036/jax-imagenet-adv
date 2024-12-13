@@ -161,7 +161,7 @@ class TrainAdvModule(nn.Module):
         else:
 
             if use_pgd:
-                images = pgd_attack(images, labels, self.model, key=self.make_rng('adv'),
+                images = pgd_attack(images, labels, self.model, key=self.make_rng('adv'),epsilon=self.eps,
                                     step_size=self.train_adv_step_size,  #if train else self.test_adv_step_size ,
                                     maxiter=self.train_adv_step  #if train else self.test_adv_step
                                     )
