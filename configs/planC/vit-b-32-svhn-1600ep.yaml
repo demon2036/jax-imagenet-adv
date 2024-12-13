@@ -6,7 +6,7 @@ steps: 73257
 training_epoch: 1600
 warmup_epoch: 50
 log_interval: 100
-eval_epoch: 50
+eval_epoch: 1
 grad_accum_steps: 1
 use_pgd: False
 
@@ -18,7 +18,7 @@ dataset:
   train_loader_workers: 20
   valid_loader_workers: 10
   train_dataset_shards: "$GCS_DATASET_DIR/svhn-train-wds/shards-{00000..00099}.tar"
-  valid_dataset_shards: "$GCS_DATASET_DIR/svhn-train-wds/shards-{00000..00063}.tar"
+  valid_dataset_shards: "$GCS_DATASET_DIR/svhn-test-wds/shards-{00000..00063}.tar"
   random_crop: none
   color_jitter: 0.0
   auto_augment: "none"
