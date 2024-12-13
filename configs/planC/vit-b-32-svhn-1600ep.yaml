@@ -12,8 +12,8 @@ grad_accum_steps: 1
 #resume: True
 
 dataset:
-  train_batch_size: 4096
-  valid_batch_size: 2048
+  train_batch_size: 1024
+  valid_batch_size: 1024
   train_loader_workers: 20
   valid_loader_workers: 10
   train_dataset_shards: "$GCS_DATASET_DIR/svhn-train-wds/shards-{00000..00099}.tar"
@@ -59,7 +59,7 @@ train_state:
   optimizer:
     target: 'lion'
     optimizer_kwargs:
-      learning_rate: 3.0e-5
+      learning_rate: 1.0e-5
       weight_decay: 0.05
       b1: 0.9
       b2: 0.99
