@@ -4,7 +4,7 @@ name: vit-b
 project: jax-adv-image-net-svhn
 steps: 73257
 training_epoch: 1600
-warmup_epoch: 20
+warmup_epoch: 400
 log_interval: 100
 eval_epoch: 50
 grad_accum_steps: 1
@@ -18,7 +18,7 @@ dataset:
   valid_loader_workers: 10
   train_dataset_shards: "$GCS_DATASET_DIR/svhn-train-wds/shards-{00000..00099}.tar"
   valid_dataset_shards: "$GCS_DATASET_DIR/svhn-train-wds/shards-{00000..00063}.tar"
-  random_crop: src
+  random_crop: none
   color_jitter: 0.0
   auto_augment: "none"
   random_erasing: 0.0
@@ -59,7 +59,7 @@ train_state:
   optimizer:
     target: 'lion'
     optimizer_kwargs:
-      learning_rate: 1.0e-5
+      learning_rate: 1.0e-4
       weight_decay: 0.05
       b1: 0.9
       b2: 0.99
