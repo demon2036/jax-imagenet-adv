@@ -4,7 +4,7 @@ name: vit-b
 project: jax-adv-image-net-svhn
 steps: 73257
 training_epoch: 1600
-warmup_epoch: 400
+warmup_epoch: 50
 log_interval: 100
 eval_epoch: 50
 grad_accum_steps: 1
