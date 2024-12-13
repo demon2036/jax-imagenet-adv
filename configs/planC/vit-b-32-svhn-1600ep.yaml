@@ -19,7 +19,7 @@ dataset:
   valid_loader_workers: 10
   train_dataset_shards: "$GCS_DATASET_DIR/svhn-train-wds/shards-{00000..00099}.tar"
   valid_dataset_shards: "$GCS_DATASET_DIR/svhn-test-wds/shards-{00000..00063}.tar"
-  random_crop: none
+  random_crop: src
   color_jitter: 0.0
   auto_augment: "none"
   random_erasing: 0.0
@@ -33,8 +33,8 @@ dataset:
   generated_dataset_shards:
     ['$GCS_MODEL_DIR/svhn_50m-1024-wds/shards-{00000..01023}.tar']
   dataset_mix_ratio: 0.1
-  max_syn_ratio: 0.1
-  min_syn_ratio: 0.1
+  max_syn_ratio: 0.8
+  min_syn_ratio: 0.8
   scheduler: 'stable'
 
 
