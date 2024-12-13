@@ -112,6 +112,13 @@ def main(configs):
         # for step in tqdm.trange(init_step, training_steps + 1, dynamic_ncols=True):
         for _ in range(grad_accum_steps):
             batch = shard(jax.tree_util.tree_map(np.asarray, next(train_dataloader_iter)))
+
+            images,labels=batch
+            print(images.shape,labels.shape)
+            while True:
+                pass
+
+
             state, metrics = training_step(state, batch, use_pgd)
             average_meter.update(**unreplicate(metrics))
 
