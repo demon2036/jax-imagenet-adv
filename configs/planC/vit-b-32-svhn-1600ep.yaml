@@ -32,6 +32,9 @@ dataset:
   generated_dataset_shards:
     ['$GCS_MODEL_DIR/svhn_50m-1024-wds/shards-{00000..01023}.tar']
   dataset_mix_ratio: 0.1
+  max_syn_ratio: 0.1
+  min_syn_ratio: 0.1
+  scheduler: 'stable'
 
 
 train_state:
