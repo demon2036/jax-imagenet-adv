@@ -6,7 +6,7 @@ steps: 73257
 training_epoch: 1600
 warmup_epoch: 20
 log_interval: 100
-eval_epoch: 10
+eval_epoch: 50
 grad_accum_steps: 1
 
 #resume: True
@@ -31,7 +31,7 @@ dataset:
   image_size: 32
   generated_dataset_shards:
     ['$GCS_MODEL_DIR/svhn_50m-1024-wds/shards-{00000..01023}.tar']
-  dataset_mix_ratio: 0.9
+  dataset_mix_ratio: 0.1
 
 
 train_state:
@@ -40,8 +40,8 @@ train_state:
     mixup: 0.0
     cutmix: 0.0
     criterion: ce
-    label_smoothing: 0.1
-    train_adv_step: 1
+    label_smoothing: 0.0
+    train_adv_step: 0
     eps: 8/255
     train_adv_step_size: 2 / 255
 
@@ -54,12 +54,12 @@ train_state:
 #      drop_rate: 0.5
 
   optimizer:
-    target: 'adamw'
+    target: 'lion'
     optimizer_kwargs:
-      learning_rate: 1.0e-3
+      learning_rate: 1.0e-4
       weight_decay: 0.05
       b1: 0.9
-      b2: 0.999
+      b2: 0.99
 #      eps: 1.0e-8
 #      lr_decay: 1.0
 #      clip_grad: 0.0
