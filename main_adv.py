@@ -114,9 +114,9 @@ def main(configs):
             batch = shard(jax.tree_util.tree_map(np.asarray, next(train_dataloader_iter)))
 
             images,labels=batch
-            print(images.max(),images.min(),labels.shape,labels)
-            while True:
-                pass
+            # print(images.max(),images.min(),labels.shape,labels)
+            # while True:
+            #     pass
 
 
             state, metrics = training_step(state, batch, use_pgd)
