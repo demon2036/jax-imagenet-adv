@@ -113,12 +113,6 @@ def main(configs):
         for _ in range(grad_accum_steps):
             batch = shard(jax.tree_util.tree_map(np.asarray, next(train_dataloader_iter)))
 
-            images,labels=batch
-            # print(images.max(),images.min(),labels.shape,labels)
-            # while True:
-            #     pass
-
-
             state, metrics = training_step(state, batch, use_pgd)
             average_meter.update(**unreplicate(metrics))
 
