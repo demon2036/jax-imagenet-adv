@@ -44,7 +44,7 @@ train_state:
     mixup: 0.0
     cutmix: 0.0
     criterion: ce
-    label_smoothing: 0.0
+    label_smoothing: 0.4
     train_adv_step: 10
     beta: 4
     eps: 8/255
@@ -62,7 +62,7 @@ train_state:
     target: 'lion'
     optimizer_kwargs:
       learning_rate: 1.0e-4
-      weight_decay: 0.05
+      weight_decay: 0.5
       b1: 0.9
       b2: 0.99
 #      eps: 1.0e-8
