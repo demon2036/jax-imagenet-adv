@@ -27,7 +27,7 @@ dataset:
   color_generated_jitter: 0.0
   random_generated_erasing: 0.0
   augment_repeats: 3
-  test_crop_ratio: 0.875
+  test_crop_ratio: 1.0
   shuffle_seed: 1
   image_size: 32
   generated_dataset_shards:
@@ -46,7 +46,7 @@ train_state:
     criterion: ce
     label_smoothing: 0.0
     train_adv_step: 10
-    beta: 3
+    beta: 4
     eps: 8/255
     train_adv_step_size: 2 / 255
 
