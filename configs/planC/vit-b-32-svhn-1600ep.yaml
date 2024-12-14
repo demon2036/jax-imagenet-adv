@@ -46,7 +46,7 @@ train_state:
     criterion: ce
     label_smoothing: 0.4
     train_adv_step: 10
-    beta: 4
+    beta: 6
     eps: 8/255
     train_adv_step_size: 2 / 255
 
