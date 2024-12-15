@@ -134,8 +134,22 @@ def main(configs):
 
         train_state_sharding = jtu.tree_map(lambda x: NamedSharding(mesh, x), train_state_partition)
 
+
+
+
+        def go(x):
+            return x
+
+        go_jit=jax.jit(go,out_shardings=jax.NamedSharding(mesh,P('dp')))
+
+
+
+
+
+
+
         training_step_pjit = jax.jit(training_step, static_argnums=(2,),
-                                     donate_argnums=(0,), in_shardings=(train_state_sharding, NamedSharding(mesh,P('dp','fsdp','mp')),),
+                                     donate_argnums=(0,), in_shardings=(train_state_sharding, None,),
                                      out_shardings=(train_state_sharding,None ))
 
         if use_orbax_save:
@@ -162,6 +176,9 @@ def main(configs):
                 batch = jax.tree_util.tree_map(lambda x: np.asarray(x), next(train_dataloader_iter))
 
                 batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
+
+                batch = jtu.tree_map(go_jit, batch)
+
 
                 state, metrics = training_step_pjit(state, batch, use_pgd)
                 # images,labels=batch
