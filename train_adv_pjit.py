@@ -48,38 +48,36 @@ from utils import AverageMeter, read_yaml, preprocess_config, save_checkpoint_in
 import jax.tree_util as jtu
 from functools import partial
 
+
 # warnings.filterwarnings("ignore")
 
 
 def _build_global_shape_and_sharding(
-    local_shape: tuple[int, ...], global_mesh: Mesh
+        local_shape: tuple[int, ...], global_mesh: Mesh
 ) -> tuple[tuple[int, ...], NamedSharding]:
-  sharding = NamedSharding(global_mesh, PartitionSpec(global_mesh.axis_names))
+    sharding = NamedSharding(global_mesh, PartitionSpec(global_mesh.axis_names))
 
-  global_shape = (jax.process_count() * local_shape[0],) + local_shape[1:]
+    global_shape = (jax.process_count() * local_shape[0],) + local_shape[1:]
 
-  return global_shape, sharding
+    return global_shape, sharding
 
 
 def _form_global_array(path, array: np.ndarray, global_mesh: Mesh) -> jax.Array:
-  """Put local sharded array into local devices"""
+    """Put local sharded array into local devices"""
 
+    global_shape, sharding = _build_global_shape_and_sharding(np.shape(array), global_mesh)
 
+    try:
+        local_device_arrays = np.split(array, len(global_mesh.local_devices), axis=0)
+    except ValueError as array_split_error:
+        raise ValueError(
+            f"Unable to put to devices shape {array.shape} with "
+            f"local device count {len(global_mesh.local_devices)} "
+            f"at {jtu.keystr(path)}"
+        ) from array_split_error
 
-  global_shape, sharding = _build_global_shape_and_sharding(np.shape(array), global_mesh)
-
-  try:
-    local_device_arrays = np.split(array, len(global_mesh.local_devices), axis=0)
-  except ValueError as array_split_error:
-    raise ValueError(
-        f"Unable to put to devices shape {array.shape} with "
-        f"local device count {len(global_mesh.local_devices)} "
-        f"at {jtu.keystr(path)}"
-    ) from array_split_error
-
-  local_device_buffers = jax.device_put(local_device_arrays, global_mesh.local_devices)
-  return jax.make_array_from_single_device_arrays(global_shape, sharding, local_device_buffers)
-
+    local_device_buffers = jax.device_put(local_device_arrays, global_mesh.local_devices)
+    return jax.make_array_from_single_device_arrays(global_shape, sharding, local_device_buffers)
 
 
 def evaluate(state: TrainState, dataloader: DataLoader) -> dict[str, float]:
@@ -112,15 +110,11 @@ def main(configs):
         pass
         # wandb.init(name=configs['name'], project=configs['project'], config=configs)
 
-
-
     postfix = "ema"
     name = configs['name']
     output_dir = configs['output_dir']
     filename = os.path.join(output_dir, f"{name}-{postfix}")
     print(filename)
-
-
 
     mesh_dim = '!-1,1,2'
     mesh = get_jax_mesh2(mesh_dim)
@@ -133,19 +127,16 @@ def main(configs):
                                                                                   grad_accum=grad_accum_steps)
     with mesh:
 
-        state,train_state_partition=create_train_state(configs['train_state'],
-                                                                        warmup_steps=warmup_steps,
-                                                                        training_steps=training_steps,
-                                                                        grad_accum_steps=grad_accum_steps,mesh=mesh)
+        state, train_state_partition = create_train_state(configs['train_state'],
+                                                          warmup_steps=warmup_steps,
+                                                          training_steps=training_steps,
+                                                          grad_accum_steps=grad_accum_steps, mesh=mesh)
 
-        train_state_sharding=jtu.tree_map(lambda x:NamedSharding(mesh,x),train_state_partition)
+        train_state_sharding = jtu.tree_map(lambda x: NamedSharding(mesh, x), train_state_partition)
 
-
-        training_step_pjit=jax.jit(training_step,static_argnums=(2,),
-                                donate_argnums=(0,),in_shardings=(train_state_sharding,None,),out_shardings=(train_state_sharding,P()))
-
-
-
+        training_step_pjit = jax.jit(training_step, static_argnums=(2,),
+                                     donate_argnums=(0,), in_shardings=(train_state_sharding, NamedSharding(mesh,P('dp')),),
+                                     out_shardings=(train_state_sharding, ))
 
         if use_orbax_save:
             checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
@@ -160,8 +151,6 @@ def main(configs):
         else:
             init_step = 1
 
-
-
         average_meter, max_val_acc1 = AverageMeter(use_latest=["learning_rate"]), 0.0
 
         epoch = init_step // epoch_per_step
@@ -170,7 +159,7 @@ def main(configs):
             # for step in tqdm.trange(init_step, training_steps + 1, dynamic_ncols=True):
             for _ in range(grad_accum_steps):
                 # batch = jax.tree_util.tree_map(lambda x: jax.make_array_from_process_local_data(sharding,np.asarray(x))  , next(train_dataloader_iter))
-                batch = jax.tree_util.tree_map(lambda x: np.asarray(x)  , next(train_dataloader_iter))
+                batch = jax.tree_util.tree_map(lambda x: np.asarray(x), next(train_dataloader_iter))
 
                 batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
 
@@ -178,39 +167,24 @@ def main(configs):
                 # images,labels=batch
 
                 # print(f'{images.shape=}  {labels.shape=}')
-                if jax.process_index()==0:
-                    images,labels=batch
+                if jax.process_index() == 0:
+                    images, labels = batch
                     print(f'{images.shape=}')
-                    images,labels=next(train_dataloader_iter)
+                    images, labels = next(train_dataloader_iter)
                     print(f'{images.shape=}')
-
 
                 # print(metrics)
-
 
                 # while True:
                 #     pass
 
-
                 # state, metrics = training_step(state, batch, use_pgd)
                 # average_meter.update(**unreplicate(metrics))
-
-
-
-
-
-
-
 
         # print(state.params)
 
     # train_state_shapes = jax.eval_shape(init_fn, params)
     # train_state_partition = match_partition_rules(get_partition_rules(), train_state_shapes)
-
-
-
-        
-
 
     """
 
@@ -274,6 +248,7 @@ def main(configs):
     if use_orbax_save:
         checkpointer.wait_until_finished()
     """
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
