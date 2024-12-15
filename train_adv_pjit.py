@@ -133,10 +133,7 @@ def main(configs):
         for step in tqdm.tqdm(range(init_step, training_steps + 1), initial=init_step, total=training_steps + 1):
             # for step in tqdm.trange(init_step, training_steps + 1, dynamic_ncols=True):
             for _ in range(grad_accum_steps):
-                batch = shard(jax.tree_util.tree_map(np.asarray, next(train_dataloader_iter)))
-
-
-
+                batch = jax.tree_util.tree_map(np.asarray, next(train_dataloader_iter))
 
                 images,labels=batch
 
