@@ -137,8 +137,8 @@ def main(configs):
                 print(metrics)
 
 
-                while True:
-                    pass
+                # while True:
+                #     pass
 
 
                 # state, metrics = training_step(state, batch, use_pgd)
