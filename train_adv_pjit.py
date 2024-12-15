@@ -29,6 +29,7 @@ from flax.jax_utils import unreplicate
 from flax.serialization import msgpack_serialize
 from flax.training import orbax_utils
 from flax.training.common_utils import shard
+from jax._src.pjit import pjit
 from tensorboard.plugins.image.summary import image
 from torch.nn.parallel import replicate
 from torch.utils.data import DataLoader
@@ -36,6 +37,7 @@ from torch.utils.data import DataLoader
 from state import create_train_state
 from test_dataset_fork2 import create_dataloaders, DynamicMixRatioState
 # from test_dataset_fork import create_dataloaders
+from jax.sharding import PartitionSpec as P
 from training import TrainState, training_step, validation_adv_step
 from utils import AverageMeter, read_yaml, preprocess_config, save_checkpoint_in_background, \
     save_checkpoint_in_background2, get_partition_rules, match_partition_rules, get_jax_mesh2
@@ -74,10 +76,7 @@ def main(configs):
         pass
         # wandb.init(name=configs['name'], project=configs['project'], config=configs)
 
-    # state = create_train_state(configs['train_state'],
-    #                            warmup_steps=warmup_steps,
-    #                            training_steps=training_steps,
-    #                            grad_accum_steps=grad_accum_steps)
+
 
     postfix = "ema"
     name = configs['name']
@@ -99,6 +98,8 @@ def main(configs):
                                                                         warmup_steps=warmup_steps,
                                                                         training_steps=training_steps,
                                                                         grad_accum_steps=grad_accum_steps,mesh=mesh)
+
+        training_step_pjit=pjit(training_step,donate_argnums=(0,),in_shardings=(train_state_partition,P('data'),P()),out_shardings=(train_state_partition,P()))
 
         sharding = jax.sharding.NamedSharding(
             mesh, jax.sharding.PartitionSpec("dp"))
@@ -128,9 +129,11 @@ def main(configs):
             for _ in range(grad_accum_steps):
                 batch = jax.tree_util.tree_map(lambda x: jax.make_array_from_process_local_data(sharding,np.asarray(x))  , next(train_dataloader_iter))
 
-                images,labels=batch
+                state, metrics = training_step_pjit(state, batch, use_pgd)
+                # images,labels=batch
 
-                print(f'{images.shape=}  {labels.shape=}')
+                # print(f'{images.shape=}  {labels.shape=}')
+                print(metrics)
 
 
                 while True:
