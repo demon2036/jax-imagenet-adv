@@ -32,7 +32,9 @@ import optax
 import webdataset as wds
 import yaml
 from chex import Array, ArrayTree
+from jax.experimental import mesh_utils
 from jax.tree_util import DictKey
+from jax.sharding import Mesh,PartitionSpec as PS
 
 
 class AverageMeter:
@@ -217,6 +219,55 @@ def get_obj_from_str(string: str):
 
 
 
+
+def tree_path_to_string(path, sep=None):
+    keys = []
+    for key in path:
+        if isinstance(key, jax.tree_util.SequenceKey):
+            keys.append(str(key.idx))
+        elif isinstance(key, jax.tree_util.DictKey):
+            keys.append(str(key.key))
+        elif isinstance(key, jax.tree_util.GetAttrKey):
+            keys.append(str(key.name))
+        elif isinstance(key, jax.tree_util.FlattenedIndexKey):
+            keys.append(str(key.key))
+        else:
+            keys.append(str(key))
+    if sep is None:
+        return tuple(keys)
+    return sep.join(keys)
+
+def named_tree_map(f, tree, *rest, is_leaf=None, sep=None):
+    """ An extended version of jax.tree_util.tree_map, where the mapped function
+        f takes both the name (path) and the tree leaf as input.
+    """
+    return jax.tree_util.tree_map_with_path(
+        lambda path, x, *r: f(tree_path_to_string(path, sep=sep), x, *r),
+        tree, *rest,
+        is_leaf=is_leaf
+    )
+
+def match_partition_rules(rules, params):
+    """ Returns a pytree of PartitionSpec according to rules. Supports handling
+        Flax TrainState and Optax optimizer state.
+    """
+
+    def get_partition_spec(name, leaf):
+        # print(name,)
+        if len(leaf.shape) == 0 or np.prod(leaf.shape) == 1:
+            """ Don't partition scalar values. """
+            return PS()
+        for rule, ps in rules:
+            if re.search(rule, name) is not None:
+                return ps
+        raise ValueError(f'Partition rule not found for param: {name}')
+
+    return named_tree_map(get_partition_spec, params, sep='/')
+
+
+
+
+
 def replace_env_variables(text):
 
     if isinstance(text,str):
@@ -244,11 +295,58 @@ def replace_env_variables(text):
 
 
 def preprocess_config(yaml):
-
     yaml=jax.tree_util.tree_map(replace_env_variables,yaml)
-
-
-
-
-
     return yaml
+
+
+
+def get_partition_rules():
+    return (
+        ('MetaFormerStage_[01]/.*/pwconv1/kernel', PS(None, None, 'fsdp', 'mp')),
+        ('MetaFormerStage_[01]/.*/dwconv/kernel', PS(None, None, 'fsdp', 'mp')),
+        ('MetaFormerStage_[01]/.*/pwconv2/kernel', PS(None, None, 'fsdp', 'mp')),
+
+        ('MetaFormerStage_[01]/.*/fc1/kernel', PS(None,None,'fsdp', 'mp')),
+        ('MetaFormerStage_[01]/.*/fc2/kernel', PS(None,None,'mp', 'fsdp')),
+
+        ('MetaFormerStage_[23]/.*/qkv/kernel', PS('fsdp', 'mp')),
+        ('MetaFormerStage_[23]/.*/proj/kernel', PS('mp', 'fsdp')),
+
+
+        ('MetaFormerStage_[23]/.*/fc1/kernel',PS('fsdp','mp')),
+        ('MetaFormerStage_[23]/.*/fc2/kernel', PS('mp', 'fsdp')),
+        ('.*', PS(None)),
+    )
+
+def get_jax_mesh(axis_dims, names):
+    if axis_dims.startswith('!'):
+        # Allow splitting a physical mesh axis if needed
+        mesh_axis_splitting = True
+        axis_dims = axis_dims[1:]
+    else:
+        mesh_axis_splitting = False
+
+    if ':' in axis_dims:
+        dims = []
+        dim_names = []
+        for axis in axis_dims.split(','):
+            print(axis)
+            name, dim = axis.split(':')
+            assert name in names
+            dims.append(int(dim))
+            dim_names.append(name)
+        assert(set(dim_names) == set(names))
+    else:
+        dims = [int(x) for x in axis_dims.split(',')]
+        dim_names = names
+    assert len(dims) == len(names)
+    mesh_shape = np.arange(jax.device_count()).reshape(dims).shape
+    if mesh_axis_splitting:
+        physical_mesh = np.array(jax.devices()).reshape(mesh_shape)
+    else:
+        physical_mesh = mesh_utils.create_device_mesh(mesh_shape)
+    return Mesh(physical_mesh, dim_names)
+
+# mesh_dim='dp:2,fsdp:-1,mp:1'
+def get_jax_mesh2(axis_dims):
+    return get_jax_mesh(axis_dims, ('dp', 'fsdp', 'mp'))

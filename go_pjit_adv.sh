@@ -10,7 +10,7 @@ for script in "${SCRIPT_PATHS[@]}"; do
     sudo rm /tmp/libtpu_lockfile
     source ~/miniconda3/bin/activate base;
 #    python -u test.py
-    python -u main_adv.py --yaml-path $script
+    python -u train_adv_pjit.py --yaml-path $script
 #    python -u main.py --yaml-path $script
 #    python -u main_test.py --yaml-path $script
 
