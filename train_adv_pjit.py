@@ -134,7 +134,9 @@ def main(configs):
                 # images,labels=batch
 
                 # print(f'{images.shape=}  {labels.shape=}')
-                print(metrics)
+                if jax.process_index()==0:
+                    print(batch[0].shape)
+                # print(metrics)
 
 
                 # while True:
