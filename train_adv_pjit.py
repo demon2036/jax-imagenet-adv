@@ -135,7 +135,7 @@ def main(configs):
         train_state_sharding = jtu.tree_map(lambda x: NamedSharding(mesh, x), train_state_partition)
 
         training_step_pjit = jax.jit(training_step, static_argnums=(2,),
-                                     donate_argnums=(0,), in_shardings=(train_state_sharding, NamedSharding(mesh,P('dp')),),
+                                     donate_argnums=(0,), in_shardings=(train_state_sharding, NamedSharding(mesh,P('dp','fsdp','mp')),),
                                      out_shardings=(train_state_sharding,None ))
 
         if use_orbax_save:
