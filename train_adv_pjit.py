@@ -47,7 +47,7 @@ from utils import AverageMeter, read_yaml, preprocess_config, save_checkpoint_in
 
 import jax.tree_util as jtu
 from functools import partial
-
+import jax.numpy as jnp
 
 # warnings.filterwarnings("ignore")
 
@@ -178,7 +178,12 @@ def main(configs):
                 batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
 
                 batch = jtu.tree_map(go_jit, batch)
+                images, labels = batch
+                # jnp.array().addressable_data(0)
+                print(images.addressable_data(0))
 
+                while True:
+                    pass
 
                 state, metrics = training_step_pjit(state, batch, use_pgd)
                 # images,labels=batch
