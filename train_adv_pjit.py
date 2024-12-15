@@ -139,7 +139,7 @@ def main(configs):
                                                                         grad_accum_steps=grad_accum_steps,mesh=mesh)
 
         training_step_pjit=pjit(training_step,static_argnums=(2,),
-                                donate_argnums=(0,),in_shardings=(train_state_partition,P('dp','fsdp','mp'),),out_shardings=(train_state_partition,P()))
+                                donate_argnums=(0,),in_shardings=(train_state_partition,None,),out_shardings=(train_state_partition,P()))
 
 
 
