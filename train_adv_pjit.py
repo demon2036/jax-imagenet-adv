@@ -93,14 +93,6 @@ def main(configs):
 
     train_dataloader_iter, valid_dataloader, mix_ratio_state = create_dataloaders(**configs['dataset'],
                                                                                   grad_accum=grad_accum_steps)
-    batch = jax.tree_util.tree_map(np.asarray, next(train_dataloader_iter))
-    images, labels = batch
-
-    print(f'{images.shape=}')
-
-
-
-
     with mesh:
 
         state,train_state_partition=create_train_state(configs['train_state'],
@@ -134,18 +126,11 @@ def main(configs):
         for step in tqdm.tqdm(range(init_step, training_steps + 1), initial=init_step, total=training_steps + 1):
             # for step in tqdm.trange(init_step, training_steps + 1, dynamic_ncols=True):
             for _ in range(grad_accum_steps):
-                batch = jax.tree_util.tree_map(np.asarray, next(train_dataloader_iter))
+                batch = jax.tree_util.tree_map(lambda x: jax.make_array_from_process_local_data(sharding,np.asarray(x))  , next(train_dataloader_iter))
 
                 images,labels=batch
 
-                print(f'{images.shape=}')
-
-
-
-                global_batch_array = jax.make_array_from_process_local_data(
-                    sharding, images)
-
-                print(f'{global_batch_array.shape=}')
+                print(f'{images.shape=}  {labels.shape=}')
 
 
                 while True:
