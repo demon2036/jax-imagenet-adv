@@ -29,6 +29,7 @@ from flax.jax_utils import unreplicate
 from flax.serialization import msgpack_serialize
 from flax.training import orbax_utils
 from flax.training.common_utils import shard
+from tensorboard.plugins.image.summary import image
 from torch.nn.parallel import replicate
 from torch.utils.data import DataLoader
 
@@ -105,6 +106,10 @@ def main(configs):
                                                                         training_steps=training_steps,
                                                                         grad_accum_steps=grad_accum_steps,mesh=mesh)
 
+        sharding = jax.sharding.NamedSharding(
+            mesh, jax.sharding.PartitionSpec("dp"))
+
+
         if use_orbax_save:
             checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
             ckpt = {'model': state}
@@ -118,6 +123,47 @@ def main(configs):
         else:
             init_step = 1
 
+        train_dataloader_iter, valid_dataloader, mix_ratio_state = create_dataloaders(**configs['dataset'],
+                                                                                 grad_accum=grad_accum_steps)
+
+        average_meter, max_val_acc1 = AverageMeter(use_latest=["learning_rate"]), 0.0
+
+        epoch = init_step // epoch_per_step
+        mix_ratio_state.update_mix_ratio(epoch, configs['training_epoch'])
+        for step in tqdm.tqdm(range(init_step, training_steps + 1), initial=init_step, total=training_steps + 1):
+            # for step in tqdm.trange(init_step, training_steps + 1, dynamic_ncols=True):
+            for _ in range(grad_accum_steps):
+                batch = shard(jax.tree_util.tree_map(np.asarray, next(train_dataloader_iter)))
+
+
+
+
+                images,labels=batch
+
+                print(images.shape)
+
+
+
+                global_batch_array = jax.make_array_from_process_local_data(
+                    sharding, images)
+
+                print(global_batch_array.shape)
+
+
+                while True:
+                    pass
+
+
+                # state, metrics = training_step(state, batch, use_pgd)
+                # average_meter.update(**unreplicate(metrics))
+
+
+
+
+
+
+
+
         # print(state.params)
 
     # train_state_shapes = jax.eval_shape(init_fn, params)
@@ -130,15 +176,11 @@ def main(configs):
 
     """
 
-    state = state.replicate()
-    train_dataloader, valid_dataloader,mix_ratio_state = create_dataloaders(**configs['dataset'],
-                                                                             grad_accum=grad_accum_steps)
 
 
 
-    # train_dataloader_iter = iter(train_dataloader)
-    train_dataloader_iter = train_dataloader
-    average_meter, max_val_acc1 = AverageMeter(use_latest=["learning_rate"]), 0.0
+
+
 
     epoch = init_step // epoch_per_step
     mix_ratio_state.update_mix_ratio(epoch, configs['training_epoch'])
