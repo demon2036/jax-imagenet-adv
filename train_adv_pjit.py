@@ -63,6 +63,9 @@ def _build_global_shape_and_sharding(
 
 def _form_global_array(path, array: np.ndarray, global_mesh: Mesh) -> jax.Array:
   """Put local sharded array into local devices"""
+
+
+
   global_shape, sharding = _build_global_shape_and_sharding(np.shape(array), global_mesh)
 
   try:
@@ -164,7 +167,9 @@ def main(configs):
             # for step in tqdm.trange(init_step, training_steps + 1, dynamic_ncols=True):
             for _ in range(grad_accum_steps):
                 # batch = jax.tree_util.tree_map(lambda x: jax.make_array_from_process_local_data(sharding,np.asarray(x))  , next(train_dataloader_iter))
-                batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), next(train_dataloader_iter))
+                batch = jax.tree_util.tree_map(lambda x: np.asarray(x)  , next(train_dataloader_iter))
+
+                batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
 
                 # state, metrics = training_step_pjit(state, batch, use_pgd)
                 # images,labels=batch
