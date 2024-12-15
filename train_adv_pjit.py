@@ -89,6 +89,9 @@ def main(configs):
     mesh_dim = '-1,1,4'
     mesh = get_jax_mesh2(mesh_dim)
     print(mesh)
+    sharding = jax.sharding.NamedSharding(
+        mesh, jax.sharding.PartitionSpec("dp"))
+    print(sharding)
 
     train_dataloader_iter, valid_dataloader, mix_ratio_state = create_dataloaders(**configs['dataset'],
                                                                                   grad_accum=grad_accum_steps)
@@ -102,8 +105,7 @@ def main(configs):
         training_step_pjit=pjit(training_step,static_argnums=(2,),
                                 donate_argnums=(0,),in_shardings=(train_state_partition,P('dp'),),out_shardings=(train_state_partition,P()))
 
-        sharding = jax.sharding.NamedSharding(
-            mesh, jax.sharding.PartitionSpec("dp"))
+
 
 
         if use_orbax_save:
@@ -135,11 +137,8 @@ def main(configs):
 
                 # print(f'{images.shape=}  {labels.shape=}')
                 if jax.process_index()==0:
-
                     images,labels=batch
                     print(f'{images.shape=}')
-
-
                     images,labels=next(train_dataloader_iter)
                     print(f'{images.shape=}')
 
