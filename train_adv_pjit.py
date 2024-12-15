@@ -54,7 +54,7 @@ from functools import partial
 def _build_global_shape_and_sharding(
     local_shape: tuple[int, ...], global_mesh: Mesh
 ) -> tuple[tuple[int, ...], NamedSharding]:
-  sharding = NamedSharding(global_mesh, PartitionSpec("dp"))
+  sharding = NamedSharding(global_mesh, PartitionSpec(global_mesh.axis_names))
 
   global_shape = (jax.process_count() * local_shape[0],) + local_shape[1:]
 
@@ -139,7 +139,7 @@ def main(configs):
                                                                         grad_accum_steps=grad_accum_steps,mesh=mesh)
 
         training_step_pjit=pjit(training_step,static_argnums=(2,),
-                                donate_argnums=(0,),in_shardings=(train_state_partition,P('dp'),),out_shardings=(train_state_partition,P()))
+                                donate_argnums=(0,),in_shardings=(train_state_partition,P('dp','fsdp','mp'),),out_shardings=(train_state_partition,P()))
 
 
 
