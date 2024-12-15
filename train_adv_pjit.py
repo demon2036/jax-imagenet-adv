@@ -140,14 +140,14 @@ def main(configs):
 
                 images,labels=batch
 
-                print(images.shape)
+                print(f'{images.shape=}')
 
 
 
                 global_batch_array = jax.make_array_from_process_local_data(
                     sharding, images)
 
-                print(global_batch_array.shape)
+                print(f'{global_batch_array.shape=}')
 
 
                 while True:
