@@ -309,12 +309,12 @@ def get_partition_rules():
         ('MetaFormerStage_[01]/.*/fc1/kernel', PS(None,None,'fsdp', 'mp')),
         ('MetaFormerStage_[01]/.*/fc2/kernel', PS(None,None,'mp', 'fsdp')),
 
-        # ('MetaFormerStage_[23]/.*/qkv/kernel', PS('fsdp', 'mp')),
-        # ('MetaFormerStage_[23]/.*/proj/kernel', PS('mp', 'fsdp')),
+        ('MetaFormerStage_[23]/.*/qkv/kernel', PS('fsdp', 'mp')),
+        ('MetaFormerStage_[23]/.*/proj/kernel', PS('mp', 'fsdp')),
 
 
-        # ('MetaFormerStage_[23]/.*/fc1/kernel',PS('fsdp','mp')),
-        # ('MetaFormerStage_[23]/.*/fc2/kernel', PS('mp', 'fsdp')),
+        ('MetaFormerStage_[23]/.*/fc1/kernel',PS('fsdp','mp')),
+        ('MetaFormerStage_[23]/.*/fc2/kernel', PS('mp', 'fsdp')),
         ('.*', PS(None)),
     )
 
