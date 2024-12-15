@@ -99,7 +99,8 @@ def main(configs):
                                                                         training_steps=training_steps,
                                                                         grad_accum_steps=grad_accum_steps,mesh=mesh)
 
-        training_step_pjit=pjit(training_step,donate_argnums=(0,),in_shardings=(train_state_partition,P('dp'),P()),out_shardings=(train_state_partition,P()))
+        training_step_pjit=pjit(training_step,static_argnums=(2,),
+                                donate_argnums=(0,),in_shardings=(train_state_partition,P('dp'),P()),out_shardings=(train_state_partition,P()))
 
         sharding = jax.sharding.NamedSharding(
             mesh, jax.sharding.PartitionSpec("dp"))
