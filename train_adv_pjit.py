@@ -86,7 +86,7 @@ def main(configs):
 
 
 
-    mesh_dim = '-1,1,2'
+    mesh_dim = '-1,1,4'
     mesh = get_jax_mesh2(mesh_dim)
     print(mesh)
 
