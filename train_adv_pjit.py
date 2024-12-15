@@ -181,7 +181,7 @@ def main(configs):
                 # batch = jtu.tree_map(go_jit, batch)
                 images, labels = batch
                 # jnp.array().addressable_shards(0)
-                print(images.addressable_data(0).shape,                      )
+                print(images.addressable_data(0).shape,)
 
                 # while True:
                 #     pass
