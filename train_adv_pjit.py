@@ -97,6 +97,16 @@ def main(configs):
 
     train_dataloader_iter, valid_dataloader, mix_ratio_state = create_dataloaders(**configs['dataset'],
                                                                                   grad_accum=grad_accum_steps)
+    batch = jax.tree_util.tree_map(np.asarray, next(train_dataloader_iter))
+    images, labels = batch
+
+    print(f'{images.shape=}')
+
+
+    while True:
+        pass
+
+
 
     with mesh:
 
