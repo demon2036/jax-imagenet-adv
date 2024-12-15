@@ -101,7 +101,8 @@ def main(configs):
     use_orbax_save = configs.pop('use_orbax_save', True)
 
     if use_orbax_save:
-        jax.distributed.initialize()
+        pass
+        # jax.distributed.initialize()
 
     use_pgd = configs.pop('use_pgd', True)
     grad_accum_steps = configs.pop('grad_accum_steps', 1)
@@ -116,7 +117,7 @@ def main(configs):
     filename = os.path.join(output_dir, f"{name}-{postfix}")
     print(filename)
 
-    mesh_dim = '!-1,1,4'
+    mesh_dim = '-1,1,4'
     mesh = get_jax_mesh2(mesh_dim)
     print(mesh)
     sharding = jax.sharding.NamedSharding(
@@ -184,8 +185,8 @@ def main(configs):
                       # images.addressable_shards
                       )
 
-                while True:
-                    pass
+                # while True:
+                #     pass
 
                 state, metrics = training_step_pjit(state, batch, use_pgd)
                 # images,labels=batch
@@ -277,7 +278,7 @@ def main(configs):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--yaml-path", type=str,
-                        default='configs/pjit/test.yaml')
+                        default='configs/planB/ablation/best/test.yaml')
     # parser.add_argument("--train-dataset-shards")
     # parser.add_argument("--valid-dataset-shards")
     # parser.add_argument("--train-batch-size", type=int, default=2048)

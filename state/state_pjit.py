@@ -159,7 +159,6 @@ def create_train_state(train_state_config, image_size: int = 32, warmup_steps=1,
 
     train_state_shapes = jax.eval_shape(init_fn, params)
     train_state_partition = match_partition_rules(get_partition_rules(), train_state_shapes)
-
     # jax.sharding.NamedSharding(mesh,train_state_partition)
 
     state=pjit(init_fn, in_shardings=(train_state_partition.params, ),
