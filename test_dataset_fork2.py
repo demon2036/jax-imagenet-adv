@@ -351,6 +351,9 @@ def create_dataloaders(
                                                                test_crop_ratio
                                                                )
     total_batch_size = train_batch_size // jax.process_count() //grad_accum
+
+
+
     train_batch_size = int(total_batch_size * dataset_mix_ratio)
     train_origin_batch_size = total_batch_size - train_batch_size
 

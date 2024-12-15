@@ -65,11 +65,7 @@ def main(configs):
     use_orbax_save = configs.pop('use_orbax_save', True)
 
     if use_orbax_save:
-        pass
-        os.environ["XLA_FLAGS"] = '--xla_force_host_platform_device_count=2'
-        #
-        jax.config.update('jax_platform_name', 'cpu')
-        # jax.distributed.initialize()
+        jax.distributed.initialize()
 
     use_pgd = configs.pop('use_pgd', True)
     grad_accum_steps = configs.pop('grad_accum_steps', 1)
@@ -102,9 +98,6 @@ def main(configs):
 
     print(f'{images.shape=}')
 
-
-    while True:
-        pass
 
 
 
