@@ -95,9 +95,8 @@ def main(configs):
     mesh = get_jax_mesh2(mesh_dim)
     print(mesh)
 
-
-
-
+    train_dataloader_iter, valid_dataloader, mix_ratio_state = create_dataloaders(**configs['dataset'],
+                                                                                  grad_accum=grad_accum_steps)
 
     with mesh:
 
@@ -123,8 +122,7 @@ def main(configs):
         else:
             init_step = 1
 
-        train_dataloader_iter, valid_dataloader, mix_ratio_state = create_dataloaders(**configs['dataset'],
-                                                                                 grad_accum=grad_accum_steps)
+
 
         average_meter, max_val_acc1 = AverageMeter(use_latest=["learning_rate"]), 0.0
 
