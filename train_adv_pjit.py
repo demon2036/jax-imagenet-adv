@@ -132,7 +132,7 @@ def main(configs):
             for _ in range(grad_accum_steps):
                 batch = jax.tree_util.tree_map(lambda x: jax.make_array_from_process_local_data(sharding,np.asarray(x))  , next(train_dataloader_iter))
 
-                # state, metrics = training_step_pjit(state, batch, use_pgd)
+                state, metrics = training_step_pjit(state, batch, use_pgd)
                 # images,labels=batch
 
                 # print(f'{images.shape=}  {labels.shape=}')
