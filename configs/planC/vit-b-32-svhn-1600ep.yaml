@@ -6,7 +6,7 @@ steps: 73257
 training_epoch: 6000
 warmup_epoch: 50
 log_interval: 100
-eval_epoch: 1
+eval_epoch: 2
 grad_accum_steps: 1
 use_pgd: False
 
@@ -45,7 +45,7 @@ train_state:
     cutmix: 0.0
     criterion: ce
     label_smoothing: 0.0
-    train_adv_step: 10
+    train_adv_step: 20
     beta: 8
     eps: 8/255
     train_adv_step_size: 2 / 255
