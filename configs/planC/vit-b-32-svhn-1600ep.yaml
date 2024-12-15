@@ -10,7 +10,7 @@ eval_epoch: 1
 grad_accum_steps: 1
 use_pgd: False
 
-#resume: True
+resume: True
 
 dataset:
   train_batch_size: 4096
