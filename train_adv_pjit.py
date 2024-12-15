@@ -179,7 +179,7 @@ def main(configs):
                 # batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
 
                 # batch = jtu.tree_map(go_jit, batch)
-                # images, labels = batch
+                images, labels = batch
                 # jnp.array().addressable_shards(0)
                 print(images.addressable_data(0).shape,                      )
 
