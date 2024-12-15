@@ -29,6 +29,9 @@ from flax.jax_utils import unreplicate
 from flax.serialization import msgpack_serialize
 from flax.training import orbax_utils
 from flax.training.common_utils import shard
+from jax import NamedSharding
+from jax._src.mesh import Mesh
+from jax._src.partition_spec import PartitionSpec
 from jax._src.pjit import pjit
 from tensorboard.plugins.image.summary import image
 from torch.nn.parallel import replicate
@@ -42,8 +45,38 @@ from training_pjit import TrainState, training_step, validation_adv_step
 from utils import AverageMeter, read_yaml, preprocess_config, save_checkpoint_in_background, \
     save_checkpoint_in_background2, get_partition_rules, match_partition_rules, get_jax_mesh2
 
+import jax.tree_util as jtu
+from functools import partial
 
 # warnings.filterwarnings("ignore")
+
+
+def _build_global_shape_and_sharding(
+    local_shape: tuple[int, ...], global_mesh: Mesh
+) -> tuple[tuple[int, ...], NamedSharding]:
+  sharding = NamedSharding(global_mesh, PartitionSpec(global_mesh.axis_names))
+
+  global_shape = (jax.process_count() * local_shape[0],) + local_shape[1:]
+
+  return global_shape, sharding
+
+
+def _form_global_array(path, array: np.ndarray, global_mesh: Mesh) -> jax.Array:
+  """Put local sharded array into local devices"""
+  global_shape, sharding = _build_global_shape_and_sharding(np.shape(array), global_mesh)
+
+  try:
+    local_device_arrays = np.split(array, len(global_mesh.local_devices), axis=0)
+  except ValueError as array_split_error:
+    raise ValueError(
+        f"Unable to put to devices shape {array.shape} with "
+        f"local device count {len(global_mesh.local_devices)} "
+        f"at {jtu.keystr(path)}"
+    ) from array_split_error
+
+  local_device_buffers = jax.device_put(local_device_arrays, global_mesh.local_devices)
+  return jax.make_array_from_single_device_arrays(global_shape, sharding, local_device_buffers)
+
 
 
 def evaluate(state: TrainState, dataloader: DataLoader) -> dict[str, float]:
@@ -130,9 +163,10 @@ def main(configs):
         for step in tqdm.tqdm(range(init_step, training_steps + 1), initial=init_step, total=training_steps + 1):
             # for step in tqdm.trange(init_step, training_steps + 1, dynamic_ncols=True):
             for _ in range(grad_accum_steps):
-                batch = jax.tree_util.tree_map(lambda x: jax.make_array_from_process_local_data(sharding,np.asarray(x))  , next(train_dataloader_iter))
+                # batch = jax.tree_util.tree_map(lambda x: jax.make_array_from_process_local_data(sharding,np.asarray(x))  , next(train_dataloader_iter))
+                batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), next(train_dataloader_iter))
 
-                state, metrics = training_step_pjit(state, batch, use_pgd)
+                # state, metrics = training_step_pjit(state, batch, use_pgd)
                 # images,labels=batch
 
                 # print(f'{images.shape=}  {labels.shape=}')
