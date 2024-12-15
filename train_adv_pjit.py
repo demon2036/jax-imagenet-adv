@@ -117,7 +117,7 @@ def main(configs):
     filename = os.path.join(output_dir, f"{name}-{postfix}")
     print(filename)
 
-    mesh_dim = '-1,1,4'
+    mesh_dim = '-1,1,1'
     mesh = get_jax_mesh2(mesh_dim)
     print(mesh)
     sharding = jax.sharding.NamedSharding(
@@ -142,11 +142,6 @@ def main(configs):
             return x
 
         go_jit=jax.jit(go,out_shardings=jax.NamedSharding(mesh,P('dp')))
-
-
-
-
-
 
 
         training_step_pjit = jax.jit(training_step, static_argnums=(2,),
@@ -179,20 +174,13 @@ def main(configs):
                 # batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
 
                 # batch = jtu.tree_map(go_jit, batch)
-                images, labels = batch
-                # jnp.array().addressable_shards(0)
-                print(images.addressable_data(0).shape,)
-
-                # while True:
-                #     pass
-
                 state, metrics = training_step_pjit(state, batch, use_pgd)
                 # images,labels=batch
 
                 # print(f'{images.shape=}  {labels.shape=}')
                 if jax.process_index() == 0:
                     images, labels = batch
-                    print(f'{images.shape=}')
+                    print(f'{images.shape=}   {images.addressable_data(0).shape=}')
                     images, labels = next(train_dataloader_iter)
                     print(f'{images.shape=}')
 
