@@ -38,7 +38,7 @@ from state import create_train_state
 from test_dataset_fork2 import create_dataloaders, DynamicMixRatioState
 # from test_dataset_fork import create_dataloaders
 from jax.sharding import PartitionSpec as P
-from training import TrainState, training_step, validation_adv_step
+from training_pjit import TrainState, training_step, validation_adv_step
 from utils import AverageMeter, read_yaml, preprocess_config, save_checkpoint_in_background, \
     save_checkpoint_in_background2, get_partition_rules, match_partition_rules, get_jax_mesh2
 
