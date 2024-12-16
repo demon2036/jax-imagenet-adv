@@ -144,7 +144,7 @@ def main(configs):
         return x
 
     jax.debug.visualize_array_sharding(test(batch[:,:,0,0,]))
-
+    print(1)
     while True:
         pass
 
