@@ -123,9 +123,9 @@ def main(configs):
         mesh, jax.sharding.PartitionSpec("dp",'fsdp','mp'))
     print(sharding)
     data_spec=[["dp",'fsdp','mp']]
-    data_spec=["dp",'fsdp','mp']
+    # data_spec=["dp",'fsdp','mp']
     data_spec=P(*data_spec)
-    print(data_spec,)
+    print(data_spec)
     sharding=jtu.tree_map(lambda p:NamedSharding(mesh,p),data_spec)
     print(data_spec)
 
