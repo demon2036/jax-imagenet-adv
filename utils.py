@@ -298,7 +298,6 @@ def preprocess_config(yaml):
     yaml=jax.tree_util.tree_map(replace_env_variables,yaml)
     return yaml
 
-
 def get_partition_rules():
     return (
         ('scale', PS('mp')),
