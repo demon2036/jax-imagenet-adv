@@ -66,7 +66,6 @@ def _form_global_array(path, array: np.ndarray, global_mesh: Mesh) -> jax.Array:
     """Put local sharded array into local devices"""
 
     global_shape, sharding = _build_global_shape_and_sharding(np.shape(array), global_mesh)
-
     try:
         local_device_arrays = np.split(array, len(global_mesh.local_devices), axis=0)
     except ValueError as array_split_error:
@@ -99,15 +98,19 @@ def main(configs):
     log_interval = configs['log_interval']
     use_orbax_save = configs.pop('use_orbax_save', True)
 
+
     if use_orbax_save:
+        # os.environ["XLA_FLAGS"] = '--xla_force_host_platform_device_count=8'
+        # jax.config.update('jax_platform_name', 'cpu')
+        # os.environ['JAX_PLATFORMS']='cpu'
         # pass
         jax.distributed.initialize()
 
     use_pgd = configs.pop('use_pgd', True)
     grad_accum_steps = configs.pop('grad_accum_steps', 1)
 
-    if jax.process_index() == 0:
-        pass
+    # if jax.process_index() == 0:
+    #     pass
         # wandb.init(name=configs['name'], project=configs['project'], config=configs)
 
     postfix = "ema"
@@ -131,6 +134,20 @@ def main(configs):
 
     # while True:
     #     pass
+
+    x=jnp.ones((128,3,224,224))
+    batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), x)
+    jax.debug.visualize_array_sharding(batch[:,:,0,0,])
+
+    @partial(jax.jit,out_shardings=sharding)
+    def test(x):
+        return x
+
+    jax.debug.visualize_array_sharding(test(batch[:,:,0,0,]))
+
+    while True:
+        pass
+
 
     train_dataloader_iter, valid_dataloader, mix_ratio_state = create_dataloaders(**configs['dataset'],
                                                                                   grad_accum=grad_accum_steps)
