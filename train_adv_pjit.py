@@ -108,7 +108,7 @@ def main(configs):
         # os.environ["XLA_FLAGS"] = '--xla_force_host_platform_device_count=8'
         # jax.config.update('jax_platform_name', 'cpu')
         pass
-        # jax.distributed.initialize()
+        jax.distributed.initialize()
 
     use_pgd = configs.pop('use_pgd', True)
     grad_accum_steps = configs.pop('grad_accum_steps', 1)
