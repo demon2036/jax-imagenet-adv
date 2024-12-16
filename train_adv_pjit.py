@@ -117,7 +117,7 @@ def main(configs):
     filename = os.path.join(output_dir, f"{name}-{postfix}")
     print(filename)
 
-    mesh_dim = '-1,1,1'
+    mesh_dim = '-1,1,4'
     mesh = get_jax_mesh2(mesh_dim)
     print(mesh)
     sharding = jax.sharding.NamedSharding(
@@ -178,11 +178,16 @@ def main(configs):
                 # images,labels=batch
 
                 # print(f'{images.shape=}  {labels.shape=}')
-                if jax.process_index() == 0:
-                    images, labels = batch
-                    print(f'{images.shape=}   {images.addressable_data(0).shape=}')
-                    images, labels = next(train_dataloader_iter)
-                    print(f'{images.shape=}')
+                # if jax.process_index() == 0:
+                #     images, labels = batch
+                #     print(f'{images.shape=}   {images.addressable_data(0).shape=}')
+                #     images, labels = next(train_dataloader_iter)
+                #     print(f'{images.shape=}')
+
+                images, labels = batch
+                print(f'{images.shape=}   {images.addressable_data(0).shape=}')
+                images, labels = next(train_dataloader_iter)
+                print(f'{images.shape=}')
 
                 # print(metrics)
 
