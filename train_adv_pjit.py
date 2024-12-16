@@ -121,7 +121,7 @@ def main(configs):
     mesh = get_jax_mesh2(mesh_dim)
     print(mesh)
     sharding = jax.sharding.NamedSharding(
-        mesh, jax.sharding.PartitionSpec("dp"))
+        mesh, jax.sharding.PartitionSpec("dp",'fsdp','mp'))
     print(sharding)
 
     train_dataloader_iter, valid_dataloader, mix_ratio_state = create_dataloaders(**configs['dataset'],
@@ -168,10 +168,9 @@ def main(configs):
         for step in tqdm.tqdm(range(init_step, training_steps + 1), initial=init_step, total=training_steps + 1):
             # for step in tqdm.trange(init_step, training_steps + 1, dynamic_ncols=True):
             for _ in range(grad_accum_steps):
-                batch = jax.tree_util.tree_map(lambda x: jax.make_array_from_process_local_data(sharding,np.asarray(x))  , next(train_dataloader_iter))
-                # batch = jax.tree_util.tree_map(lambda x: np.asarray(x), next(train_dataloader_iter))
-
-                # batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
+                # batch = jax.tree_util.tree_map(lambda x: jax.make_array_from_process_local_data(sharding,np.asarray(x))  , next(train_dataloader_iter))
+                batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), next(train_dataloader_iter))
+                batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
 
                 # batch = jtu.tree_map(go_jit, batch)
                 state, metrics = training_step_pjit(state, batch, use_pgd)
