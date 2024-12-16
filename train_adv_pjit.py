@@ -101,8 +101,8 @@ def main(configs):
     use_orbax_save = configs.pop('use_orbax_save', True)
 
     if use_orbax_save:
-        pass
-        # jax.distributed.initialize()
+        #pass
+        jax.distributed.initialize()
 
     use_pgd = configs.pop('use_pgd', True)
     grad_accum_steps = configs.pop('grad_accum_steps', 1)
