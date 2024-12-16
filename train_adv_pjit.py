@@ -97,7 +97,6 @@ def main(configs):
     eval_interval = configs['steps'] * configs['eval_epoch'] // configs['dataset']['train_batch_size']
     epoch_per_step = configs['steps'] // configs['dataset']['train_batch_size']
     log_interval = configs['log_interval']
-
     use_orbax_save = configs.pop('use_orbax_save', True)
 
     if use_orbax_save:
