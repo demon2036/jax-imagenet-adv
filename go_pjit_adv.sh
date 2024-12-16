@@ -9,7 +9,7 @@ for script in "${SCRIPT_PATHS[@]}"; do
     source ~/miniconda3/bin/activate base;
 #    python -u test.py
 #    export LIBTPU_INIT_ARGS="--xla_tpu_enable_async_collective_fusion_fuse_all_gather=true --xla_tpu_megacore_fusion_allow_ags=false --xla_enable_async_collective_permute=true --xla_tpu_enable_ag_backward_pipelining=true --xla_tpu_enable_data_parallel_all_reduce_opt=false --xla_tpu_data_parallel_opt_different_sized_ops=false --xla_tpu_enable_async_collective_fusion=true --xla_tpu_enable_async_collective_fusion_multiple_steps=true --xla_tpu_overlap_compute_collective_tc=true --xla_enable_async_all_gather=true"
-    export LIBTPU_INIT_ARGS="--xla_enable_async_collective_permute=true "
+    export LIBTPU_INIT_ARGS="--xla_enable_async_collective_permute=true --xla_tpu_enable_async_collective_fusion_fuse_all_gather=true --xla_tpu_megacore_fusion_allow_ags=truetrue"
 
     python -u train_adv_pjit.py --yaml-path $script
 #    python -u main.py --yaml-path $script
