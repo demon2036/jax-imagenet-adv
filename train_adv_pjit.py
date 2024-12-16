@@ -100,7 +100,7 @@ def main(configs):
     use_orbax_save = configs.pop('use_orbax_save', True)
 
     if use_orbax_save:
-        #pass
+        # pass
         jax.distributed.initialize()
 
     use_pgd = configs.pop('use_pgd', True)
@@ -116,7 +116,7 @@ def main(configs):
     filename = os.path.join(output_dir, f"{name}-{postfix}")
     print(filename)
 
-    mesh_dim = '-1,1,1'
+    mesh_dim = '-1,1,4'
     mesh = get_jax_mesh2(mesh_dim)
     print(mesh)
     sharding = jax.sharding.NamedSharding(
@@ -127,7 +127,10 @@ def main(configs):
     data_spec=P(*data_spec)
     print(data_spec)
     sharding=jtu.tree_map(lambda p:NamedSharding(mesh,p),data_spec)
-    print(data_spec)
+    print(sharding.addressable_devices,mesh.axis_names)
+
+    while True:
+        pass
 
     train_dataloader_iter, valid_dataloader, mix_ratio_state = create_dataloaders(**configs['dataset'],
                                                                                   grad_accum=grad_accum_steps)
