@@ -10,6 +10,7 @@ for script in "${SCRIPT_PATHS[@]}"; do
     sudo rm /tmp/libtpu_lockfile
     source ~/miniconda3/bin/activate base;
 #    python -u test.py
+    export LIBTPU_INIT_ARGS="--xla_enable_async_all_gather=true TPU_MEGACORE=MEGACORE_DENSE"
     python -u train_adv_pjit.py --yaml-path $script
 #    python -u main.py --yaml-path $script
 #    python -u main_test.py --yaml-path $script
