@@ -301,7 +301,6 @@ def preprocess_config(yaml):
 
 def get_partition_rules():
     return (
-
         ('scale', PS('mp')),
         ('bias', PS('mp')),
 
