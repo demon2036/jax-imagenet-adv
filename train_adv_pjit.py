@@ -138,6 +138,7 @@ def main(configs):
     x=jnp.ones((128,3,224,224))
     batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), x)
     jax.debug.visualize_array_sharding(batch[:,:,0,0,])
+    print('\n'*5)
 
     @partial(jax.jit,out_shardings=sharding)
     def test(x):
