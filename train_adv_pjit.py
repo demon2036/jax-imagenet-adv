@@ -50,7 +50,7 @@ from functools import partial
 import jax.numpy as jnp
 
 # warnings.filterwarnings("ignore")
-# os.environ['XLA_FLAGS'] = '--xla_tpu_enable_data_parallel_all_reduce_opt=true --xla_enable_async_all_gather=true   --xla_tpu_enable_async_collective_fusion=true --xla_tpu_megacore_fusion_allow_ags=true'
+os.environ['XLA_FLAGS'] = '--xla_tpu_enable_data_parallel_all_reduce_opt=true --xla_enable_async_all_gather=true   --xla_tpu_enable_async_collective_fusion=true --xla_tpu_megacore_fusion_allow_ags=true'
 
 
 def _build_global_shape_and_sharding(
