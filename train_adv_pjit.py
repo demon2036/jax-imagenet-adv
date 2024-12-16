@@ -100,11 +100,12 @@ def main(configs):
 
 
     if use_orbax_save:
-        # os.environ["XLA_FLAGS"] = '--xla_force_host_platform_device_count=8'
-        # jax.config.update('jax_platform_name', 'cpu')
-        # os.environ['JAX_PLATFORMS']='cpu'
-        # pass
-        jax.distributed.initialize()
+        os.environ['JAX_PLATFORMS']='cpu'
+
+        os.environ["XLA_FLAGS"] = '--xla_force_host_platform_device_count=8'
+        jax.config.update('jax_platform_name', 'cpu')
+        pass
+        # jax.distributed.initialize()
 
     use_pgd = configs.pop('use_pgd', True)
     grad_accum_steps = configs.pop('grad_accum_steps', 1)
@@ -119,7 +120,7 @@ def main(configs):
     filename = os.path.join(output_dir, f"{name}-{postfix}")
     print(filename)
 
-    mesh_dim = '-1,1,4'
+    mesh_dim = '-1,1,2'
     mesh = get_jax_mesh2(mesh_dim)
     print(mesh)
     sharding = jax.sharding.NamedSharding(
@@ -135,19 +136,19 @@ def main(configs):
     # while True:
     #     pass
 
-    x=jnp.ones((128,3,224,224))
-    batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), x)
-    jax.debug.visualize_array_sharding(batch[:,:,0,0,])
-    print('\n'*5)
-
-    @partial(jax.jit,out_shardings=sharding)
-    def test(x):
-        return x
-
-    jax.debug.visualize_array_sharding(test(batch[:,:,0,0,]))
-    print(1)
-    while True:
-        pass
+    # x=jnp.ones((128,3,224,224))
+    # batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), x)
+    # jax.debug.visualize_array_sharding(batch[:,:,0,0,])
+    # print('\n'*5)
+    #
+    # @partial(jax.jit,out_shardings=sharding)
+    # def test(x):
+    #     return x
+    #
+    # jax.debug.visualize_array_sharding(test(batch[:,:,0,0,]))
+    # print(1)
+    # while True:
+    #     pass
 
 
     train_dataloader_iter, valid_dataloader, mix_ratio_state = create_dataloaders(**configs['dataset'],
