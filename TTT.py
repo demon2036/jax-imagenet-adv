@@ -34,6 +34,9 @@ num_model_replicas_total = num_model_replicas_per_process * jax.process_count()
 mesh_devices = np.array([jax.local_devices(process_idx)
                          for process_idx in range(jax.process_count())])
 
+
+print(mesh_devices)
+
 print(per_process_batch.shape)
 
 mesh_devices = mesh_devices.reshape(num_model_replicas_total, -1)
@@ -41,7 +44,7 @@ print(mesh_devices.shape)
 # Double check that each replica's devices are on a single process.
 for replica_devices in mesh_devices:
   num_processes = len(set(d.process_index for d in replica_devices))
-  print(replica_devices)
+  # print(replica_devices)
   print()
   assert num_processes == 1
 mesh = jax.sharding.Mesh(mesh_devices, ["model_replicas", "data_parallelism"])
