@@ -200,9 +200,9 @@ def main(configs):
             for _ in range(grad_accum_steps):
                 # batch = jax.tree_util.tree_map(lambda x: jax.make_array_from_process_local_data(sharding,np.asarray(x))  , next(train_dataloader_iter))
                 batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), next(train_dataloader_iter))
-                batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
+                # batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
 
-                # batch = jtu.tree_map(go_jit, batch)
+                batch = jtu.tree_map(go_jit, batch)
                 state, metrics = training_step_pjit(state, batch, use_pgd)
                 # images,labels=batch
 
