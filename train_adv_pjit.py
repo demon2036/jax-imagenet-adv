@@ -242,7 +242,7 @@ def main(configs):
 
                 di=flax.traverse_util.flatten_dict(state.params,sep='.')
                 print(di.keys())
-                # jax.debug.visualize_array_sharding()
+                jax.debug.visualize_array_sharding(di['model.MetaFormerStage_2.MetaFormerBlock_7.mlp.fc1.kernel'])
                 while True:
                     pass
 
