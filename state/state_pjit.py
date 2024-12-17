@@ -175,6 +175,9 @@ def create_train_state(train_state_config, image_size: int = 32, warmup_steps=1,
         # donate_argnums=(0, )
                   )(params)
 
+    print()
+
+
 
     if jax.process_index()==0:
         print(train_state_config)
