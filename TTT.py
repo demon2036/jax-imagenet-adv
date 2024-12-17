@@ -6,7 +6,7 @@ import os
 import jax
 import tensorflow as tf
 import numpy as np
-
+jax.distributed.initialize()
 ################################################################################
 # Step 1: Set up the Dataset with a different data shard per-process (do once)
 #         (same as for pure data parallelism)
