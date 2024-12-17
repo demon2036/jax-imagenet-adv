@@ -237,7 +237,7 @@ def main(configs):
                 images, labels = batch
                 print(f'{images.shape=}   {images.addressable_data(0).shape=}')
 
-                jax.debug.visualize_array_sharding(labels)
+                jax.debug.visualize_array_sharding(labels,max_width=200)
                 while True:
                     pass
 
