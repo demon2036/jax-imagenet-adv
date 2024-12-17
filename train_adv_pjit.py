@@ -171,7 +171,10 @@ def main(configs):
         def go(x):
             return x
 
-        go_jit=jax.jit(go,out_shardings=jax.NamedSharding(mesh,P('dp')))
+        go_jit=jax.jit(go,
+                       out_shardings=sharding
+                       # out_shardings=jax.NamedSharding(mesh,P('dp'))
+                       )
 
 
         training_step_pjit = jax.jit(training_step, static_argnums=(2,),
