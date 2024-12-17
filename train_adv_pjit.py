@@ -135,7 +135,7 @@ def main(configs):
     print(data_spec)
     sharding=jtu.tree_map(lambda p:NamedSharding(mesh,p),data_spec)
     print(sharding.addressable_devices,mesh.axis_names)
-    """
+
     num_model_replicas_per_process = 4  # set according to your parallelism strategy
     num_model_replicas_total = num_model_replicas_per_process * jax.process_count()
 
@@ -148,7 +148,7 @@ def main(configs):
     mesh= mesh_devices.reshape(4,1, -1)
     mesh = einops.rearrange(mesh, 'a b c -> c b a')
     mesh=Mesh(mesh, ('dp', 'fsdp', 'mp'))
-
+    """
     mesh_devices = mesh_devices.reshape(num_model_replicas_total,1, -1)
     mesh_devices=einops.rearrange(mesh_devices,'a b c -> c b a')
     print(mesh_devices.shape)
@@ -160,10 +160,10 @@ def main(configs):
     sharding = jax.sharding.NamedSharding(
         mesh_data, jax.sharding.PartitionSpec("mp"))
 
-
+    """
     # while True:
     #     pass
-    """
+
     # x=jnp.ones((128,3,224,224))
     # batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), x)
     # jax.debug.visualize_array_sharding(batch[:,:,0,0,])
