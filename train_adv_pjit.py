@@ -146,7 +146,7 @@ def main(configs):
 
     mesh_devices = mesh_devices.reshape(num_model_replicas_total,1, -1)
 
-    mesh = jax.sharding.Mesh(mesh_devices, ["mp", "dp"])
+    mesh = jax.sharding.Mesh(mesh_devices, ["mp",'fsdp', "dp"])
 
     # Shard the data across model replicas. You don't shard across the
     # data_parallelism mesh axis, meaning each per-replica shard will be replicated
