@@ -240,7 +240,7 @@ def main(configs):
                 jax.debug.visualize_array_sharding(labels,max_width=200)
                 print()
 
-                di=flax.traverse_util.unflatten_dict(state.params)
+                di=flax.traverse_util.flatten_dict(state.params,sep='.')
                 print(di.keys())
                 # jax.debug.visualize_array_sharding()
                 while True:
