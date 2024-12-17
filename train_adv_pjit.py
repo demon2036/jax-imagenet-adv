@@ -135,6 +135,26 @@ def main(configs):
     sharding=jtu.tree_map(lambda p:NamedSharding(mesh,p),data_spec)
     print(sharding.addressable_devices,mesh.axis_names)
 
+    num_model_replicas_per_process = 4  # set according to your parallelism strategy
+    num_model_replicas_total = num_model_replicas_per_process * jax.process_count()
+
+    # Create an example `Mesh` for per-process data parallelism. Make sure all devices
+    # are grouped by process, and then resize so each row is a model replica.
+    mesh_devices = np.array([jax.local_devices(process_idx)
+                             for process_idx in range(jax.process_count())])
+
+
+    mesh_devices = mesh_devices.reshape(num_model_replicas_total, -1)
+
+    mesh = jax.sharding.Mesh(mesh_devices, ["model_replicas", "data_parallelism"])
+
+    # Shard the data across model replicas. You don't shard across the
+    # data_parallelism mesh axis, meaning each per-replica shard will be replicated
+    # across that axis.
+    sharding = jax.sharding.NamedSharding(
+        mesh, jax.sharding.PartitionSpec("model_replicas"))
+
+
     # while True:
     #     pass
 
@@ -201,11 +221,11 @@ def main(configs):
         for step in tqdm.tqdm(range(init_step, training_steps + 1), initial=init_step, total=training_steps + 1):
             # for step in tqdm.trange(init_step, training_steps + 1, dynamic_ncols=True):
             for _ in range(grad_accum_steps):
-                # batch = jax.tree_util.tree_map(lambda x: jax.make_array_from_process_local_data(sharding,np.asarray(x))  , next(train_dataloader_iter))
-                batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), next(train_dataloader_iter))
-                batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
+                batch = jax.tree_util.tree_map(lambda x: jax.make_array_from_process_local_data(sharding,np.asarray(x))  , next(train_dataloader_iter))
+                # batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), next(train_dataloader_iter))
+                # batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
 
-                batch = jtu.tree_map(go_jit, batch)
+                # batch = jtu.tree_map(go_jit, batch)
 
 
                 images, labels = batch
