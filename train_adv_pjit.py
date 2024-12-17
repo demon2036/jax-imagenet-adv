@@ -236,16 +236,16 @@ def main(configs):
                 batch = jtu.tree_map(go_jit, batch)
 
 
-                images, labels = batch
-                print(f'{images.shape=}   {images.addressable_data(0).shape=}')
-
-                jax.debug.visualize_array_sharding(labels,max_width=200)
-                print()
-
-                di=flax.traverse_util.flatten_dict(state.params,sep='.')
-                print(di.keys())
-                jax.debug.visualize_array_sharding(di['model.MetaFormerStage_2.MetaFormerBlock_7.mlp.fc1.kernel'])
-                print(jax.devices())
+                # images, labels = batch
+                # print(f'{images.shape=}   {images.addressable_data(0).shape=}')
+                #
+                # jax.debug.visualize_array_sharding(labels,max_width=200)
+                # print()
+                #
+                # di=flax.traverse_util.flatten_dict(state.params,sep='.')
+                # print(di.keys())
+                # jax.debug.visualize_array_sharding(di['model.MetaFormerStage_2.MetaFormerBlock_7.mlp.fc1.kernel'])
+                # print(jax.devices())
                 # while True:
                 #     pass
 
@@ -260,8 +260,8 @@ def main(configs):
                 #     print(f'{images.shape=}')
 
 
-                images, labels = next(train_dataloader_iter)
-                print(f'{images.shape=}')
+                # images, labels = next(train_dataloader_iter)
+                # print(f'{images.shape=}')
 
                 # print(metrics)
 
