@@ -41,6 +41,7 @@ print(mesh_devices.shape)
 # Double check that each replica's devices are on a single process.
 for replica_devices in mesh_devices:
   num_processes = len(set(d.process_index for d in replica_devices))
+  print(set(d.process_index for d in replica_devices))
   assert num_processes == 1
 mesh = jax.sharding.Mesh(mesh_devices, ["model_replicas", "data_parallelism"])
 
