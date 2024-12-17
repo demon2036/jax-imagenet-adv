@@ -19,6 +19,7 @@ import argparse
 import os
 import time
 
+import einops
 import flax.jax_utils
 import orbax.checkpoint as ocp
 import jax
@@ -145,8 +146,9 @@ def main(configs):
 
     print(mesh_devices.shape)
     mesh_devices = mesh_devices.reshape(num_model_replicas_total,1, -1)
+    mesh_devices=einops.rearrange(mesh_devices,'a b c -> c b a')
     print(mesh_devices.shape)
-    mesh_data = jax.sharding.Mesh(mesh_devices, ["mp",'fsdp', "dp"])
+    mesh_data = jax.sharding.Mesh(mesh_devices, ['dp','fsdp','mp'])
 
     # Shard the data across model replicas. You don't shard across the
     # data_parallelism mesh axis, meaning each per-replica shard will be replicated
