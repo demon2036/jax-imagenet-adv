@@ -63,3 +63,4 @@ print(global_batch_array.addressable_data(0).shape)
 # jax.debug.visualize_array_sharding(global_batch_array)
 
 print(global_batch_array[0].devices())
+print(jax.device_get(global_batch_array[0]).devices())
