@@ -231,11 +231,15 @@ def main(configs):
                 batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), next(train_dataloader_iter))
                 batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
 
-                # batch = jtu.tree_map(go_jit, batch)
+                batch = jtu.tree_map(go_jit, batch)
 
 
                 images, labels = batch
                 print(f'{images.shape=}   {images.addressable_data(0).shape=}')
+
+                jax.debug.visualize_array_sharding(labels)
+                while True:
+                    pass
 
                 state, metrics = training_step_pjit(state, batch, use_pgd)
                 # images,labels=batch
