@@ -55,3 +55,4 @@ global_batch_array = jax.make_array_from_process_local_data(
 
 print(global_batch_array.shape)
 print(global_batch_array.addressable_data(0).shape)
+jax.debug.visualize_array_sharding(global_batch_array)
