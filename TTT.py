@@ -14,7 +14,7 @@ jax.distributed.initialize()
 # Fake example data (replace with your Dataset)
 # per_process_batches = [np.ones((128, 3,224,224)) * i for i in range(100)]
 # per_process_batches = [np.ones((16, 3,224,224)) * i for i in range(100)]
-per_process_batches = [np.ones((16, 3)) * i for i in range(100)]
+per_process_batches = [np.ones((2, 3)) * i for i in range(100)]
 ds = tf.data.Dataset.from_tensor_slices(per_process_batches)
 
 ds = ds.shard(num_shards=jax.process_count(), index=jax.process_index())
@@ -60,4 +60,12 @@ global_batch_array = jax.make_array_from_process_local_data(
 
 print(global_batch_array.shape)
 print(global_batch_array.addressable_data(0).shape)
-jax.debug.visualize_array_sharding(global_batch_array)
+# jax.debug.visualize_array_sharding(global_batch_array)
+def f(x):
+    return x * 2
+
+# Get the XLA computation
+xla_comp = jax.xla_computation(f)(global_batch_array)
+
+# Print the computation graph (helpful for debugging device placement)
+print(xla_comp.as_text())
