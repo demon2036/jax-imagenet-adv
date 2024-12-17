@@ -146,6 +146,7 @@ def main(configs):
 
     print(mesh_devices.shape)
     mesh= mesh_devices.reshape(4,1, -1)
+    print(mesh)
     mesh = einops.rearrange(mesh, 'a b c -> c b a')
     mesh=Mesh(mesh, ('dp', 'fsdp', 'mp'))
     """
