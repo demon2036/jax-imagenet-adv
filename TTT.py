@@ -65,7 +65,7 @@ def f(x):
     return x * 2
 
 # Get the XLA computation
-xla_comp = jax.xla_computation(f)(global_batch_array)
+xla_comp = jax.make_jaxpr(f)(global_batch_array)
 
 # Print the computation graph (helpful for debugging device placement)
-print(xla_comp.as_text())
+print(xla_comp)
