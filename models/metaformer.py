@@ -53,6 +53,26 @@ class Stem(nn.Module):
             x = self.norm_layer(name='norm')(x)
         return x
 
+#
+# class StarReLU(nn.Module):
+#     scale_value: float = 1.0
+#     bias_value: float = 0.0
+#     scale_learnable: bool = False
+#     bias_learnable: bool = False
+#
+#     @nn.compact
+#     def __call__(self, x):
+#         scale = self.param('scale', lambda rng, shape: jnp.full(shape, self.scale_value), (1,))
+#         bias = self.param('bias', lambda rng, shape: jnp.full(shape, self.bias_value), (1,))
+#
+#         if not self.scale_learnable:
+#             scale = jnp.array(scale).at[()].set(self.scale_value)
+#         if not self.bias_learnable:
+#             bias = jnp.array(bias).at[()].set(self.bias_value)
+#
+#         return scale * nn.relu(x) ** 2 + bias
+
+
 
 class StarReLU(nn.Module):
     scale_value: float = 1.0
@@ -62,16 +82,7 @@ class StarReLU(nn.Module):
 
     @nn.compact
     def __call__(self, x):
-        scale = self.param('scale', lambda rng, shape: jnp.full(shape, self.scale_value), (1,))
-        bias = self.param('bias', lambda rng, shape: jnp.full(shape, self.bias_value), (1,))
-
-        if not self.scale_learnable:
-            scale = jnp.array(scale).at[()].set(self.scale_value)
-        if not self.bias_learnable:
-            bias = jnp.array(bias).at[()].set(self.bias_value)
-
-        return scale * nn.relu(x) ** 2 + bias
-
+        return nn.relu(x)
 
 class Scale(nn.Module):
     """
