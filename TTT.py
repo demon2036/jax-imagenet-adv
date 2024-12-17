@@ -47,13 +47,13 @@ for replica_devices in mesh_devices:
   # print(replica_devices)
   print()
   assert num_processes == 1
-mesh = jax.sharding.Mesh(mesh_devices, ["model_replicas", "data_parallelism"])
+mesh = jax.sharding.Mesh(mesh_devices, ["mp", "dp"])
 
 # Shard the data across model replicas. You don't shard across the
 # data_parallelism mesh axis, meaning each per-replica shard will be replicated
 # across that axis.
 sharding = jax.sharding.NamedSharding(
-    mesh, jax.sharding.PartitionSpec("model_replicas"))
+    mesh, jax.sharding.PartitionSpec("dp"))
 
 global_batch_array = jax.make_array_from_process_local_data(
     sharding, per_process_batch)
