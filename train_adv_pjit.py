@@ -238,6 +238,11 @@ def main(configs):
                 print(f'{images.shape=}   {images.addressable_data(0).shape=}')
 
                 jax.debug.visualize_array_sharding(labels,max_width=200)
+                print()
+
+                di=flax.traverse_util.unflatten_dict(state.params)
+                print(di.keys())
+                # jax.debug.visualize_array_sharding()
                 while True:
                     pass
 
