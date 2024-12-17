@@ -63,4 +63,19 @@ print(global_batch_array.addressable_data(0).shape)
 # jax.debug.visualize_array_sharding(global_batch_array)
 
 print(global_batch_array[0].devices())
-print(jax.device_get(global_batch_array[0]).devices())
+
+def collect_process_data(data):
+    local_data = []
+    local_devices = jax.local_devices()
+
+    for shard in data.addressable_shards:
+        device = shard.device
+        local_shard = shard.data
+        if device in local_devices:
+            # if jax.process_index() == 0:
+            #     print(device, local_devices)
+            local_data.append(np.array(local_shard))
+    local_data = np.concatenate(local_data, axis=0)
+    return local_data
+
+print(collect_process_data(global_batch_array).shape)
