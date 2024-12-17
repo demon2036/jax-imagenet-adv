@@ -185,12 +185,11 @@ def main(configs):
                                                                                   grad_accum=grad_accum_steps)
     with mesh:
 
-        state, train_state_partition = create_train_state(configs['train_state'],
+        state, train_state_partition,train_state_sharding = create_train_state(configs['train_state'],
                                                           warmup_steps=warmup_steps,
                                                           training_steps=training_steps,
                                                           grad_accum_steps=grad_accum_steps, mesh=mesh)
 
-        train_state_sharding = jtu.tree_map(lambda x: NamedSharding(mesh, x), train_state_partition)
         # state=state.replace(step=1)
 
 
