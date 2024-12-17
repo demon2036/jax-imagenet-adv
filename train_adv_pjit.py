@@ -104,7 +104,6 @@ def main(configs):
 
     if use_orbax_save:
         # os.environ['JAX_PLATFORMS']='cpu'
-
         # os.environ["XLA_FLAGS"] = '--xla_force_host_platform_device_count=8'
         # jax.config.update('jax_platform_name', 'cpu')
         # pass
