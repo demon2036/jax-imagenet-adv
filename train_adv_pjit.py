@@ -146,13 +146,13 @@ def main(configs):
     print(mesh_devices.shape)
     mesh_devices = mesh_devices.reshape(num_model_replicas_total,1, -1)
     print(mesh_devices.shape)
-    mesh = jax.sharding.Mesh(mesh_devices, ["mp",'fsdp', "dp"])
+    mesh_data = jax.sharding.Mesh(mesh_devices, ["mp",'fsdp', "dp"])
 
     # Shard the data across model replicas. You don't shard across the
     # data_parallelism mesh axis, meaning each per-replica shard will be replicated
     # across that axis.
     sharding = jax.sharding.NamedSharding(
-        mesh, jax.sharding.PartitionSpec("mp"))
+        mesh_data, jax.sharding.PartitionSpec("mp"))
 
 
     # while True:
