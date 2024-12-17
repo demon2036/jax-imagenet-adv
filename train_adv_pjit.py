@@ -122,7 +122,7 @@ def main(configs):
     filename = os.path.join(output_dir, f"{name}-{postfix}")
     print(filename)
 
-    mesh_dim = '-1,1,8'
+    mesh_dim = '-1,1,4'
     mesh = get_jax_mesh2(mesh_dim)
     print(mesh)
     sharding = jax.sharding.NamedSharding(
@@ -143,7 +143,7 @@ def main(configs):
     mesh_devices = np.array([jax.local_devices(process_idx)
                              for process_idx in range(jax.process_count())])
 
-
+    print(mesh_devices.shape)
     mesh_devices = mesh_devices.reshape(num_model_replicas_total,1, -1)
 
     mesh = jax.sharding.Mesh(mesh_devices, ["mp",'fsdp', "dp"])
