@@ -135,7 +135,7 @@ def main(configs):
     print(data_spec)
     sharding=jtu.tree_map(lambda p:NamedSharding(mesh,p),data_spec)
     print(sharding.addressable_devices,mesh.axis_names)
-
+    """
     num_model_replicas_per_process = 4  # set according to your parallelism strategy
     num_model_replicas_total = num_model_replicas_per_process * jax.process_count()
 
@@ -163,7 +163,7 @@ def main(configs):
 
     # while True:
     #     pass
-
+    """
     # x=jnp.ones((128,3,224,224))
     # batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), x)
     # jax.debug.visualize_array_sharding(batch[:,:,0,0,])
@@ -189,7 +189,7 @@ def main(configs):
                                                           grad_accum_steps=grad_accum_steps, mesh=mesh)
 
         train_state_sharding = jtu.tree_map(lambda x: NamedSharding(mesh, x), train_state_partition)
-        state=state.replace(step=1)
+        # state=state.replace(step=1)
 
 
 
@@ -227,9 +227,9 @@ def main(configs):
         for step in tqdm.tqdm(range(init_step, training_steps + 1), initial=init_step, total=training_steps + 1):
             # for step in tqdm.trange(init_step, training_steps + 1, dynamic_ncols=True):
             for _ in range(grad_accum_steps):
-                batch = jax.tree_util.tree_map(lambda x: jax.make_array_from_process_local_data(sharding,np.asarray(x))  , next(train_dataloader_iter))
-                # batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), next(train_dataloader_iter))
-                # batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
+                # batch = jax.tree_util.tree_map(lambda x: jax.make_array_from_process_local_data(sharding,np.asarray(x))  , next(train_dataloader_iter))
+                batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), next(train_dataloader_iter))
+                batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
 
                 # batch = jtu.tree_map(go_jit, batch)
 
