@@ -204,6 +204,11 @@ def main(configs):
                 batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
 
                 batch = jtu.tree_map(go_jit, batch)
+
+
+                images, labels = batch
+                print(f'{images.shape=}   {images.addressable_data(0).shape=}')
+
                 state, metrics = training_step_pjit(state, batch, use_pgd)
                 # images,labels=batch
 
@@ -214,8 +219,7 @@ def main(configs):
                 #     images, labels = next(train_dataloader_iter)
                 #     print(f'{images.shape=}')
 
-                images, labels = batch
-                print(f'{images.shape=}   {images.addressable_data(0).shape=}')
+
                 images, labels = next(train_dataloader_iter)
                 print(f'{images.shape=}')
 
