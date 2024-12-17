@@ -145,6 +145,8 @@ def main(configs):
                              for process_idx in range(jax.process_count())])
 
     print(mesh_devices.shape)
+
+
     mesh_devices = mesh_devices.reshape(num_model_replicas_total,1, -1)
     mesh_devices=einops.rearrange(mesh_devices,'a b c -> c b a')
     print(mesh_devices.shape)

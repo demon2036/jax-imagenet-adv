@@ -61,11 +61,5 @@ global_batch_array = jax.make_array_from_process_local_data(
 print(global_batch_array.shape)
 print(global_batch_array.addressable_data(0).shape)
 # jax.debug.visualize_array_sharding(global_batch_array)
-def f(x):
-    return x * 2
 
-# Get the XLA computation
-xla_comp = jax.make_jaxpr(f)(global_batch_array)
-
-# Print the computation graph (helpful for debugging device placement)
-print(xla_comp)
+print(global_batch_array[0].devices())
