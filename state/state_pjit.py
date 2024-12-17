@@ -90,7 +90,7 @@ def create_train_state(train_state_config, image_size: int = 32, warmup_steps=1,
     def p(p,x):
         print(p,x.shape)
 
-    jax.tree_util.tree_map_with_path(p,params)
+    # jax.tree_util.tree_map_with_path(p,params)
 
 
     if pretrained_ckpt is  None:
