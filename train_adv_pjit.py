@@ -231,7 +231,7 @@ def main(configs):
                 batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), next(train_dataloader_iter))
                 batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
 
-                batch = jtu.tree_map(go_jit, batch)
+                # batch = jtu.tree_map(go_jit, batch)
 
 
                 images, labels = batch

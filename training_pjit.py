@@ -27,6 +27,8 @@ from chex import ArrayTree, PRNGKey
 from flax.training import train_state
 from flax.training.common_utils import shard_prng_key
 
+from utils import get_jax_mesh2
+
 
 class TrainState(train_state.TrainState):
     mixup_rng: PRNGKey
@@ -102,6 +104,13 @@ def validation_adv_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
 
 
 def training_step(state: TrainState, batch: ArrayTree, use_pgd) -> tuple[TrainState, ArrayTree]:
+    mesh_dim = '-1,1,4'
+    mesh = get_jax_mesh2(mesh_dim)
+    print(mesh)
+    sharding = jax.sharding.NamedSharding(
+        mesh, jax.sharding.PartitionSpec("dp",))
+    batch=jax.tree_util.tree_map(lambda x:jax.lax.with_sharding_constraint(x,sharding),batch)
+
     def loss_fn(params: ArrayTree) -> ArrayTree:
         metrics = state.apply_fn({"params": params}, *batch, det=False, rngs=rngs, use_trade=not use_pgd,
                                  use_pgd=use_pgd, )
