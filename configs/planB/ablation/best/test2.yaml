@@ -52,7 +52,7 @@ train_state:
 #      drop_rate: 0.5
 
   optimizer:
-    target: 'lamb'
+    target: 'sgd'
     optimizer_kwargs:
       learning_rate: 8.0e-4
       weight_decay: 0.05
