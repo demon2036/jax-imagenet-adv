@@ -246,8 +246,8 @@ def main(configs):
                 print(di.keys())
                 jax.debug.visualize_array_sharding(di['model.MetaFormerStage_2.MetaFormerBlock_7.mlp.fc1.kernel'])
                 print(jax.devices())
-                while True:
-                    pass
+                # while True:
+                #     pass
 
                 state, metrics = training_step_pjit(state, batch, use_pgd)
                 # images,labels=batch
