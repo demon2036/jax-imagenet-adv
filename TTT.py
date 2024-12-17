@@ -32,7 +32,7 @@ num_model_replicas_total = num_model_replicas_per_process * jax.process_count()
 mesh_devices = np.array([jax.local_devices(process_idx)
                          for process_idx in range(jax.process_count())])
 
-print(mesh_devices)
+print(per_process_batch.shape)
 
 mesh_devices = mesh_devices.reshape(num_model_replicas_total, -1)
 # Double check that each replica's devices are on a single process.
