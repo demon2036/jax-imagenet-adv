@@ -207,7 +207,7 @@ def main(configs):
         training_step_pjit = jax.jit(training_step, static_argnums=(2,),
                                      donate_argnums=(0,),
                                      # in_shardings=(train_state_sharding, sharding,),
-                                     out_shardings=(train_state_sharding,None ))
+                                     # out_shardings=(train_state_sharding,None ))
 
         if use_orbax_save:
             checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
