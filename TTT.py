@@ -24,7 +24,7 @@ ds = ds.shard(num_shards=jax.process_count(), index=jax.process_index())
 # Grab just the first batch from the Dataset for this example
 per_process_batch = ds.as_numpy_iterator().next()
 
-num_model_replicas_per_process = 2 # set according to your parallelism strategy
+num_model_replicas_per_process = 1 # set according to your parallelism strategy
 num_model_replicas_total = num_model_replicas_per_process * jax.process_count()
 
 # Create an example `Mesh` for per-process data parallelism. Make sure all devices
