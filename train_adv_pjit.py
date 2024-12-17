@@ -193,9 +193,11 @@ def main(configs):
 
 
 
+        def go(x):
+            return x
 
         go_jit=jax.jit(go,
-                       # out_shardings=sharding,
+                       # out_shardings=sharding
                        out_shardings=jax.NamedSharding(mesh,P('dp'))
                        )
 
