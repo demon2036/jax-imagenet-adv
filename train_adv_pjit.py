@@ -152,7 +152,7 @@ def main(configs):
     # data_parallelism mesh axis, meaning each per-replica shard will be replicated
     # across that axis.
     sharding = jax.sharding.NamedSharding(
-        mesh, jax.sharding.PartitionSpec("model_replicas"))
+        mesh, jax.sharding.PartitionSpec("mp"))
 
 
     # while True:
