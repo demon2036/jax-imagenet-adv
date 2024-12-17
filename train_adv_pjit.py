@@ -189,7 +189,7 @@ def main(configs):
                                                           grad_accum_steps=grad_accum_steps, mesh=mesh)
 
         train_state_sharding = jtu.tree_map(lambda x: NamedSharding(mesh, x), train_state_partition)
-
+        state=state.replace(step=1)
 
 
 
