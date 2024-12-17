@@ -71,7 +71,7 @@ def collect_process_data(data):
     for shard in data.addressable_shards:
         device = shard.device
         local_shard = shard.data
-        print(local_shard.shape)
+        print(local_shard.shape,local_shard.device)
         if device in local_devices:
             # if jax.process_index() == 0:
             #     print(device, local_devices)
