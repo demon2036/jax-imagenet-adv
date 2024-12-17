@@ -14,7 +14,7 @@ jax.distributed.initialize()
 # Fake example data (replace with your Dataset)
 # per_process_batches = [np.ones((128, 3,224,224)) * i for i in range(100)]
 # per_process_batches = [np.ones((16, 3,224,224)) * i for i in range(100)]
-per_process_batches = [np.ones((2, 3)) * i for i in range(100)]
+per_process_batches = [np.ones((16, 3)) * i for i in range(100)]
 ds = tf.data.Dataset.from_tensor_slices(per_process_batches)
 
 ds = ds.shard(num_shards=jax.process_count(), index=jax.process_index())
