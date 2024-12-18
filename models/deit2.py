@@ -255,6 +255,8 @@ class ViT(ViTBase, nn.Module):
         return self.head(x)
         """
         # jnp.array().sharding
+        # print(x.sharding)
+        print(type(x),)
         if self.pooling == "cls":
             x = x[:, 0, :]
         elif self.pooling == "gap":
