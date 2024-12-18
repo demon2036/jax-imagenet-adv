@@ -164,7 +164,8 @@ class Attention(ViTBase, nn.Module):
         q=einops.rearrange(q,'b n (h d)-> b h n d',h=self.heads)
         k = einops.rearrange(k, 'b n (h d)-> b h n d',h=self.heads)
         v = einops.rearrange(v, 'b n (h d)-> b h n d',h=self.heads)
-        z=(q@k.transpose((-2,-1)))/self.head_dim**0.5
+        # jnp.array().swapaxes()
+        z=(q@k.sw(-2,-1))/self.head_dim**0.5
         z=nn.softmax(z)
         z=z@v
         z=einops.rearrange(z,'b h n d -> b n (h d)')
