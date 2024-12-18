@@ -149,7 +149,7 @@ def main(configs):
     # mesh = einops.rearrange(mesh_devices, 'a ( b c)-> a b c',b=1,c=4)
     # print(mesh)
 
-    mesh=Mesh(mesh, ('dp', 'fsdp', 'mp'))
+    # mesh=Mesh(mesh, ('dp', 'fsdp', 'mp'))
     """
     mesh_devices = mesh_devices.reshape(num_model_replicas_total,1, -1)
     mesh_devices=einops.rearrange(mesh_devices,'a b c -> c b a')
