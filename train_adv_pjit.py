@@ -44,7 +44,7 @@ from test_dataset_fork2 import create_dataloaders, DynamicMixRatioState
 from jax.sharding import PartitionSpec as P
 from training_pjit import TrainState, training_step, validation_adv_step
 from utils import AverageMeter, read_yaml, preprocess_config, save_checkpoint_in_background, \
-    save_checkpoint_in_background2, get_partition_rules, match_partition_rules, get_jax_mesh2
+    save_checkpoint_in_background2, match_partition_rules, get_jax_mesh2
 
 import jax.tree_util as jtu
 from functools import partial
