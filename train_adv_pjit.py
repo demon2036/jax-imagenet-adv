@@ -190,7 +190,7 @@ def main(configs):
                                                           training_steps=training_steps,
                                                           grad_accum_steps=grad_accum_steps, mesh=mesh)
 
-        state=state.replace(step=1)
+        # state=state.replace(step=1)
 
 
 
