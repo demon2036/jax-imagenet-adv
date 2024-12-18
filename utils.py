@@ -349,7 +349,29 @@ def get_partition_rules_vit():
         # ('MetaFormerStage_[23]/.*/qkv/kernel', PS('fsdp', 'mp')),
         # ('MetaFormerStage_[23]/.*/proj/kernel', PS('mp', 'fsdp')),
         #
+
+        # (DictKey(key='model.layer_1.attn.wk.bias'),)(12, 64)
+        # (DictKey(key='model.layer_1.attn.wk.kernel'), )(768, 12, 64)
+        # (DictKey(key='model.layer_1.attn.wo.bias'), )(768, )
+        # (DictKey(key='model.layer_1.attn.wo.kernel'), )(12, 64, 768)
+        # (DictKey(key='model.layer_1.attn.wq.bias'), )(12, 64)
+        # (DictKey(key='model.layer_1.attn.wq.kernel'), )(768, 12, 64)
+        # (DictKey(key='model.layer_1.attn.wv.bias'), )(12, 64)
+        # (DictKey(key='model.layer_1.attn.wv.kernel'), )(768, 12, 64)
+        # (DictKey(key='model.layer_1.ff.w1.bias'), )(3072, )
+        # (DictKey(key='model.layer_1.ff.w1.kernel'), )(768, 3072)
+        # (DictKey(key='model.layer_1.ff.w2.bias'), )(768, )
+        # (DictKey(key='model.layer_1.ff.w2.kernel'), )(3072, 768)
         #
+
+        ('attn/wq/kernel', PS('mp', 'fsdp')),
+        ('attn/wk/kernel', PS('mp', 'fsdp')),
+        ('attn/wv/kernel', PS('mp', 'fsdp')),
+        ('attn/wo/kernel', PS(None, 'fsdp','mp',)),
+        ('ff/w1/kernel', PS('fsdp', 'mp')),
+        ('ff/w2/kernel', PS('mp', 'fsdp')),
+
+
         ('model/head/kernel', PS('mp', 'fsdp')),
         ('.*', PS(None)),
     )
