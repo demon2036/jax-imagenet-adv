@@ -170,8 +170,8 @@ class ViTLayer(ViTBase, nn.Module):
         x = x + self.drop(self.scale2 * self.ff(self.norm2(x), det), det)
         return x
 
-mesh_dim = '1,1,-1'
-mesh = get_jax_mesh2(mesh_dim)
+# mesh_dim = '1,1,-1'
+# mesh = get_jax_mesh2(mesh_dim)
 
 class ViT(ViTBase, nn.Module):
     def setup(self):
