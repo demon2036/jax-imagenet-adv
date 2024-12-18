@@ -28,7 +28,7 @@ dataset:
   augment_repeats: 3
   test_crop_ratio: 0.875
   shuffle_seed: 1
-  image_size: 256
+  image_size: 224
   generated_dataset_shards:
     ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar']
   dataset_mix_ratio: 0.9
@@ -50,7 +50,7 @@ train_state:
       layers: 32
       dim: 1280
       heads: 16
-      image_size: 256
+      image_size: 224
 
 #      drop_path_rate: 0.6
 #      drop_rate: 0.5
