@@ -10,7 +10,8 @@ from jax._src.pjit import pjit
 
 from pre_define import CRITERION_COLLECTION, OPTIMIZER_COLLECTION
 from training import TrainState
-from utils import read_yaml, get_obj_from_str, Mixup, preprocess_config, match_partition_rules, get_partition_rules
+from utils import read_yaml, get_obj_from_str, Mixup, preprocess_config, match_partition_rules, \
+    get_partition_rules_vit
 import os
 import jax.numpy as jnp
 from convert_model_pytorch import convert_torch_to_flax_conv_next,convert_torch_to_flax_meta_former
@@ -166,7 +167,7 @@ def create_train_state(train_state_config, image_size: int = 32, warmup_steps=1,
         return state
 
     train_state_shapes = jax.eval_shape(init_fn, params)
-    train_state_partition = match_partition_rules(get_partition_rules(), train_state_shapes)
+    train_state_partition = match_partition_rules(get_partition_rules_vit(), train_state_shapes)
     # jax.sharding.NamedSharding(mesh,train_state_partition)
     train_state_sharding = jax.tree_util.tree_map(lambda x: jax.sharding.NamedSharding(mesh, x), train_state_partition)
 

@@ -123,7 +123,7 @@ def main(configs):
     filename = os.path.join(output_dir, f"{name}-{postfix}")
     print(filename)
 
-    mesh_dim = '-1,1,4'
+    mesh_dim = '-1,1,1'
     mesh = get_jax_mesh2(mesh_dim)
     print(mesh)
     sharding = jax.sharding.NamedSharding(
@@ -146,7 +146,7 @@ def main(configs):
 
     print(mesh_devices.shape)
     # mesh= mesh_devices.reshape(4,1, -1)
-    mesh = einops.rearrange(mesh_devices, 'a ( b c)-> a b c',b=1,c=4)
+    # mesh = einops.rearrange(mesh_devices, 'a ( b c)-> a b c',b=1,c=4)
     # print(mesh)
 
     mesh=Mesh(mesh, ('dp', 'fsdp', 'mp'))

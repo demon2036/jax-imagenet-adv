@@ -51,12 +51,12 @@ class ViTBase:
     layers: int = 12
     dim: int = 768
     heads: int = 12
-    labels: int | None = 10
+    labels: int | None = 1000
     layerscale: bool = True
 
-    patch_size: int = 2
-    image_size: int = 32
-    posemb: Literal["learnable", "sincos2d"] = "learnable"
+    patch_size: int = 16
+    image_size: int = 224
+    posemb: Literal["learnable", "sincos2d"] = "sincos2d"
     pooling: Literal["cls", "gap"] = "cls"
     qk_norm: bool = False
     use_fc_norm: bool = True
@@ -108,9 +108,9 @@ class PatchEmbed(ViTBase, nn.Module):
 
     def __call__(self, x: Array) -> Array:
         x = (self.wte(x) + self.wpe).reshape(x.shape[0], -1, self.dim)
-        # if self.pooling == "cls":
-        cls_token = jnp.repeat(self.cls_token, x.shape[0], axis=0)
-        x = jnp.concatenate((cls_token, x), axis=1)
+        if self.pooling == "cls":
+            cls_token = jnp.repeat(self.cls_token, x.shape[0], axis=0)
+            x = jnp.concatenate((cls_token, x), axis=1)
         return x
 
 
