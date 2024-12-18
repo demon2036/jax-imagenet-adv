@@ -23,6 +23,10 @@ import flax.linen.initializers as init
 import jax.experimental.pallas.ops.tpu.flash_attention
 import jax.numpy as jnp
 from chex import Array
+from jax import NamedSharding
+
+from utils import get_jax_mesh2
+
 
 # from datasets import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 # from utils2 import fixed_sincos2d_embeddings
@@ -166,6 +170,8 @@ class ViTLayer(ViTBase, nn.Module):
         x = x + self.drop(self.scale2 * self.ff(self.norm2(x), det), det)
         return x
 
+mesh_dim = '1,1,-1'
+mesh = get_jax_mesh2(mesh_dim)
 
 class ViT(ViTBase, nn.Module):
     def setup(self):
@@ -215,6 +221,6 @@ class ViT(ViTBase, nn.Module):
             raise NotImplemented()
 
         x = self.fc_norm(x)
-
+        x=jax.lax.with_sharding_constraint(x,NamedSharding(mesh,jax.sharding.PartitionSpec('mp',None)))
         return self.head(x)
 

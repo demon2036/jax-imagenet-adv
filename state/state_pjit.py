@@ -91,8 +91,10 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     def p(p,x):
         print(p,x.shape)
 
-    # jax.tree_util.tree_map_with_path(p,params)
-
+    di = flax.traverse_util.flatten_dict(params, sep='.')
+    jax.tree_util.tree_map_with_path(p,di)
+    while True:
+        params
 
     if pretrained_ckpt is  None:
         pass

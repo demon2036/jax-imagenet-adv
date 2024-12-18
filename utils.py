@@ -350,8 +350,7 @@ def get_partition_rules_vit():
         # ('MetaFormerStage_[23]/.*/proj/kernel', PS('mp', 'fsdp')),
         #
         #
-        # ('MetaFormerStage_[23]/.*/fc1/kernel',PS('fsdp','mp')),
-        # ('MetaFormerStage_[23]/.*/fc2/kernel', PS('mp', 'fsdp')),
+        # ('model/head/kernel', PS('mp', 'fsdp')),
         ('.*', PS(None)),
     )
 

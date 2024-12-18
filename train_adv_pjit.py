@@ -107,8 +107,8 @@ def main(configs):
         # os.environ['JAX_PLATFORMS']='cpu'
         # os.environ["XLA_FLAGS"] = '--xla_force_host_platform_device_count=8'
         # jax.config.update('jax_platform_name', 'cpu')
-        # pass
-        jax.distributed.initialize()
+        pass
+        # jax.distributed.initialize()
 
     use_pgd = configs.pop('use_pgd', True)
     grad_accum_steps = configs.pop('grad_accum_steps', 1)
@@ -343,7 +343,7 @@ def main(configs):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--yaml-path", type=str,
-                        default='configs/planB/ablation/best/test.yaml')
+                        default='configs/planB/ablation/best/test3.yaml')
     # parser.add_argument("--train-dataset-shards")
     # parser.add_argument("--valid-dataset-shards")
     # parser.add_argument("--train-batch-size", type=int, default=2048)
