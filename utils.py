@@ -364,10 +364,16 @@ def get_partition_rules_vit():
         # (DictKey(key='model.layer_1.ff.w2.kernel'), )(3072, 768)
         #
 
+        # ('attn/wq/kernel', PS('mp', 'fsdp')),
+        # ('attn/wk/kernel', PS('mp', 'fsdp')),
+        # ('attn/wv/kernel', PS('mp', 'fsdp')),
+        # ('attn/wo/kernel', PS(None, 'fsdp','mp',)),
+
         ('attn/wq/kernel', PS('mp', 'fsdp')),
         ('attn/wk/kernel', PS('mp', 'fsdp')),
         ('attn/wv/kernel', PS('mp', 'fsdp')),
-        ('attn/wo/kernel', PS(None, 'fsdp','mp',)),
+        ('attn/wo/kernel', PS(None, 'fsdp', 'mp', )),
+
         ('ff/w1/kernel', PS('fsdp', 'mp')),
         ('ff/w2/kernel', PS('mp', 'fsdp')),
         #
