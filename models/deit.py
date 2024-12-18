@@ -166,7 +166,7 @@ class ViTLayer(ViTBase, nn.Module):
             # self.scale2 = self.param("scale2", init.constant(1e-6), (self.dim,))
 
     def __call__(self, x: Array, det: bool = True) -> Array:
-        x = x + self.drop(self.scale1 * self.attn(self.norm1(x), det), det)
+        # x = x + self.drop(self.scale1 * self.attn(self.norm1(x), det), det)
         x = x + self.drop(self.scale2 * self.ff(self.norm2(x), det), det)
         return x
 
