@@ -187,7 +187,7 @@ class ViT(ViTBase, nn.Module):
         self.norm = nn.LayerNorm() if not self.use_fc_norm else Identity()
         self.fc_norm = nn.LayerNorm() if self.use_fc_norm else Identity()
 
-        print(self.norm, self.fc_norm)
+        # print(self.norm, self.fc_norm)
 
         self.head = Dense(self.labels) if self.labels is not None else None
         self.pre_norm=nn.LayerNorm()
