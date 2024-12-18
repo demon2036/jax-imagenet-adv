@@ -127,7 +127,7 @@ def main(configs):
     filename = os.path.join(output_dir, f"{name}-{postfix}")
     print(filename)
 
-    mesh_dim = '1,-1,1'
+    mesh_dim = '1,1,-1'
     mesh = get_jax_mesh2(mesh_dim)
     print(mesh)
     sharding = jax.sharding.NamedSharding(
