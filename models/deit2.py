@@ -256,7 +256,9 @@ class ViT(ViTBase, nn.Module):
         """
         # jnp.array().sharding
         # print(x.sharding)
-        print(type(x),)
+        if isinstance(x,jax._src.interpreters.ad.JVPTracer):
+            print(x.sharding)
+        # print(type(x),)
         if self.pooling == "cls":
             x = x[:, 0, :]
         elif self.pooling == "gap":
