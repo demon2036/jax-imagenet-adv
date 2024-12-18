@@ -257,7 +257,8 @@ class ViT(ViTBase, nn.Module):
         # jnp.array().sharding
         # print(x.sharding)
         if isinstance(x,jax._src.interpreters.ad.JVPTracer):
-            print(x.sharding)
+            jax.debug.visualize_array_sharding(x[0])
+        #     print(x.sharding)
         # print(type(x),)
         if self.pooling == "cls":
             x = x[:, 0, :]
