@@ -221,6 +221,6 @@ class ViT(ViTBase, nn.Module):
             raise NotImplemented()
 
         x = self.fc_norm(x)
-        x=jax.lax.with_sharding_constraint(x,NamedSharding(mesh,jax.sharding.PartitionSpec('mp',None)))
+        x=jax.lax.with_sharding_constraint(x,NamedSharding(mesh,jax.sharding.PartitionSpec(None,'mp',)))
         return self.head(x)
 
