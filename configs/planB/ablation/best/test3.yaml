@@ -12,7 +12,7 @@ grad_accum_steps: 1
 #resume: True
 
 dataset:
-  train_batch_size: 16384
+  train_batch_size: 4096
   valid_batch_size: 2048
   train_loader_workers: 20
   valid_loader_workers: 10
@@ -47,8 +47,8 @@ train_state:
     target: 'models.ViT'
     model_kwargs:
       labels: 1000
-      layers: 24
-      dim: 1024
+      layers: 32
+      dim: 1280
       heads: 16
 
 #      drop_path_rate: 0.6
