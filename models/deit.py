@@ -18,6 +18,7 @@ from dataclasses import dataclass, fields
 from functools import partial
 from typing import Any, Literal
 
+import einops
 import flax.linen as nn
 import flax.linen.initializers as init
 import jax.experimental.pallas.ops.tpu.flash_attention
@@ -122,21 +123,59 @@ class Identity(nn.Module):
     def __call__(self, x):
         return x
 
+#
+# class Attention(ViTBase, nn.Module):
+#     def setup(self):
+#         self.q_norm = nn.LayerNorm() if self.qk_norm else Identity()
+#         self.k_norm = nn.LayerNorm() if self.qk_norm else Identity()
+#         self.wq = DenseGeneral((self.heads, self.head_dim))
+#         self.wk = DenseGeneral((self.heads, self.head_dim))
+#         self.wv = DenseGeneral((self.heads, self.head_dim))
+#         self.wo = DenseGeneral(self.dim, axis=(-2, -1))
+#         self.drop = nn.Dropout(self.dropout)
+#
+#     def __call__(self, x: Array, det: bool = True) -> Array:
+#         z = jnp.einsum("bqhd,bkhd->bhqk", self.q_norm(self.wq(x)) / self.head_dim ** 0.5, self.k_norm(self.wk(x)))
+#         z = jnp.einsum("bhqk,bkhd->bqhd", self.drop(nn.softmax(z), det), self.wv(x))
+#         return self.drop(self.wo(z), det)
+
+
+
+
+
 
 class Attention(ViTBase, nn.Module):
     def setup(self):
         self.q_norm = nn.LayerNorm() if self.qk_norm else Identity()
         self.k_norm = nn.LayerNorm() if self.qk_norm else Identity()
-        self.wq = DenseGeneral((self.heads, self.head_dim))
-        self.wk = DenseGeneral((self.heads, self.head_dim))
-        self.wv = DenseGeneral((self.heads, self.head_dim))
-        self.wo = DenseGeneral(self.dim, axis=(-2, -1))
+        self.wq = Dense(self.dim)
+        self.wk = Dense(self.dim)
+        self.wv = Dense(self.dim)
+        self.wo = Dense(self.dim)
         self.drop = nn.Dropout(self.dropout)
 
     def __call__(self, x: Array, det: bool = True) -> Array:
-        z = jnp.einsum("bqhd,bkhd->bhqk", self.q_norm(self.wq(x)) / self.head_dim ** 0.5, self.k_norm(self.wk(x)))
-        z = jnp.einsum("bhqk,bkhd->bqhd", self.drop(nn.softmax(z), det), self.wv(x))
-        return self.drop(self.wo(z), det)
+
+
+        q=self.wq(x)
+        k=self.wk(x)
+        v=self.wv(x)
+
+        q=einops.rearrange(q,'b n (h d)-> b h n d',h=self.heads)
+        k = einops.rearrange(k, 'b n (h d)-> b h n d',h=self.heads)
+        v = einops.rearrange(v, 'b n (h d)-> b h n d',h=self.heads)
+        z=(q@k.transpose((-2,-1)))/self.head_dim**0.5
+        z=nn.softmax(z)
+        z=z@v
+        z=einops.rearrange(z,'b h n d -> b n (h d)')
+        return self.wo(z)
+
+        # z = jnp.einsum("bqhd,bkhd->bhqk", self.q_norm(self.wq(x)) / self.head_dim ** 0.5, self.k_norm(self.wk(x)))
+        # z = jnp.einsum("bhqk,bkhd->bqhd", self.drop(nn.softmax(z), det), self.wv(x))
+        # return self.drop(self.wo(z), det)
+
+
+
 
 
 class FeedForward(ViTBase, nn.Module):
