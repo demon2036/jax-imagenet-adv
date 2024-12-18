@@ -295,8 +295,7 @@ def replace_env_variables(text):
 
 
 def preprocess_config(yaml):
-    yaml=jax.tree_util.tree_map(replace_env_variables,yaml)apt get upgrade
-
+    yaml=jax.tree_util.tree_map(replace_env_variables,yaml)
     return yaml
 
 def get_partition_rules_caformer():
