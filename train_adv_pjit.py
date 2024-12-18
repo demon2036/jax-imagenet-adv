@@ -253,9 +253,9 @@ def main(configs):
                 # while True:
                 #     pass
                 if step==1:
-                    with jax.profiler.trace("/tmp/jax-trace", create_perfetto_link=True):
+                    # with jax.profiler.trace("/tmp/jax-trace", create_perfetto_link=True):
                         state, metrics = training_step_pjit(state, batch, use_pgd)
-                    break
+                    # break
                 else:
                     state, metrics = training_step_pjit(state, batch, use_pgd)
                 # images,labels=batch
