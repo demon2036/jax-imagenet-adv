@@ -62,7 +62,7 @@ class ViTBase:
     patch_size: int = 16
     image_size: int = 224
     posemb: Literal["learnable", "sincos2d"] = "sincos2d"
-    pooling: Literal["cls", "gap"] = "gap"
+    pooling: Literal["cls", "gap"] = "cls"
     qk_norm: bool = False
     use_fc_norm: bool = True
     reduce_include_prefix: bool = False
