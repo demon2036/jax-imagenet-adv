@@ -254,7 +254,8 @@ class ViT(ViTBase, nn.Module):
             x = x[:, 0:].mean(1)
         return self.head(x)
         """
-
+        # jnp.array().sharding
+        print(x.sharding)
         if self.pooling == "cls":
             x = x[:, 0, :]
         elif self.pooling == "gap":
