@@ -131,6 +131,8 @@ def main(configs):
     # mesh_dim = '-1,1,1'
     # mesh_dim = '-1,1,16'
     mesh_dim = '1,1,-1'
+    mesh_dim = '1,-1,1'
+
     mesh = get_jax_mesh2(mesh_dim)
     print(mesh)
     sharding = jax.sharding.NamedSharding(
