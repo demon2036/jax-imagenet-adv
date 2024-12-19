@@ -99,7 +99,7 @@ class PatchEmbed(ViTBase, nn.Module):
             strides=(self.patch_size, self.patch_size),
             padding="VALID",
             use_bias=False,
-            kernel_init=nn.with_logical_partitioning(self.dense_init, (None,None, 'mlp',None)),
+            kernel_init=nn.with_logical_partitioning(self.dense_init, (None,None,'embed', 'mlp')),
 
         )
         # if self.pooling == "cls":
@@ -263,7 +263,7 @@ class ViT(ViTBase, nn.Module):
         #     jax.debug.inspect_array_sharding(x,callback=print)
         # else:
         #     print(type(x))
-        x = nn.with_logical_constraint(x, ('batch', 'vocab',None, 'activation_embed'))
+        x = nn.with_logical_constraint(x, ('batch', 'vocab',None, None))
 
         x = self.drop(self.embed(x), det)
 
