@@ -103,7 +103,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     else:
         params = load_pretrain(pretrained_model=pretrained_ckpt,default_params=params)
 
-    # params=jax.tree_util.tree_map(jnp.array,params)
+    params=jax.tree_util.tree_map(jnp.array,params)
 
     # if args.grad_accum > 1:
     #     grad_accum = jax.tree_map(jnp.zeros_like, params)
@@ -190,7 +190,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
 
     state=jax.jit(init_fn, #in_shardings=(train_state_partition.params, ),
         out_shardings=logical_state_sharding,
-        donate_argnums=(0, )
+        # donate_argnums=(0, )
                   )(params)
 
     return state, train_state_partition, logical_state_sharding
