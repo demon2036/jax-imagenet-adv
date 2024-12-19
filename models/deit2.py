@@ -222,9 +222,6 @@ class ViTLayer(ViTBase, nn.Module):
     def __call__(self, x: Array, det: bool = True) -> Array:
         # x = x + self.drop(self.scale1 * self.attn(self.norm1(x), det), det)
         # x = x + self.drop(self.scale2 * self.ff(self.norm2(x), det), det)
-
-
-
         x=self.ff(x)
         return x
 
@@ -275,7 +272,6 @@ class ViT(ViTBase, nn.Module):
             #     # jax.debug.visualize_array_sharding(x[0])
             #     print(x.shape)
             #     jax.debug.inspect_array_sharding(x,callback=print)
-
 
             # x = jax.lax.with_sharding_constraint(x, sharding_m)
             x = layer(x, det)
