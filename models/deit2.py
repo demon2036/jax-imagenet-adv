@@ -211,6 +211,12 @@ class ViTLayer(ViTBase, nn.Module):
     def __call__(self, x: Array, det: bool = True) -> Array:
         # x = x + self.drop(self.scale1 * self.attn(self.norm1(x), det), det)
         # x = x + self.drop(self.scale2 * self.ff(self.norm2(x), det), det)
+
+        if isinstance(x,jax._src.interpreters.ad.JVPTracer):
+            # jax.debug.visualize_array_sharding(x[0])
+            print(x.shape)
+            jax.debug.inspect_array_sharding(x,callback=print)
+
         x=self.ff.w2(x)
         return x
 
@@ -257,10 +263,7 @@ class ViT(ViTBase, nn.Module):
         """
         # jnp.array().sharding
         # print(x.sharding)
-        if isinstance(x,jax._src.interpreters.ad.JVPTracer):
-            # jax.debug.visualize_array_sharding(x[0])
-            print(x[0].shape)
-            jax.debug.inspect_array_sharding(x,callback=print)
+
         #     print(x.sharding)
         # print(type(x),)
         if self.pooling == "cls":
