@@ -242,7 +242,7 @@ class ViT(ViTBase, nn.Module):
     def __call__(self, x: Array, det: bool = True) -> Array:
         # x = (x - IMAGENET_DEFAULT_MEAN) / IMAGENET_DEFAULT_STD
 
-        if isinstance(x,jax._src.interpreters.ad.JVPTracer):
+        if isinstance(x,jax._src.interpreters.partial_eval.DynamicJaxprTracer):
             # jax.debug.visualize_array_sharding(x[0])
             print(x.shape)
             jax.debug.inspect_array_sharding(x,callback=print)
