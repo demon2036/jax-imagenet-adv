@@ -53,6 +53,7 @@ from utils import AverageMeter, read_yaml, preprocess_config, save_checkpoint_in
 import jax.tree_util as jtu
 from functools import partial
 import jax.numpy as jnp
+from flax.linen import partitioning as nn_partitioning
 
 # warnings.filterwarnings("ignore")
 # os.environ['LIBTPU_INIT_ARGS']='--xla_enable_async_all_gather=auto '
@@ -189,7 +190,17 @@ def main(configs):
 
     train_dataloader_iter, valid_dataloader, mix_ratio_state = create_dataloaders(**configs['dataset'],
                                                                                   grad_accum=grad_accum_steps)
-    with mesh:
+
+    logical_axis_rules = [
+        ['batch', 'dp'],
+        ['activation_embed', 'mp'],
+        ['mlp', 'mp'],
+        ['vocab', 'fsdp'],
+        ['embed', 'fsdp'],
+        ['heads', 'mp'],
+    ]
+
+    with mesh, nn_partitioning.axis_rules(logical_axis_rules):
 
         state, train_state_partition,train_state_sharding = create_train_state(configs['train_state'],
                                                           warmup_steps=warmup_steps,
