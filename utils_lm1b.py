@@ -1,182 +1,118 @@
-# Copyright 2024 The Flax Authors.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-# Copied over from MaxText (https://github.com/google/maxtext/blob/main/MaxText/max_utils.py).
-
 import functools
-import logging
+from typing import Callable
 
-import numpy as np
 import flax.linen as nn
-from flax.linen import partitioning as nn_partitioning
-from flax.training import train_state
+import flax.traverse_util
 import jax
 import jax.numpy as jnp
+import os
+
+import optax
+from flax.training import train_state
+from jax.lax import with_sharding_constraint
 from jax.experimental import mesh_utils
+from jax.sharding import Mesh, PartitionSpec, NamedSharding
+os.environ["XLA_FLAGS"] = '--xla_force_host_platform_device_count=8'
+jax.config.update('jax_platform_name', 'cpu')
+
+device_mesh = mesh_utils.create_device_mesh((2, 4))
+print(device_mesh)
+
+mesh = Mesh(devices=device_mesh, axis_names=('data', 'model'))
+print(mesh)
+
+def mesh_sharding(pspec: PartitionSpec) -> NamedSharding:
+  return NamedSharding(mesh, pspec)
 
 
-# Mesh utils.
-# -----------------------------------------------------------------------------
 
 
-def create_device_mesh(config):
-  """Creates a device mesh with each slice in its own data parallel group. If there is only one slice, uses two replicas."""
-  devices = jax.devices()
-  num_devices = len(devices)
-  try:
-    num_slices = 1 + max([d.slice_index for d in devices])
-  except:
-    num_slices = 1
-  num_devices_per_slice = num_devices // num_slices
-  logging.info(f"Devices: {devices}")
-  logging.info(f"Number of devices: {num_devices}")
+class LogicalDotReluDot(nn.Module):
+  depth: int
+  dense_init: Callable = nn.initializers.xavier_normal()
+  @nn.compact
+  def __call__(self, x):
+    y = nn.Dense(self.depth,
+                 kernel_init=nn.with_logical_partitioning(self.dense_init, ('embed', 'hidden')),
+                 use_bias=False,  # or overwrite with `bias_init`
+                 )(x)
 
-  multi_slice_env = hasattr(jax.devices()[0], "slice_index")
+    y = jax.nn.relu(y)
+    # Force a local sharding annotation.
+    y = with_sharding_constraint(y, mesh_sharding(PartitionSpec('data', 'model')))
 
-  dcn_parallelism = [
-      config.dcn_data_parallelism,
-      config.dcn_fsdp_parallelism,
-      config.dcn_tensor_parallelism,
-  ]
-  ici_parallelism = [
-      config.ici_data_parallelism,
-      config.ici_fsdp_parallelism,
-      config.ici_tensor_parallelism,
-  ]
+    W2 = self.param(
+        'W2',
+        nn.with_logical_partitioning(self.dense_init, ('hidden', 'embed')),
+        (self.depth, x.shape[-1]))
 
-  # Find possible unspecified parallelisms
-  dcn_parallelism = fill_unspecified_mesh_axes(
-      dcn_parallelism, num_slices, "DCN"
-  )
-  ici_parallelism = fill_unspecified_mesh_axes(
-      ici_parallelism, num_devices_per_slice, "ICI"
-  )
+    z = jnp.dot(y, W2)
+    # Force a local sharding annotation.
+    z = nn.with_logical_constraint(z, ('batch', 'embed'))
+    return z, None
 
-  if multi_slice_env:
-    mesh = mesh_utils.create_hybrid_device_mesh(
-        ici_parallelism, dcn_parallelism
-    )
-  else:
-    mesh = mesh_utils.create_device_mesh(ici_parallelism)
+class LogicalMLP(nn.Module):
+  num_layers: int
+  depth: int
+  use_scan: bool
+  @nn.compact
+  def __call__(self, x):
+    if self.use_scan:
+      x, _ = nn.scan(LogicalDotReluDot, length=self.num_layers,
+                    variable_axes={"params": 0},
+                    split_rngs={"params": True},
+                    metadata_params={nn.PARTITION_NAME: 'layer'}
+                    )(self.depth)(x)
+    else:
+      for i in range(self.num_layers):
+        x, _ = LogicalDotReluDot(self.depth)(x)
+    return x
 
-  logging.info(f"Decided on mesh: {mesh}")
-  logging.info(f"Mesh shape: {mesh.shape}")
+# MLP hyperparameters.
+BATCH, LAYERS, DEPTH, USE_SCAN = 8, 4, 1024, False
+# Create fake inputs.
+x = jnp.ones((BATCH, DEPTH))
+# Initialize a PRNG key.
+k = jax.random.key(0)
 
-  return mesh
-
-
-def fill_unspecified_mesh_axes(
-    parallelism_vals, target_product, parallelism_type
-):
-  """Evaluates unspecified DCN/ICI parallelism values"""
-  if -1 in parallelism_vals:
-    assert parallelism_vals.count(-1) == 1, (
-        f"Found unspecified values (-1) for more than one {parallelism_type}   "
-        "   parallelism axis. At most one axis can be unspecified."
-    )
-
-    determined_val = target_product / np.prod(parallelism_vals) * -1
-
-    assert determined_val >= 1 and determined_val.is_integer, (
-        "Unspecified value unable to be determined with the given     "
-        f" {parallelism_type} parallelism values"
-    )
-
-    parallelism_vals[parallelism_vals.index(-1)] = int(determined_val)
-
-  target_type = "slices" if parallelism_type == "DCN" else "devices per slice"
-
-  assert np.prod(parallelism_vals) == target_product, (
-      f"Number of {target_type} {target_product} does not match    the product"
-      f" of the {parallelism_type} parallelism {np.prod(parallelism_vals)}"
-  )
-
-  return parallelism_vals
+# Create an Optax optimizer.
+optimizer = optax.adam(learning_rate=0.001)
+# Instantiate the model.
+logical_model = LogicalMLP(LAYERS, DEPTH, USE_SCAN)
 
 
-# State initialization utils.
-# -----------------------------------------------------------------------------
+rules = (('batch', 'data'),
+         ('hidden', 'model'))
 
 
-def unbox_logicallypartioned_trainstate(
-    boxed_train_state: train_state.TrainState,
-):
-  """Unboxes the flax.LogicallyPartitioned pieces in a train state.
-
-  Args:
-    boxed_train_state: a train state that includes LogicallyPartitioned
-      leaves.
-  Returns:
-    a TrainState where all all LogicallyPartitioned leaves have been unboxed.
-  """
-  return jax.tree_util.tree_map(
-      lambda x: x.unbox() if isinstance(x, nn.spmd.LogicallyPartitioned) else x,
-      boxed_train_state,
-      is_leaf=lambda k: isinstance(k, nn.spmd.LogicallyPartitioned),
-  )
-
-
-def init_train_state(model, tx, config, key):
-  """
-  We pass in "static" objects like model, tx, config as JAX compares them by
-  object hash, and instantiating them inside causes pjit top-level annotations
-  to fail to match as pytree prefixes if we re-instantiate.
-
-  Args: model, tx, config, key
-  """
-  input_shape = (config.per_device_batch_size, config.max_target_length)
-  initial_variables = jax.jit(model.init)(
-      key, jnp.ones(input_shape, jnp.float32)
-  )
-
-  state = train_state.TrainState.create(
-      apply_fn=model.apply, params=initial_variables["params"], tx=tx
-  )
+def init_fn(k, x, model, optimizer):
+  variables = model.init(k, x) # Initialize the model.
+  state = train_state.TrainState.create( # Create a `TrainState`.
+    apply_fn=model.apply,
+    params=variables['params'],
+    tx=optimizer)
   return state
 
+logical_abstract_variables = jax.eval_shape(
+    functools.partial(init_fn, model=logical_model, optimizer=optimizer), k, x)
 
-def setup_initial_state(model, tx, config, rng, mesh):
-  """We initialize the model and optimizer state, and optionally load from a
-  checkpoint as necessary.
+logical_state_spec = nn.get_partition_spec(logical_abstract_variables)
+def pp(p,x):
+    print(p,x.sharding,)
 
-  Args:
-    model: the flax model to initialize
-    tx: the optax.GradientTransformation
-    config: config object
-    rng: jax.prng key
-    mesh: jax.devices() mesh
+# print(logical_abstract_variables.params)
+print(logical_state_spec)
+jax.tree_util.tree_map_with_path(pp,flax.traverse_util.flatten_dict(logical_abstract_variables.params,sep='/'))
 
-  Returns:
-    state: the initialized train state
-    state_mesh_annotations: the mesh annotations for the train state
-  """
-  init_train_state_partial = functools.partial(
-      init_train_state, model, tx, config
-  )
-  abstract_state = jax.eval_shape(init_train_state_partial, rng)
-  state_logical_annotations = nn.get_partition_spec(abstract_state)
+logical_state_sharding = nn.logical_to_mesh_sharding(logical_state_spec, mesh, rules)
+print(logical_state_sharding)
+x_sharding = mesh_sharding(PartitionSpec('data', None)) # dimensions: (batch, length)
+x = jax.device_put(x, x_sharding)
 
-  # Initialization
-  with mesh, nn_partitioning.axis_rules(config.logical_axis_rules):
-    state_mesh_annotations = nn.logical_to_mesh_sharding(
-        state_logical_annotations, mesh, config.logical_axis_rules
-    )
-    state = jax.jit(
-        init_train_state_partial,
-        in_shardings=None,  # type: ignore
-        out_shardings=state_mesh_annotations,
-    )(rng)
+logical_jit_init_fn = jax.jit(init_fn, static_argnums=(2, 3),
+                      in_shardings=(mesh_sharding(()), x_sharding),  # PRNG key and x
+                      out_shardings=logical_state_sharding)
 
-  state = unbox_logicallypartioned_trainstate(state)
-  return state, state_mesh_annotations
+logical_initialized_state = logical_jit_init_fn(k, x, logical_model, optimizer)
+jax.tree_util.tree_map_with_path(pp,logical_initialized_state)
+

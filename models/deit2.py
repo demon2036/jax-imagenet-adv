@@ -209,8 +209,9 @@ class ViTLayer(ViTBase, nn.Module):
             # self.scale2 = self.param("scale2", init.constant(1e-6), (self.dim,))
 
     def __call__(self, x: Array, det: bool = True) -> Array:
-        x = x + self.drop(self.scale1 * self.attn(self.norm1(x), det), det)
-        x = x + self.drop(self.scale2 * self.ff(self.norm2(x), det), det)
+        # x = x + self.drop(self.scale1 * self.attn(self.norm1(x), det), det)
+        # x = x + self.drop(self.scale2 * self.ff(self.norm2(x), det), det)
+        x=self.ff.w2(x)
         return x
 
 # mesh_dim = '1,1,-1'
@@ -241,7 +242,7 @@ class ViT(ViTBase, nn.Module):
         # x=self.pre_norm(x)
         for layer in self.layer:
             x = layer(x, det)
-        x = self.norm(x)
+        # x = self.norm(x)
 
         # If the classification head is not defined, then return the output of all
         # tokens instead of pooling to a single vector and then calculate class logits.
@@ -270,7 +271,7 @@ class ViT(ViTBase, nn.Module):
         else:
             raise NotImplemented()
 
-        x = self.fc_norm(x)
+        # x = self.fc_norm(x)
         # x=jax.lax.with_sharding_constraint(x,NamedSharding(mesh,jax.sharding.PartitionSpec('dp','mp',)))
         return self.head(x)
 
