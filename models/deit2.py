@@ -263,7 +263,7 @@ class ViT(ViTBase, nn.Module):
         #     jax.debug.inspect_array_sharding(x,callback=print)
         # else:
         #     print(type(x))
-        x = nn.with_logical_constraint(x, ('batch', 'vocab','vocab', 'activation_embed'))
+        x = nn.with_logical_constraint(x, ('batch', 'vocab',None, 'activation_embed'))
 
         x = self.drop(self.embed(x), det)
 
