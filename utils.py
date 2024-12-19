@@ -300,8 +300,8 @@ def preprocess_config(yaml):
 
 def get_partition_rules_caformer():
     return (
-        ('scale', PS('mp')),
-        ('bias', PS('mp')),
+        # ('scale', PS('mp')),
+        # ('bias', PS('mp')),
 
         ('fc/fc1/kernel', PS('fsdp', 'mp')),
         ('fc/fc2/kernel', PS('mp', None)),
