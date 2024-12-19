@@ -256,6 +256,7 @@ class ViT(ViTBase, nn.Module):
         #     print(type(x))
 
         x = self.drop(self.embed(x), det)
+        x=jax.lax.stop_gradient(x)
 
         # x=self.pre_norm(x)
         x = jax.lax.with_sharding_constraint(x, sharding_m)
