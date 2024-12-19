@@ -150,10 +150,10 @@ def main(configs):
 
     # Create an example `Mesh` for per-process data parallelism. Make sure all devices
     # are grouped by process, and then resize so each row is a model replica.
-    mesh_devices = np.array([jax.local_devices(process_idx)
-                             for process_idx in range(jax.process_count())])
-
-    print(mesh_devices.shape)
+    # mesh_devices = np.array([jax.local_devices(process_idx)
+    #                          for process_idx in range(jax.process_count())])
+    #
+    # print(mesh_devices.shape)
     # mesh= mesh_devices.reshape(4,1, -1)
     # mesh = einops.rearrange(mesh_devices, 'a ( b c)-> a b c',b=1,c=4)
     # print(mesh)
