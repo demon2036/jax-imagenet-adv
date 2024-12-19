@@ -29,12 +29,12 @@ class TrainModule(nn.Module):
         # Normalize the pixel values in TPU devices, instead of copying the normalized
         # float values from CPU. This may reduce both memory usage and latency.
 
-        if isinstance(images,jax._src.interpreters.partial_eval.DynamicJaxprTracer):
-            # jax.debug.visualize_array_sharding(x[0])
-            print(images.shape)
-            jax.debug.inspect_array_sharding(images,callback=print)
-        else:
-            print(type(images))
+        # if isinstance(images,jax._src.interpreters.partial_eval.DynamicJaxprTracer):
+        #     # jax.debug.visualize_array_sharding(x[0])
+        #     print(images.shape)
+        #     jax.debug.inspect_array_sharding(images,callback=print)
+        # else:
+        #     print(type(images))
 
 
         images = jnp.moveaxis(images, 1, 3).astype(jnp.float32) / 0xFF
