@@ -99,7 +99,7 @@ class PatchEmbed(ViTBase, nn.Module):
             strides=(self.patch_size, self.patch_size),
             padding="VALID",
             use_bias=False,
-            kernel_init=nn.with_logical_partitioning(self.dense_init, (None,None,'embed', 'mlp')),
+            kernel_init=nn.with_logical_partitioning(self.dense_init, (None,None, 'mlp',None)),
 
         )
         # if self.pooling == "cls":
