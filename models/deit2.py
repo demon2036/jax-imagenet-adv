@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, fields
 from functools import partial
-from typing import Any, Literal
+from typing import Any, Literal, Callable
 
 import einops
 import flax.linen as nn
@@ -57,7 +57,7 @@ class ViTBase:
     dim: int = 768
     heads: int = 12
     labels: int | None = 1000
-    layerscale: bool = True
+    layerscale: bool = False
 
     patch_size: int = 16
     image_size: int = 224
@@ -185,9 +185,13 @@ class Attention(ViTBase, nn.Module):
 
 
 class FeedForward(ViTBase, nn.Module):
+    dense_init: Callable = nn.initializers.xavier_normal()
     def setup(self):
         self.w1 = Dense(self.hidden_dim)
-        self.w2 = Dense(self.dim)
+        self.w2 = Dense(self.dim,
+                        kernel_init=nn.with_logical_partitioning(self.dense_init, ('mlp', 'embed')),
+
+                        use_bias=False,)
         self.drop = nn.Dropout(self.dropout)
 
     def __call__(self, x: Array, det: bool = True) -> Array:
@@ -220,11 +224,11 @@ class ViTLayer(ViTBase, nn.Module):
         return x
 
 
-mesh_dim_m = '-1,1,4'
-# mesh_dim = '1,1,-1'
-mesh_m = get_jax_mesh2(mesh_dim_m)
-sharding_m = jax.sharding.NamedSharding(
-    mesh_m, jax.sharding.PartitionSpec("dp",None,'mp' ))
+# mesh_dim_m = '-1,1,4'
+# # mesh_dim = '1,1,-1'
+# mesh_m = get_jax_mesh2(mesh_dim_m)
+# sharding_m = jax.sharding.NamedSharding(
+#     mesh_m, jax.sharding.PartitionSpec("dp",None,'mp' ))
 
 class ViT(ViTBase, nn.Module):
     def setup(self):
@@ -259,10 +263,10 @@ class ViT(ViTBase, nn.Module):
         x=jax.lax.stop_gradient(x)
 
         # x=self.pre_norm(x)
-        x = jax.lax.with_sharding_constraint(x, sharding_m)
+        # x = jax.lax.with_sharding_constraint(x, sharding_m)
         for layer in self.layer:
             x = layer(x, det)
-            x = jax.lax.with_sharding_constraint(x, sharding_m)
+            # x = jax.lax.with_sharding_constraint(x, sharding_m)
             # if isinstance(x,jax._src.interpreters.ad.JVPTracer):
             #     # jax.debug.visualize_array_sharding(x[0])
             #     print(x.shape)
