@@ -228,7 +228,7 @@ mesh_dim_m = '-1,1,4'
 # mesh_dim = '1,1,-1'
 mesh_m = get_jax_mesh2(mesh_dim_m)
 sharding_m = jax.sharding.NamedSharding(
-    mesh_m, jax.sharding.PartitionSpec("dp",None,'mp' ))
+    mesh_m, jax.sharding.PartitionSpec("dp",'mp','fsdp' ))
 
 class ViT(ViTBase, nn.Module):
     def setup(self):
