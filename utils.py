@@ -304,7 +304,7 @@ def get_partition_rules_caformer():
         # ('bias', PS('mp')),
 
         ('fc/fc1/kernel', PS('fsdp', 'mp')),
-        ('fc/fc2/kernel', PS('mp', 'fsdp')),
+        ('fc/fc2/kernel', PS('mp', None)),
 
         # ('downsample/conv/kernel', PS(None, None, 'fsdp', 'mp')),
         # ('stem/conv/kernel', PS(None, None, 'fsdp', 'mp')),
