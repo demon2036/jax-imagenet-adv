@@ -212,10 +212,7 @@ class ViTLayer(ViTBase, nn.Module):
         # x = x + self.drop(self.scale1 * self.attn(self.norm1(x), det), det)
         # x = x + self.drop(self.scale2 * self.ff(self.norm2(x), det), det)
 
-        if isinstance(x,jax._src.interpreters.ad.JVPTracer):
-            # jax.debug.visualize_array_sharding(x[0])
-            print(x.shape)
-            jax.debug.inspect_array_sharding(x,callback=print)
+
 
         x=self.ff.w2(x)
         return x
@@ -244,7 +241,20 @@ class ViT(ViTBase, nn.Module):
 
     def __call__(self, x: Array, det: bool = True) -> Array:
         # x = (x - IMAGENET_DEFAULT_MEAN) / IMAGENET_DEFAULT_STD
+
+        if isinstance(x,jax._src.interpreters.ad.JVPTracer):
+            # jax.debug.visualize_array_sharding(x[0])
+            print(x.shape)
+            jax.debug.inspect_array_sharding(x,callback=print)
+
         x = self.drop(self.embed(x), det)
+
+
+        if isinstance(x,jax._src.interpreters.ad.JVPTracer):
+            # jax.debug.visualize_array_sharding(x[0])
+            print(x.shape)
+            jax.debug.inspect_array_sharding(x,callback=print)
+
         # x=self.pre_norm(x)
         for layer in self.layer:
             x = layer(x, det)
