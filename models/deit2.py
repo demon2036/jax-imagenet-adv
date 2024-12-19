@@ -224,11 +224,11 @@ class ViTLayer(ViTBase, nn.Module):
         return x
 
 
-# mesh_dim_m = '-1,1,4'
-# # mesh_dim = '1,1,-1'
-# mesh_m = get_jax_mesh2(mesh_dim_m)
-# sharding_m = jax.sharding.NamedSharding(
-#     mesh_m, jax.sharding.PartitionSpec("dp",None,'mp' ))
+mesh_dim_m = '-1,1,4'
+# mesh_dim = '1,1,-1'
+mesh_m = get_jax_mesh2(mesh_dim_m)
+sharding_m = jax.sharding.NamedSharding(
+    mesh_m, jax.sharding.PartitionSpec("dp",None,'mp' ))
 
 class ViT(ViTBase, nn.Module):
     def setup(self):
@@ -265,7 +265,8 @@ class ViT(ViTBase, nn.Module):
         # x=self.pre_norm(x)
         # x = jax.lax.with_sharding_constraint(x, sharding_m)
         for layer in self.layer:
-            x=nn.with_logical_constraint(x,('batch','vocab','embed'))
+            # x=nn.with_logical_constraint(x,('batch','vocab','embed'))
+            x = jax.lax.with_sharding_constraint(x, sharding_m)
             x = layer(x, det)
             # x = jax.lax.with_sharding_constraint(x, sharding_m)
             # if isinstance(x,jax._src.interpreters.ad.JVPTracer):
