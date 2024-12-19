@@ -56,7 +56,7 @@ train_state:
 #      drop_rate: 0.5
 
   optimizer:
-    target: 'adamw'
+    target: 'sgd'
     optimizer_kwargs:
       learning_rate: 8.0e-4
 #      eps: 1.0e-8
