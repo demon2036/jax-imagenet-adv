@@ -258,11 +258,11 @@ class ViT(ViTBase, nn.Module):
         x = self.drop(self.embed(x), det)
 
         # x=self.pre_norm(x)
-        x = jax.lax.with_sharding_constraint(x, sharding_m)
+        # x = jax.lax.with_sharding_constraint(x, sharding_m)
         for layer in self.layer:
             x = layer(x, det)
         # x = self.norm(x)
-        x=jax.lax.with_sharding_constraint(x,sharding_m)
+        # x=jax.lax.with_sharding_constraint(x,sharding_m)
 
         #
         # if isinstance(x,jax._src.interpreters.ad.JVPTracer):
