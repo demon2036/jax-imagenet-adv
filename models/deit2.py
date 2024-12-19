@@ -270,7 +270,6 @@ class ViT(ViTBase, nn.Module):
             # jax.debug.visualize_array_sharding(x[0])
             print(x.shape)
             jax.debug.inspect_array_sharding(x,callback=print)
-        return x
 
         # If the classification head is not defined, then return the output of all
         # tokens instead of pooling to a single vector and then calculate class logits.
