@@ -49,7 +49,7 @@ def load_pretrain(pretrained_model='convnext_base.fb_in1k',default_params=None):
 
 
 def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1, training_steps=10,
-                       grad_accum_steps=1,mesh=None
+                       grad_accum_steps=1,mesh=None,logical_axis_rules=None
                        ):  # -> TrainState:
 
 
@@ -175,16 +175,6 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
 
 
     logical_state_spec = flax.linen.get_partition_spec(train_state_shapes)
-
-
-    logical_axis_rules = [
-        ['batch', 'dp'],
-        ['activation_embed', 'mp'],
-        ['mlp', 'mp'],
-        ['vocab', 'fsdp'],
-        ['embed', 'fsdp'],
-        ['heads', 'mp'],
-    ]
 
     logical_state_sharding = flax.linen.logical_to_mesh_sharding(logical_state_spec, mesh, logical_axis_rules)
     print(logical_state_sharding)
