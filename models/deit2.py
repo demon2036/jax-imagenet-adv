@@ -267,7 +267,7 @@ class ViT(ViTBase, nn.Module):
         # x=self.pre_norm(x)
         # x = jax.lax.with_sharding_constraint(x, sharding_m)
         for layer in self.layer:
-            # x=nn.with_logical_constraint(x,('batch','vocab','activation_embed'))
+            x=nn.with_logical_constraint(x,('batch','vocab','activation_embed'))
             # if isinstance(x,jax._src.interpreters.ad.JVPTracer):
             #     # jax.debug.visualize_array_sharding(x[0])
             #     print(x.shape)
