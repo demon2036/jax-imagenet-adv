@@ -179,8 +179,9 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
 
     logical_axis_rules = [
         ['batch', 'dp'],
+        ['activation_embed', 'mp'],
         ['mlp', 'mp'],
-        ['vocab', 'mp'],
+        ['vocab', 'fsdp'],
         ['embed', 'fsdp'],
         ['heads', 'mp'],
     ]
