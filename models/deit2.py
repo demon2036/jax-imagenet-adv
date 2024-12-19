@@ -246,6 +246,8 @@ class ViT(ViTBase, nn.Module):
             # jax.debug.visualize_array_sharding(x[0])
             print(x.shape)
             jax.debug.inspect_array_sharding(x,callback=print)
+        else:
+            print(type(x))
 
         x = self.drop(self.embed(x), det)
 
