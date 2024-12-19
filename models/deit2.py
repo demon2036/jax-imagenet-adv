@@ -219,13 +219,13 @@ class ViTLayer(ViTBase, nn.Module):
         x=self.ff.w2(x)
         return x
 
-
-mesh_dim = '-1,1,4'
-# mesh_dim = '1,1,-1'
-mesh = get_jax_mesh2(mesh_dim)
-print(mesh)
-sharding = jax.sharding.NamedSharding(
-    mesh, jax.sharding.PartitionSpec("dp",None,'mp' ))
+#
+# mesh_dim = '-1,1,4'
+# # mesh_dim = '1,1,-1'
+# mesh = get_jax_mesh2(mesh_dim)
+# print(mesh)
+# sharding = jax.sharding.NamedSharding(
+#     mesh, jax.sharding.PartitionSpec("dp",None,'mp' ))
 
 class ViT(ViTBase, nn.Module):
     def setup(self):
@@ -265,11 +265,11 @@ class ViT(ViTBase, nn.Module):
         # x = self.norm(x)
         # x=jax.lax.with_sharding_constraint(x,sharding)
 
-
-        if isinstance(x,jax._src.interpreters.ad.JVPTracer):
-            # jax.debug.visualize_array_sharding(x[0])
-            print(x.shape)
-            jax.debug.inspect_array_sharding(x,callback=print)
+        #
+        # if isinstance(x,jax._src.interpreters.ad.JVPTracer):
+        #     # jax.debug.visualize_array_sharding(x[0])
+        #     print(x.shape)
+        #     jax.debug.inspect_array_sharding(x,callback=print)
 
         # If the classification head is not defined, then return the output of all
         # tokens instead of pooling to a single vector and then calculate class logits.
