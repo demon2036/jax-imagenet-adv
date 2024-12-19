@@ -187,10 +187,12 @@ class Attention(ViTBase, nn.Module):
 class FeedForward(ViTBase, nn.Module):
     dense_init: Callable = nn.initializers.xavier_normal()
     def setup(self):
-        self.w1 = Dense(self.hidden_dim)
+        self.w1 = Dense(self.hidden_dim,
+                        kernel_init=nn.with_logical_partitioning(self.dense_init, ('embed', 'mlp')),
+                        use_bias=False
+                        )
         self.w2 = Dense(self.dim,
                         kernel_init=nn.with_logical_partitioning(self.dense_init, ('mlp', 'embed')),
-
                         use_bias=False,)
         self.drop = nn.Dropout(self.dropout)
 
@@ -220,15 +222,15 @@ class ViTLayer(ViTBase, nn.Module):
 
 
 
-        x=self.ff.w2(x)
+        x=self.ff(x)
         return x
 
 
-mesh_dim_m = '-1,1,4'
-# mesh_dim = '1,1,-1'
-mesh_m = get_jax_mesh2(mesh_dim_m)
-sharding_m = jax.sharding.NamedSharding(
-    mesh_m, jax.sharding.PartitionSpec("dp",'mp','fsdp' ))
+# mesh_dim_m = '-1,1,4'
+# # mesh_dim = '1,1,-1'
+# mesh_m = get_jax_mesh2(mesh_dim_m)
+# sharding_m = jax.sharding.NamedSharding(
+#     mesh_m, jax.sharding.PartitionSpec("dp",'mp','fsdp' ))
 
 class ViT(ViTBase, nn.Module):
     def setup(self):
