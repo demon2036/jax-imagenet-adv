@@ -191,9 +191,6 @@ class Attention(nn.Module):
         x = x.transpose((0, 2, 1, 3)).reshape(B, N, C)
         x = nn.Dense(C, use_bias=self.proj_bias, name="proj")(x)
         x = nn.Dropout(self.proj_drop)(x, deterministic=det)
-
-        # print(B,N,C,x.shape)
-
         return x
 
 
