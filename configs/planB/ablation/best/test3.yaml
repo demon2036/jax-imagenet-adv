@@ -48,7 +48,7 @@ train_state:
     model_kwargs:
       labels: 1000
       layers: 32
-      dim: 1280
+      dim: 1280*4
       heads: 16
       image_size: 224
 
