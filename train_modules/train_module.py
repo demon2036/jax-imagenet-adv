@@ -28,6 +28,15 @@ class TrainModule(nn.Module):
     def __call__(self, images: Array, labels: Array, det: bool = True,*args,**kwargs) -> ArrayTree:
         # Normalize the pixel values in TPU devices, instead of copying the normalized
         # float values from CPU. This may reduce both memory usage and latency.
+
+        if isinstance(images,jax._src.interpreters.partial_eval.DynamicJaxprTracer):
+            # jax.debug.visualize_array_sharding(x[0])
+            print(images.shape)
+            jax.debug.inspect_array_sharding(x,callback=print)
+        else:
+            print(type(images))
+
+
         images = jnp.moveaxis(images, 1, 3).astype(jnp.float32) / 0xFF
 
         labels = nn.one_hot(labels, self.model.labels) if labels.ndim == 1 else labels
