@@ -161,7 +161,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
             dropout_rng=jax.random.PRNGKey(train_state_config['dropout_seed'] ),
             adv_rng=jax.random.PRNGKey(2036 ),
             ema_decay=train_state_config['ema_decay'],
-            ema_params=copy.deepcopy(params),
+            ema_params=copy.deepcopy(params) if train_state_config['ema_decay'] > 0 else None,
             micro_step=0,
             micro_in_mini=grad_accum_steps,
             grad_accum=grad_accum if grad_accum_steps > 1 else None,
