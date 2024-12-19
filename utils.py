@@ -375,7 +375,10 @@ def get_partition_rules_vit():
         ('attn/wo/kernel', PS( 'fsdp', 'mp', )),
 
         ('ff/w1/kernel', PS('fsdp', 'mp')),
-        ('ff/w2/kernel', PS('mp', 'fsdp')),
+        # ('ff/w2/kernel', PS('mp', 'fsdp')),
+
+        ('ff/w2/kernel', PS('fsdp','mp', )),
+
         #
         #
         # ('model/head/kernel', PS('mp', 'fsdp')),
