@@ -91,13 +91,16 @@ class ViTBase:
 
 
 class PatchEmbed(ViTBase, nn.Module):
+    dense_init: Callable = nn.initializers.xavier_normal()
     def setup(self):
         self.wte = Conv(
             self.dim,
             kernel_size=(self.patch_size, self.patch_size),
             strides=(self.patch_size, self.patch_size),
             padding="VALID",
-            use_bias=True
+            use_bias=False,
+            kernel_init=nn.with_logical_partitioning(self.dense_init, (None,None,'embed', 'mlp')),
+
         )
         # if self.pooling == "cls":
         self.cls_token = self.param(
@@ -260,9 +263,9 @@ class ViT(ViTBase, nn.Module):
         #     jax.debug.inspect_array_sharding(x,callback=print)
         # else:
         #     print(type(x))
+        x = nn.with_logical_constraint(x, ('batch', 'vocab','vocab', 'activation_embed'))
 
         x = self.drop(self.embed(x), det)
-        x=jax.lax.stop_gradient(x)
 
         # x=self.pre_norm(x)
         # x = jax.lax.with_sharding_constraint(x, sharding_m)
