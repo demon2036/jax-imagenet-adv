@@ -241,6 +241,9 @@ def main(configs):
 
                 # batch = jtu.tree_map(go_jit, batch)
 
+                jax.tree_util.tree_map(lambda x:jax.debug.inspect_array_sharding(x, callback=print),batch)
+
+
 
                 # images, labels = batch
                 # print(f'{images.shape=}   {images.addressable_data(0).shape=}')
