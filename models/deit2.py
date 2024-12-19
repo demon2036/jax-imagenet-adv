@@ -263,7 +263,6 @@ class ViT(ViTBase, nn.Module):
         # x=self.pre_norm(x)
         for layer in self.layer:
             x = jax.lax.with_sharding_constraint(x, sharding)
-
             x = layer(x, det)
         # x = self.norm(x)
         # x=jax.lax.with_sharding_constraint(x,sharding)
@@ -273,7 +272,7 @@ class ViT(ViTBase, nn.Module):
             # jax.debug.visualize_array_sharding(x[0])
             print(x.shape)
             jax.debug.inspect_array_sharding(x,callback=print)
-
+        return x
 
         # If the classification head is not defined, then return the output of all
         # tokens instead of pooling to a single vector and then calculate class logits.

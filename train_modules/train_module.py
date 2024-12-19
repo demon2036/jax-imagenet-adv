@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from lib2to3.btm_utils import token_labels
 from typing import Callable, Any
 
 import flax.linen as nn
@@ -45,6 +44,13 @@ class TrainModule(nn.Module):
         if not det:
             labels = optax.smooth_labels(labels, self.label_smoothing)
             images, labels = self.mixup(images, labels)
+
+
+        out=self.model(images, det=det)
+
+        loss = out-jnp.ones_like(out)
+        return {"loss": loss, }
+
 
         loss = self.criterion((logits := self.model(images, det=det)), labels)
         labels = labels == labels.max(-1, keepdims=True)
