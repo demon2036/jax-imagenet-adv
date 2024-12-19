@@ -103,7 +103,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     else:
         params = load_pretrain(pretrained_model=pretrained_ckpt,default_params=params)
 
-    params=jax.tree_util.tree_map(jnp.array,params)
+    params=jax.tree_util.tree_map(jnp.asarray,params)
 
     # if args.grad_accum > 1:
     #     grad_accum = jax.tree_map(jnp.zeros_like, params)
