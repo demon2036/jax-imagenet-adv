@@ -32,7 +32,7 @@ class TrainModule(nn.Module):
         if isinstance(images,jax._src.interpreters.partial_eval.DynamicJaxprTracer):
             # jax.debug.visualize_array_sharding(x[0])
             print(images.shape)
-            jax.debug.inspect_array_sharding(x,callback=print)
+            jax.debug.inspect_array_sharding(images,callback=print)
         else:
             print(type(images))
 
