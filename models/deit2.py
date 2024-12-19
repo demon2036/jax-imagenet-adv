@@ -250,10 +250,10 @@ class ViT(ViTBase, nn.Module):
         x = self.drop(self.embed(x), det)
 
 
-        if isinstance(x,jax._src.interpreters.ad.JVPTracer):
-            # jax.debug.visualize_array_sharding(x[0])
-            print(x.shape)
-            jax.debug.inspect_array_sharding(x,callback=print)
+        # if isinstance(x,jax._src.interpreters.ad.JVPTracer):
+        #     # jax.debug.visualize_array_sharding(x[0])
+        #     print(x.shape)
+        #     jax.debug.inspect_array_sharding(x,callback=print)
 
         # x=self.pre_norm(x)
         for layer in self.layer:
