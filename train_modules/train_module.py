@@ -46,10 +46,10 @@ class TrainModule(nn.Module):
             images, labels = self.mixup(images, labels)
 
 
-        out=self.model(images, det=det)
-
-        loss = out-jnp.ones_like(out)
-        return {"loss": loss, }
+        # out=self.model(images, det=det)
+        #
+        # loss = out-jnp.ones_like(out)
+        # return {"loss": loss, }
 
 
         loss = self.criterion((logits := self.model(images, det=det)), labels)
