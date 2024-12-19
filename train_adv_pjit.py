@@ -241,7 +241,6 @@ def main(configs):
 
                 # batch = jtu.tree_map(go_jit, batch)
 
-                jax.tree_util.tree_map(lambda x:jax.debug.inspect_array_sharding(x, callback=print),batch)
 
 
 
@@ -257,12 +256,8 @@ def main(configs):
                 # print(jax.devices())
                 # while True:
                 #     pass
-                if step==1:
-                    # with jax.profiler.trace("/tmp/jax-trace", create_perfetto_link=True):
-                        state, metrics = training_step_pjit(state, batch, use_pgd)
-                    # break
-                else:
-                    state, metrics = training_step_pjit(state, batch, use_pgd)
+
+                state, metrics = training_step_pjit(state, batch, use_pgd)
                 # images,labels=batch
 
                 # print(f'{images.shape=}  {labels.shape=}')
