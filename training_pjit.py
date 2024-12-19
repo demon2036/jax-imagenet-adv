@@ -105,11 +105,11 @@ def validation_adv_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
 
 def training_step(state: TrainState, batch: ArrayTree, use_pgd) -> tuple[TrainState, ArrayTree]:
     # jax.tree_util.tree_map(lambda x: jax.debug.inspect_array_sharding(x, callback=print), batch)
-    images,label=batch
-    print('images')
-    jax.debug.inspect_array_sharding(images, callback=print)
-    print('labels')
-    jax.debug.inspect_array_sharding(label, callback=print)
+    # images,label=batch
+    # print('images')
+    # jax.debug.inspect_array_sharding(images, callback=print)
+    # print('labels')
+    # jax.debug.inspect_array_sharding(label, callback=print)
 
     def loss_fn(params: ArrayTree) -> ArrayTree:
         metrics = state.apply_fn({"params": params}, *batch, det=False, rngs=rngs, use_trade=not use_pgd,
