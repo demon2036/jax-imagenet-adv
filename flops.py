@@ -23,11 +23,11 @@ print(dims)
 
 # net=MetaFormer(token_mixers=SepConv,depths=(3,12,18,3),dims=(128,256,512,768))
 net=MetaFormer(
-    # token_mixers=[SepConv, SepConv, Attention, Attention],
-    token_mixers=[SepConv, SepConv, SepConv, SepConv],
-    # norm_layers=[LayerNorm2dNoBias] * 2 + [LayerNormNoBias] * 2,
+    token_mixers=[SepConv, SepConv, Attention, Attention],
+    # token_mixers=[SepConv, SepConv, SepConv, SepConv],
+    norm_layers=[LayerNorm2dNoBias] * 2 + [LayerNormNoBias] * 2,
     # token_mixers=[SepConv,SepConv,Attention,Attention],
-               depths=(3,12,18,3),dims=dims)
+               depths=(3,3,27,3),dims=dims)
 # net=convnext_xxlarge()
 
 net.eval()

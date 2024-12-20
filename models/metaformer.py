@@ -457,6 +457,6 @@ class MetaFormer(nn.Module):
 ReMatSepConv=nn.remat(SepConv)
 ReMatAttention=nn.remat(Attention)
 
-# CAFormer=partial(MetaFormer,token_mixers=(SepConv,SepConv,Attention,Attention))
-CAFormer=partial(MetaFormer,token_mixers=(ReMatSepConv,ReMatSepConv,ReMatAttention,ReMatAttention))
+CAFormer=partial(MetaFormer,token_mixers=(SepConv,SepConv,Attention,Attention))
+# CAFormer=partial(MetaFormer,token_mixers=(ReMatSepConv,ReMatSepConv,ReMatAttention,ReMatAttention))
 ConvFormer=partial(MetaFormer,token_mixers=(SepConv,SepConv,SepConv,SepConv))
