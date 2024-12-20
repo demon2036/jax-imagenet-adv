@@ -120,10 +120,6 @@ class TrainAdvModule(nn.Module):
     use_pgd: bool = False
     beta: float = 0.0
 
-
-
-
-
     def __call__(self, images: Array, labels: Array, det: bool = True, use_pgd=True, use_trade=False,
                  train=False) -> ArrayTree:
         # Normalize the pixel values in TPU devices, instead of copying the normalized
