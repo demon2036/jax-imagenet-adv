@@ -333,11 +333,19 @@ class MetaFormerStage(nn.Module):
         return x
 
 
+
+class Silu(nn.Module):
+
+    @nn.compact
+    def __call__(self, x):
+        return nn.silu(x)
+
+
 class MlpHead(nn.Module):
     dim: int
     num_classes: int = 1000
     mlp_ratio: float = 4.0
-    act_layer: nn.Module = SquaredReLU
+    act_layer: nn.Module = Silu#SquaredReLU
     norm_layer: nn.Module = nn.LayerNorm
     head_dropout: float = 0.0
     bias: bool = True
