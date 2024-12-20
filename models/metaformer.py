@@ -53,7 +53,7 @@ class Stem(nn.Module):
             name='conv',dtype=dtype
         )(x)
         if self.norm_layer:
-            x = self.norm_layer(name='norm')(x)
+            x = self.norm_layer(name='norm',dtype=dtype)(x)
         return x
 
 #
@@ -267,7 +267,7 @@ class Downsampling(nn.Module):
     def __call__(self, x):
         # Apply normalization if provided
         if self.norm_layer:
-            x = self.norm_layer(name='norm')(x)
+            x = self.norm_layer(name='norm',dtype=dtype)(x)
 
         # Convolution operation
         x = Conv(
@@ -454,5 +454,9 @@ class MetaFormer(nn.Module):
 
 
 
-CAFormer=partial(MetaFormer,token_mixers=(SepConv,SepConv,Attention,Attention))
+ReMatSepConv=nn.remat(SepConv)
+ReMatAttention=nn.remat(Attention)
+
+# CAFormer=partial(MetaFormer,token_mixers=(SepConv,SepConv,Attention,Attention))
+CAFormer=partial(MetaFormer,token_mixers=(ReMatSepConv,ReMatSepConv,ReMatAttention,ReMatAttention))
 ConvFormer=partial(MetaFormer,token_mixers=(SepConv,SepConv,SepConv,SepConv))
