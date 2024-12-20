@@ -86,7 +86,8 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     params = module.init(init_rngs, **example_inputs,det=False)["params"]
 
     if jax.process_index()==0:
-        print(module.tabulate(init_rngs, **example_inputs))
+        print(module.tabulate(init_rngs, **example_inputs,width=180,
+                              depth=2,compute_flops=True,compute_vjp_flops=True))
     #
     def p(p,x):
         print(p,x.shape)
