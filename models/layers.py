@@ -3,12 +3,13 @@ from functools import partial
 from typing import Optional, Callable
 
 import flax.linen as nn
+import jax.numpy
 
 Dense = functools.partial(nn.Dense, kernel_init=nn.initializers.truncated_normal(0.02))
 Conv = functools.partial(nn.Conv, kernel_init=nn.initializers.truncated_normal(0.02))
 
 
-
+dtype=jax.numpy.bfloat16
 
 class Mlp(nn.Module):
     """
@@ -32,7 +33,7 @@ class Mlp(nn.Module):
         linear_layer = partial(Conv, kernel_size=(1, 1)) if self.use_conv else Dense
 
         # First layer
-        x = linear_layer(features=hidden_features, use_bias=self.bias,name='fc1')(x)
+        x = linear_layer(features=hidden_features, use_bias=self.bias,name='fc1',dtype = dtype)(x)
         x = self.act_layer(name='act')(x)
         # x = self.act_layer(x,approximate=False)
         x = nn.Dropout(self.drop)(x,deterministic=det)
@@ -42,7 +43,7 @@ class Mlp(nn.Module):
             x = self.norm_layer()(x)
 
         # Second layer
-        x = linear_layer(features=out_features, use_bias=self.bias,name='fc2')(x)
+        x = linear_layer(features=out_features, use_bias=self.bias,name='fc2',dtype = dtype)(x)
         x = nn.Dropout(self.drop)(x,deterministic=det)
 
         return x

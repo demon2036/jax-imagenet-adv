@@ -15,6 +15,9 @@ use_fast_variance = True
 import flax.linen as nn
 import jax.numpy as jnp
 
+
+dtype=jnp.bfloat16
+
 class SquaredReLU(nn.Module):
     """
     Squared ReLU: https://arxiv.org/abs/2109.08668
@@ -47,7 +50,7 @@ class Stem(nn.Module):
             kernel_size=(7, 7),
             strides=(4, 4),
             padding=((2, 2), (2, 2)),
-            name='conv'
+            name='conv',dtype=dtype
         )(x)
         if self.norm_layer:
             x = self.norm_layer(name='norm')(x)
@@ -70,7 +73,7 @@ class StarReLU(nn.Module):
         if not self.bias_learnable:
             bias = jnp.array(bias).at[()].set(self.bias_value)
 
-        return scale * nn.relu(x) ** 2 + bias
+        return scale.astype(x.dtype) * nn.relu(x) ** 2 + bias.astype(x.dtype)
 
 
 
@@ -110,7 +113,7 @@ class Scale(nn.Module):
         scale = scale.reshape(shape)
 
         # Perform element-wise scaling
-        return x * scale
+        return x * scale.astype(x.dtype)
 
 
 
@@ -135,7 +138,8 @@ class SepConv(nn.Module):
 
         # Pointwise Convolution 1
         pwconv1 = Conv(
-            features=mid_channels, kernel_size=(1, 1), use_bias=self.bias, name='pwconv1'
+            features=mid_channels, kernel_size=(1, 1), use_bias=self.bias, name='pwconv1',
+            dtype = dtype
         )(x)
         x = self.act1_layer(name='act1')(pwconv1)
 
@@ -146,13 +150,13 @@ class SepConv(nn.Module):
             padding=[(self.padding, self.padding), (self.padding, self.padding)],
             feature_group_count=mid_channels,  # Depthwise
             use_bias=self.bias,
-            name='dwconv'
+            name='dwconv',dtype = dtype
         )(x)
         x = self.act2_layer()(dwconv)
 
         # Pointwise Convolution 2
         pwconv2 = Conv(
-            features=self.dim, kernel_size=(1, 1), use_bias=self.bias, name='pwconv2'
+            features=self.dim, kernel_size=(1, 1), use_bias=self.bias, name='pwconv2',dtype = dtype
         )(x)
 
         return pwconv2
@@ -177,7 +181,7 @@ class Attention(nn.Module):
         attention_dim = num_heads * head_dim
         scale = head_dim ** -0.5
 
-        qkv = nn.Dense(attention_dim * 3, use_bias=self.qkv_bias, name="qkv")(x)
+        qkv = nn.Dense(attention_dim * 3, use_bias=self.qkv_bias, name="qkv",dtype = dtype)(x)
         qkv = qkv.reshape(B, N, 3, num_heads, head_dim).transpose((2, 0, 3, 1, 4))
         q, k, v = qkv[0], qkv[1], qkv[2]
 
@@ -189,7 +193,7 @@ class Attention(nn.Module):
             x = jnp.einsum("...nm,...md->...nd", attn, v)
 
         x = x.transpose((0, 2, 1, 3)).reshape(B, N, C)
-        x = nn.Dense(C, use_bias=self.proj_bias, name="proj")(x)
+        x = nn.Dense(C, use_bias=self.proj_bias, name="proj",dtype = dtype)(x)
         x = nn.Dropout(self.proj_drop)(x, deterministic=det)
         return x
 
@@ -272,7 +276,7 @@ class Downsampling(nn.Module):
             strides=(self.stride, self.stride),
             padding=((self.padding, self.padding), (self.padding, self.padding)),
             use_bias=True,  # Flax uses `use_bias` instead of `bias` keyword
-            name="conv"
+            name="conv",dtype = dtype
         )(x)
         return x
 
