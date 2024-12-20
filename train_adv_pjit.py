@@ -88,11 +88,15 @@ def _form_global_array(path, array: np.ndarray, global_mesh: Mesh) -> jax.Array:
     return jax.make_array_from_single_device_arrays(global_shape, sharding, local_device_buffers)
 
 
-def evaluate(state: TrainState, dataloader: DataLoader) -> dict[str, float]:
+def evaluate(state: TrainState, dataloader: DataLoader,validation_adv_step_jited,mesh) -> dict[str, float]:
     average_meter = AverageMeter()
     for batch in tqdm.tqdm(dataloader, leave=False, dynamic_ncols=True):
-        metrics = validation_adv_step(state, shard(jax.tree_map(np.asarray, batch)))
-        average_meter.update(**jax.device_get(unreplicate(metrics)))
+        batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), batch)
+        batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
+
+        metrics = validation_adv_step_jited(state, batch)
+        # average_meter.update(**jax.device_get(unreplicate(metrics)))
+        average_meter.update(**metrics)
 
     metrics = average_meter.summary("val/")
     num_samples = metrics.pop("val/num_samples")
@@ -118,9 +122,8 @@ def main(configs):
     use_pgd = configs.pop('use_pgd', True)
     grad_accum_steps = configs.pop('grad_accum_steps', 1)
 
-    # if jax.process_index() == 0:
-    #     pass
-        # wandb.init(name=configs['name'], project=configs['project'], config=configs)
+    if jax.process_index() == 0:
+        wandb.init(name=configs['name'], project=configs['project'], config=configs)
 
     postfix = "ema"
     name = configs['name']
@@ -224,9 +227,14 @@ def main(configs):
 
         training_step_pjit = jax.jit(training_step, static_argnums=(2,),
                                      donate_argnums=(0,),
+                                     out_shardings=(train_state_sharding, None),
                                      # in_shardings=(train_state_sharding, sharding,),
-                                     # out_shardings=(train_state_sharding,None ))
                                      )
+
+        validation_adv_step_jited=jax.jit(validation_adv_step,
+                                          donate_argnums=(0,),
+                                          out_shardings=None
+        )
 
         if use_orbax_save:
             checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
@@ -251,57 +259,67 @@ def main(configs):
                 # batch = jax.tree_util.tree_map(lambda x: jax.make_array_from_process_local_data(sharding,np.asarray(x))  , next(train_dataloader_iter))
                 batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), next(train_dataloader_iter))
                 batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
-
                 # batch = jtu.tree_map(go_jit, batch)
-
-
-
-
                 # images, labels = batch
                 # print(f'{images.shape=}   {images.addressable_data(0).shape=}')
-                #
                 # jax.debug.visualize_array_sharding(labels,max_width=200)
-                # print()
-                #
                 # di=flax.traverse_util.flatten_dict(state.params,sep='.')
                 # print(di.keys())
                 # jax.debug.visualize_array_sharding(di['model.MetaFormerStage_2.MetaFormerBlock_7.mlp.fc1.kernel'])
                 # print(jax.devices())
                 # while True:
                 #     pass
-
                 state, metrics = training_step_pjit(state, batch, use_pgd)
-                # images,labels=batch
-
-                # print(f'{images.shape=}  {labels.shape=}')
-                # if jax.process_index() == 0:
-                #     images, labels = batch
-                #     print(f'{images.shape=}   {images.addressable_data(0).shape=}')
-                #     images, labels = next(train_dataloader_iter)
-                #     print(f'{images.shape=}')
-
-
-                # images, labels = next(train_dataloader_iter)
-                # print(f'{images.shape=}')
-
-                # print(metrics)
-
-                # while True:
-                #     pass
-
                 # state, metrics = training_step(state, batch, use_pgd)
-                # average_meter.update(**unreplicate(metrics))
+                average_meter.update(**metrics)
 
-        # print(state.params)
 
-    # train_state_shapes = jax.eval_shape(init_fn, params)
-    # train_state_partition = match_partition_rules(get_partition_rules(), train_state_shapes)
+            if step % epoch_per_step == 0:
+                epoch = step // epoch_per_step
+                mix_ratio_state.update_mix_ratio(epoch, configs['training_epoch'])
+
+            if (
+                    jax.process_index() == 0
+                    and log_interval > 0
+                    and step % log_interval == 0
+            ):
+                metrics = average_meter.summary(prefix="train/")
+                metrics["processed_samples"] = step * configs['dataset']['train_batch_size']
+                metrics["mix_ratio"] = mix_ratio_state.ratio
+                wandb.log(metrics, step)
+            """ 
+            if eval_interval > 0 and (
+                    step % eval_interval == 0 or step == training_steps
+            ):
+                if valid_dataloader is None:
+                    continue
+                try:
+                    metrics = evaluate(state, valid_dataloader,validation_adv_step_jited,mesh)
+
+                    if metrics["val/advacc1"] > max_val_acc1:
+                        if use_orbax_save:
+                            ckpt = {'model': state}
+                            save_args = orbax_utils.save_args_from_target(ckpt)
+                            checkpointer.save(filename, ckpt, save_args=save_args, force=True)
+                        else:
+                            if jax.process_index() == 0:
+                                params_bytes = msgpack_serialize(unreplicate(state.ema_params))
+                                save_checkpoint_in_background(filename, params_bytes, postfix="last")
+
+                        max_val_acc1 = metrics["val/advacc1"]
+                        # save_checkpoint_in_background(args, params_bytes, postfix="best")
+
+                    metrics["val/acc1/best"] = max_val_acc1
+                    metrics["processed_samples"] = step * configs['dataset']['train_batch_size']
+                    if jax.process_index() == 0:
+                        wandb.log(metrics, step)
+                except Exception as e:
+                    print(e)
+            if use_orbax_save:
+                checkpointer.wait_until_finished()
+            """
 
     """
-
-
-
-
 
 
 

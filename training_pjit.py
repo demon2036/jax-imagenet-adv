@@ -75,29 +75,29 @@ def validation_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
     return jax.lax.psum(metrics, axis_name="batch")
 
 
-@partial(jax.pmap, axis_name="batch")
-def validation_adv_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
-    rngs, updates = state.split_rngs()
-    metrics = state.apply_fn(
-        {"params": state.ema_params},
-        images=batch[0],
-        labels=jnp.where(batch[1] != -1, batch[1], 0),
-        det=True, use_pgd=False
-    )
-
-    metrics_adv = state.apply_fn(
-        {"params": state.ema_params},
-        images=batch[0],
-        labels=jnp.where(batch[1] != -1, batch[1], 0),
-        det=True, use_pgd=True, rngs=rngs,
-    )
-
-    metrics_adv = {'adv' + k: v for k, v in metrics_adv.items()}
-    metrics.update(metrics_adv)
-
-    metrics["num_samples"] = batch[1] != -1
-    metrics = jax.tree_util.tree_map(lambda x: (x * (batch[1] != -1)).sum(), metrics)
-    return jax.lax.psum(metrics, axis_name="batch")
+# @partial(jax.pmap, axis_name="batch")
+# def validation_adv_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
+#     rngs, updates = state.split_rngs()
+#     metrics = state.apply_fn(
+#         {"params": state.ema_params},
+#         images=batch[0],
+#         labels=jnp.where(batch[1] != -1, batch[1], 0),
+#         det=True, use_pgd=False
+#     )
+#
+#     metrics_adv = state.apply_fn(
+#         {"params": state.ema_params},
+#         images=batch[0],
+#         labels=jnp.where(batch[1] != -1, batch[1], 0),
+#         det=True, use_pgd=True, rngs=rngs,
+#     )
+#
+#     metrics_adv = {'adv' + k: v for k, v in metrics_adv.items()}
+#     metrics.update(metrics_adv)
+#
+#     metrics["num_samples"] = batch[1] != -1
+#     metrics = jax.tree_util.tree_map(lambda x: (x * (batch[1] != -1)).sum(), metrics)
+#     return jax.lax.psum(metrics, axis_name="batch")
 
 
 
@@ -162,7 +162,28 @@ def training_step(state: TrainState, batch: ArrayTree, use_pgd) -> tuple[TrainSt
 
 
 
+def validation_adv_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
+    rngs, updates = state.split_rngs()
+    metrics = state.apply_fn(
+        {"params": state.ema_params if state.ema_params is not None else state.params},
+        images=batch[0],
+        labels=jnp.where(batch[1] != -1, batch[1], 0),
+        det=True, use_pgd=False
+    )
 
+    metrics_adv = state.apply_fn(
+        {"params": state.ema_params if state.ema_params is not None else state.params},
+        images=batch[0],
+        labels=jnp.where(batch[1] != -1, batch[1], 0),
+        det=True, use_pgd=True, rngs=rngs,
+    )
+
+    metrics_adv = {'adv' + k: v for k, v in metrics_adv.items()}
+    metrics.update(metrics_adv)
+
+    metrics["num_samples"] = batch[1] != -1
+    metrics = jax.tree_util.tree_map(lambda x: (x * (batch[1] != -1)).sum(), metrics)
+    return metrics
 
 
 
