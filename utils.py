@@ -303,15 +303,15 @@ def get_partition_rules_caformer():
         # ('scale', PS('mp')),
         # ('bias', PS('mp')),
 
-        # ('fc/fc1/kernel', PS('fsdp', 'mp')),
-        # ('fc/fc2/kernel', PS('mp', None)),
+        ('fc/fc1/kernel', PS('fsdp', 'mp')),
+        ('fc/fc2/kernel', PS('mp', None)),
         #
         # ('downsample/conv/kernel', PS(None, None, 'fsdp', 'mp')),
         # ('stem/conv/kernel', PS(None, None, 'fsdp', 'mp')),
         #
         # ('MetaFormerStage_[01]/.*/pwconv1/kernel', PS(None, None, 'fsdp', 'mp')),
         ('MetaFormerStage_[01]/.*/pwconv1/kernel', PS(None, None, 'mp', 'fsdp')),
-        ('MetaFormerStage_[01]/.*/dwconv/kernel', PS(None, None, 'fsdp', 'mp')),
+        # ('MetaFormerStage_[01]/.*/dwconv/kernel', PS(None, None, 'fsdp', 'mp')),
         ('MetaFormerStage_[01]/.*/pwconv2/kernel', PS(None, None, 'mp', 'fsdp')),
         # ('MetaFormerStage_[01]/.*/pwconv2/kernel', PS(None, None, 'fsdp', 'mp')),
         #
