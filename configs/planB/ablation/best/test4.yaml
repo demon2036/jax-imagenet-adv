@@ -49,7 +49,8 @@ train_state:
     target: 'models.CAFormer'
     model_kwargs:
       depths: [3, 3, 27, 3]
-      dims: [384, 768, 1536, 2304]
+#      depths: [3, 12, 18, 3]
+      dims: [ 256, 512, 768,1536]
 #      drop_path_rate: 0.6
 #      drop_rate: 0.5
 
