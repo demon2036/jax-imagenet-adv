@@ -134,8 +134,8 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         #     label_fn = partial(get_layer_index_fn, num_layers=args.layers)
         #     label_fn = partial(tree_map_with_path, label_fn)
         #     tx = optax.chain(tx, optax.multi_transform(layerwise_scales, label_fn))
-        # if args.clip_grad > 0:
-        #     tx = optax.chain(optax.clip_by_global_norm(args.clip_grad), tx)
+        if args.clip_grad > 0:
+            tx = optax.chain(optax.clip_by_global_norm(1.0), tx)
         return tx
 
 
