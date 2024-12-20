@@ -136,7 +136,7 @@ class TrainAdvModule(nn.Module):
         if not det:
             labels = optax.smooth_labels(labels, self.label_smoothing)
             images, labels = self.mixup(images, labels)
-        print(use_trade,use_pgd)
+        print(use_pgd,use_trade,)
         if use_trade:
             logits_natural = nn.softmax(self.model(images),axis=1)
             x_adv = trade_lse(images, self.model, key=self.make_rng('adv'),
