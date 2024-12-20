@@ -126,10 +126,10 @@ def training_step(state: TrainState, batch: ArrayTree, use_pgd) -> tuple[TrainSt
             grad_accum=jax.tree_map(jnp.zeros_like, state.grad_accum),
             micro_step=state.micro_step % state.micro_in_mini,
         )
-        # new_ema_params = jax.tree_util.tree_map(
-        #     lambda ema, normal: ema * state.ema_decay + (1 - state.ema_decay) * normal,
-        #     state.ema_params, state.params)
-        # state = state.replace(ema_params=new_ema_params)
+        new_ema_params = jax.tree_util.tree_map(
+            lambda ema, normal: ema * state.ema_decay + (1 - state.ema_decay) * normal,
+            state.ema_params, state.params)
+        state = state.replace(ema_params=new_ema_params)
 
         return state
 
@@ -143,10 +143,10 @@ def training_step(state: TrainState, batch: ArrayTree, use_pgd) -> tuple[TrainSt
     if state.grad_accum is None:
         state = state.apply_gradients(grads=grads)
 
-        # new_ema_params = jax.tree_util.tree_map(
-        #     lambda ema, normal: ema * state.ema_decay + (1 - state.ema_decay) * normal,
-        #     state.ema_params, state.params)
-        # state = state.replace(ema_params=new_ema_params)
+        new_ema_params = jax.tree_util.tree_map(
+            lambda ema, normal: ema * state.ema_decay + (1 - state.ema_decay) * normal,
+            state.ema_params, state.params)
+        state = state.replace(ema_params=new_ema_params)
 
     else:
         state = state.replace(
