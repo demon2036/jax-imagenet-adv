@@ -271,24 +271,24 @@ def main(configs):
                 # while True:
                 #     pass
 
-            #     state, metrics = training_step_pjit(state, batch, use_pgd)
+                state, metrics = training_step_pjit(state, batch, use_pgd)
             #     # state, metrics = training_step(state, batch, use_pgd)
-            #     average_meter.update(**metrics)
-            #
-            #
-            # if step % epoch_per_step == 0:
-            #     epoch = step // epoch_per_step
-            #     mix_ratio_state.update_mix_ratio(epoch, configs['training_epoch'])
-            #
-            # if (
-            #         jax.process_index() == 0
-            #         and log_interval > 0
-            #         and step % log_interval == 0
-            # ):
-            #     metrics = average_meter.summary(prefix="train/")
-            #     metrics["processed_samples"] = step * configs['dataset']['train_batch_size']
-            #     metrics["mix_ratio"] = mix_ratio_state.ratio
-            #     wandb.log(metrics, step)
+                average_meter.update(**metrics)
+
+
+            if step % epoch_per_step == 0:
+                epoch = step // epoch_per_step
+                mix_ratio_state.update_mix_ratio(epoch, configs['training_epoch'])
+
+            if (
+                    jax.process_index() == 0
+                    and log_interval > 0
+                    and step % log_interval == 0
+            ):
+                metrics = average_meter.summary(prefix="train/")
+                metrics["processed_samples"] = step * configs['dataset']['train_batch_size']
+                metrics["mix_ratio"] = mix_ratio_state.ratio
+                wandb.log(metrics, step)
 
             if eval_interval > 0 and (
                     step % eval_interval == 0 or step == training_steps
