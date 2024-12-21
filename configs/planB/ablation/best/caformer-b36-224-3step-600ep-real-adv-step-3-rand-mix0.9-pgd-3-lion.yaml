@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/planb/ablation/best
-name: test
+name: caformer-b36-224-3step-600ep-real-adv-step-3-rand-mix0.9-pgd-3-lion
 project: jax-adv-image-net-best
 steps: 1281167
 training_epoch: 600
@@ -20,9 +20,9 @@ dataset:
   valid_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-validation-{00..63}.tar"
   random_crop: src
   color_jitter: 0.0
-  auto_augment: "none" #"rand-m9-mstd0.5-inc1"
+  auto_augment: "rand-m9-mstd0.5-inc1"
   random_erasing: 0.0
-  auto_generated_augment: "none" #"rand-m9-mstd0.5-inc1"
+  auto_generated_augment: "rand-m9-mstd0.5-inc1"
   color_generated_jitter: 0.0
   random_generated_erasing: 0.0
   augment_repeats: 3
@@ -37,20 +37,19 @@ dataset:
 train_state:
   train_module:
     target: 'train_modules.TrainAdvModule'
-    mixup: 0.0
-    cutmix: 0.0
+    mixup: 0.8
+    cutmix: 1.0
     criterion: ce
     label_smoothing: 0.1
-    train_adv_step: 5
-    train_adv_step_size: 4 /3  / 255
+    train_adv_step: 1
+    train_adv_step_size: 4/3 / 255
 
 
   model:
     target: 'models.CAFormer'
     model_kwargs:
-#      depths: [3, 3, 27, 3]
       depths: [3, 12, 18, 3]
-      dims: [ 256, 512, 768,1536]
+      dims: [128, 256, 512, 768]
 #      drop_path_rate: 0.6
 #      drop_rate: 0.5
 
@@ -70,7 +69,7 @@ train_state:
   mixup_seed: 1
   dropout_seed: 1
   ema_decay: 0.9998
-  pretrained_ckpt: None #'$GCS_MODEL_DIR/planb/ablation/standard/caformer-xl-36-standard-300ep-mix0.9-ema'
+  pretrained_ckpt: None #'caformer_b36.sail_in1k'
 
 
 
