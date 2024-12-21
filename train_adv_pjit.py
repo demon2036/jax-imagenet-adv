@@ -233,7 +233,7 @@ def main(configs):
                                      )
 
         validation_adv_step_jited=jax.jit(validation_adv_step,
-                                          donate_argnums=(0,),
+                                          # donate_argnums=(0,),
                                           out_shardings=None
         )
 
@@ -297,7 +297,7 @@ def main(configs):
                     continue
                 try:
                     metrics = evaluate(state, valid_dataloader,validation_adv_step_jited,mesh)
-
+                    print(metrics)
                     if metrics["val/advacc1"] > max_val_acc1:
                         if use_orbax_save:
                             ckpt = {'model': state}
