@@ -124,7 +124,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         tx = OPTIMIZER_COLLECTION[optimizer_config['target']](
             learning_rate=learning_rate,
             **optimizer_config['optimizer_kwargs'],
-            # mask=partial(jax.tree_util.tree_map_with_path, lambda kp, *_: kp[-1].key == "kernel"),
+            mask=partial(jax.tree_util.tree_map_with_path, lambda kp, *_: kp[-1].key == "kernel"),
         )
         # if args.lr_decay < 1.0:
         #     layerwise_scales = {
@@ -151,8 +151,8 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         )
 
 
-    tx=create_optimizer_fn(learning_rate)
     def init_fn(params):
+        tx = create_optimizer_fn(learning_rate)
 
         if grad_accum_steps > 1:
             grad_accum = jax.tree_map(jnp.zeros_like, params)

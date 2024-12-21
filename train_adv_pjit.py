@@ -116,15 +116,13 @@ def main(configs):
         # os.environ['JAX_PLATFORMS']='cpu'
         # os.environ["XLA_FLAGS"] = '--xla_force_host_platform_device_count=8'
         # jax.config.update('jax_platform_name', 'cpu')
-        # pass
-        jax.distributed.initialize()
+        pass
+        # jax.distributed.initialize()
 
     use_pgd = configs.pop('use_pgd', True)
     grad_accum_steps = configs.pop('grad_accum_steps', 1)
 
-    if jax.process_index() == 0:
-        # pass
-        wandb.init(name=configs['name'], project=configs['project'], config=configs)
+
 
     postfix = "ema"
     name = configs['name']
@@ -206,6 +204,8 @@ def main(configs):
         ['heads', 'mp'],
     ]
 
+
+
     with mesh, nn_partitioning.axis_rules(logical_axis_rules):
 
         state, train_state_partition,train_state_sharding = create_train_state(configs['train_state'],
@@ -254,6 +254,10 @@ def main(configs):
 
         epoch = init_step // epoch_per_step
         mix_ratio_state.update_mix_ratio(epoch, configs['training_epoch'])
+
+        if jax.process_index() == 0:
+            wandb.init(name=configs['name'], project=configs['project'], config=configs)
+
         for step in tqdm.tqdm(range(init_step, training_steps + 1), initial=init_step, total=training_steps + 1):
             # for step in tqdm.trange(init_step, training_steps + 1, dynamic_ncols=True):
             for _ in range(grad_accum_steps):
@@ -384,7 +388,7 @@ def main(configs):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--yaml-path", type=str,
-                        default='configs/planB/ablation/best/test3.yaml')
+                        default='configs/planB/ablation/best/caformer-b36-224-3step-600ep-real-adv-step-3-rand-mix0.9-pgd-3-lion.yaml')
     # parser.add_argument("--train-dataset-shards")
     # parser.add_argument("--valid-dataset-shards")
     # parser.add_argument("--train-batch-size", type=int, default=2048)

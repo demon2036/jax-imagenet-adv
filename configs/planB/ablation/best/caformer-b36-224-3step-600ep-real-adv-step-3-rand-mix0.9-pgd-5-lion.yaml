@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/planb/ablation/best
-name: caformer-b36-224-3step-600ep-real-adv-step-3-rand-mix0.9-pgd-3-lion
+name: caformer-b36-224-3step-600ep-real-adv-step-3-rand-mix0.9-pgd-5-lion
 project: jax-adv-image-net-best
 steps: 1281167
 training_epoch: 600
@@ -41,7 +41,7 @@ train_state:
     cutmix: 0.0
     criterion: ce_z_loss
     label_smoothing: 0.1
-    train_adv_step: 3
+    train_adv_step: 5
     train_adv_step_size: 4/3 / 255
 
 
