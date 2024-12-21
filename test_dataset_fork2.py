@@ -115,7 +115,7 @@ def stable_schedule(epoch, total_epochs, warmup_epochs=0, max_syn_ratio=0.7, min
 
 
 class DynamicMixRatioState:
-    def __init__(self, total_batch_size,schedule:str,max_syn_ratio=1.0,min_syn_ratio=0.3):
+    def __init__(self, total_batch_size,schedule:str,max_syn_ratio=1.0,min_syn_ratio=0.3,**kwargs):
         self.ratio = max_syn_ratio
         self.total_batch_size = total_batch_size
         self.buffer_syn_x = []
@@ -138,7 +138,7 @@ class DynamicMixRatioState:
         else:
             raise NotImplemented()
 
-        self.schedule=partial(schedule,max_syn_ratio=max_syn_ratio,min_syn_ratio=min_syn_ratio)
+        self.schedule=partial(schedule,max_syn_ratio=max_syn_ratio,min_syn_ratio=min_syn_ratio,**kwargs)
 
     def update_mix_ratio(self,epoch,total_epoch):
         self.ratio=self.schedule(epoch,total_epoch,)
@@ -327,6 +327,7 @@ def create_dataloaders(
         generated_dataset_shards,
         grad_accum=1,
         dataset_mix_ratio=0.8,
+        warmup_epoch=0,
         max_syn_ratio=0.9,
         min_syn_ratio=0.3,
         scheduler='stable'
@@ -357,7 +358,7 @@ def create_dataloaders(
     train_batch_size = int(total_batch_size * dataset_mix_ratio)
     train_origin_batch_size = total_batch_size - train_batch_size
 
-    state=DynamicMixRatioState(total_batch_size,scheduler,max_syn_ratio,min_syn_ratio)
+    state=DynamicMixRatioState(total_batch_size,scheduler,max_syn_ratio,min_syn_ratio,warmup_epoch=warmup_epoch)
 
 
     generated_train_loader_workers = 10

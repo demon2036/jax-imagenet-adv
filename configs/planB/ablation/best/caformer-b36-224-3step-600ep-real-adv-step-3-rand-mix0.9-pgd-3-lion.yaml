@@ -32,6 +32,7 @@ dataset:
   generated_dataset_shards:
     ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar']
   dataset_mix_ratio: 0.9
+  warmup_epoch: 20
 
 
 train_state:
