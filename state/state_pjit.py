@@ -66,7 +66,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     module = train_module(
         model=model,
         mixup=Mixup(train_module_config.pop('mixup',), train_module_config.pop('cutmix')),
-        label_smoothing=train_module_config.pop('label_smoothing') if train_module_config['criterion'] == "ce" else 0,
+        label_smoothing=train_module_config.pop('label_smoothing') if train_module_config['criterion'] != "bce" else 0,
         criterion=CRITERION_COLLECTION[train_module_config.pop('criterion')],**train_module_config
     )
     if jax.process_index() == 0:
