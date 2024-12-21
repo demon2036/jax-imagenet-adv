@@ -41,7 +41,7 @@ train_state:
     cutmix: 0.0
     criterion: ce_z_loss
     label_smoothing: 0.1
-    train_adv_step: 5
+    train_adv_step: 0
     train_adv_step_size: 4/3 / 255
 
 
@@ -54,7 +54,7 @@ train_state:
 #      drop_rate: 0.5
 
   optimizer:
-    target: 'lion'
+    target: 'lamb'
     optimizer_kwargs:
       learning_rate: 1.0e-4
       weight_decay: 0.5
@@ -69,7 +69,7 @@ train_state:
   mixup_seed: 1
   dropout_seed: 1
   ema_decay: 0.9998
-  pretrained_ckpt: 'caformer_b36.sail_in1k'
+  pretrained_ckpt: None #'caformer_b36.sail_in1k'
 
 
 
