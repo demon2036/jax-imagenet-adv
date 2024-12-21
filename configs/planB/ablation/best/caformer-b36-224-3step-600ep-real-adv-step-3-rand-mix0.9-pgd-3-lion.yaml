@@ -33,6 +33,7 @@ dataset:
     ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar']
   dataset_mix_ratio: 0.9
 
+
 train_state:
   train_module:
     target: 'train_modules.TrainAdvModule'
