@@ -327,9 +327,9 @@ def create_dataloaders(
         generated_dataset_shards,
         grad_accum=1,
         dataset_mix_ratio=0.8,
-        warmup_epoch=0,
+        warmup_epochs=0,
         max_syn_ratio=0.9,
-        min_syn_ratio=0.3,
+        min_syn_ratio=0.0,
         scheduler='stable'
 
 ):
@@ -358,7 +358,7 @@ def create_dataloaders(
     train_batch_size = int(total_batch_size * dataset_mix_ratio)
     train_origin_batch_size = total_batch_size - train_batch_size
 
-    state=DynamicMixRatioState(total_batch_size,scheduler,max_syn_ratio,min_syn_ratio,warmup_epoch=warmup_epoch)
+    state=DynamicMixRatioState(total_batch_size,scheduler,max_syn_ratio,min_syn_ratio,warmup_epochs=warmup_epochs)
 
 
     generated_train_loader_workers = 10
