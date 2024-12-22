@@ -94,6 +94,9 @@ def evaluate(state: TrainState, dataloader: DataLoader,validation_adv_step_jited
         batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), batch)
         batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
 
+
+        jax.debug.inspect_array_sharding(batch[0])
+
         metrics = validation_adv_step_jited(state, batch)
         # average_meter.update(**jax.device_get(unreplicate(metrics)))
         average_meter.update(**metrics)
@@ -193,24 +196,24 @@ def main(configs):
 
         if jax.process_index() == 0:
             wandb.init(name=configs['name'], project=configs['project'], config=configs)
-            metrics = evaluate(state, valid_dataloader,validation_adv_step_jited,mesh)
-            print(metrics)
-            if metrics["val/advacc1"] > max_val_acc1:
-                if use_orbax_save:
-                    ckpt = {'model': state}
-                    save_args = orbax_utils.save_args_from_target(ckpt)
-                    checkpointer.save(filename, ckpt, save_args=save_args, force=True)
-                else:
-                    if jax.process_index() == 0:
-                        params_bytes = msgpack_serialize(unreplicate(state.ema_params))
-                        save_checkpoint_in_background(filename, params_bytes, postfix="last")
+        metrics = evaluate(state, valid_dataloader,validation_adv_step_jited,mesh)
+        print(metrics)
+        if metrics["val/advacc1"] > max_val_acc1:
+            if use_orbax_save:
+                ckpt = {'model': state}
+                save_args = orbax_utils.save_args_from_target(ckpt)
+                checkpointer.save(filename, ckpt, save_args=save_args, force=True)
+            else:
+                if jax.process_index() == 0:
+                    params_bytes = msgpack_serialize(unreplicate(state.ema_params))
+                    save_checkpoint_in_background(filename, params_bytes, postfix="last")
 
-                max_val_acc1 = metrics["val/advacc1"]
-                # save_checkpoint_in_background(args, params_bytes, postfix="best")
+            max_val_acc1 = metrics["val/advacc1"]
+            # save_checkpoint_in_background(args, params_bytes, postfix="best")
 
-            metrics["val/acc1/best"] = max_val_acc1
-            if jax.process_index() == 0:
-                wandb.log(metrics, 0)
+        metrics["val/acc1/best"] = max_val_acc1
+        if jax.process_index() == 0:
+            wandb.log(metrics, 0)
 
 
 
