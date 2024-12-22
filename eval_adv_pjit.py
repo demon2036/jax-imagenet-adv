@@ -90,7 +90,6 @@ def _form_global_array(path, array: np.ndarray, global_mesh: Mesh) -> jax.Array:
 
 def evaluate(state: TrainState, dataloader: DataLoader,validation_adv_step_jited,mesh) -> dict[str, float]:
     average_meter = AverageMeter()
-    print(1)
     for batch in tqdm.tqdm(dataloader, leave=False, dynamic_ncols=True):
         batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), batch)
         batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
@@ -111,14 +110,6 @@ def main(configs):
     epoch_per_step = configs['steps'] // configs['dataset']['train_batch_size']
     log_interval = configs['log_interval']
     use_orbax_save = configs.pop('use_orbax_save', True)
-
-
-    if use_orbax_save:
-        # os.environ['JAX_PLATFORMS']='cpu'
-        # os.environ["XLA_FLAGS"] = '--xla_force_host_platform_device_count=8'
-        # jax.config.update('jax_platform_name', 'cpu')
-        # pass
-        jax.distributed.initialize()
 
     use_pgd = configs.pop('use_pgd', True)
     grad_accum_steps = configs.pop('grad_accum_steps', 1)
@@ -147,50 +138,6 @@ def main(configs):
     print(data_spec)
     sharding=jtu.tree_map(lambda p:NamedSharding(mesh,p),data_spec)
     print(sharding.addressable_devices,mesh.axis_names)
-
-    num_model_replicas_per_process = 4  # set according to your parallelism strategy
-    num_model_replicas_total = num_model_replicas_per_process * jax.process_count()
-
-    # Create an example `Mesh` for per-process data parallelism. Make sure all devices
-    # are grouped by process, and then resize so each row is a model replica.
-    # mesh_devices = np.array([jax.local_devices(process_idx)
-    #                          for process_idx in range(jax.process_count())])
-    #
-    # print(mesh_devices.shape)
-    # mesh= mesh_devices.reshape(4,1, -1)
-    # mesh = einops.rearrange(mesh_devices, 'a ( b c)-> a b c',b=1,c=4)
-    # print(mesh)
-
-    # mesh=Mesh(mesh, ('dp', 'fsdp', 'mp'))
-    """
-    mesh_devices = mesh_devices.reshape(num_model_replicas_total,1, -1)
-    mesh_devices=einops.rearrange(mesh_devices,'a b c -> c b a')
-    print(mesh_devices.shape)
-    mesh_data = jax.sharding.Mesh(mesh_devices, ['dp','fsdp','mp'])
-
-    # Shard the data across model replicas. You don't shard across the
-    # data_parallelism mesh axis, meaning each per-replica shard will be replicated
-    # across that axis.
-    sharding = jax.sharding.NamedSharding(
-        mesh_data, jax.sharding.PartitionSpec("mp"))
-
-    """
-    # while True:
-    #     pass
-
-    # x=jnp.ones((128,3,224,224))
-    # batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), x)
-    # jax.debug.visualize_array_sharding(batch[:,:,0,0,])
-    # print('\n'*5)
-    #
-    # @partial(jax.jit,out_shardings=sharding)
-    # def test(x):
-    #     return x
-    #
-    # jax.debug.visualize_array_sharding(test(batch[:,:,0,0,]))
-    # print(1)
-    # while True:
-    #     pass
 
 
     train_dataloader_iter, valid_dataloader, mix_ratio_state = create_dataloaders(**configs['dataset'],
@@ -267,64 +214,7 @@ def main(configs):
 
 
 
-    """
 
-
-
-    epoch = init_step // epoch_per_step
-    mix_ratio_state.update_mix_ratio(epoch, configs['training_epoch'])
-    for step in tqdm.tqdm(range(init_step, training_steps + 1), initial=init_step, total=training_steps + 1):
-        # for step in tqdm.trange(init_step, training_steps + 1, dynamic_ncols=True):
-        for _ in range(grad_accum_steps):
-            batch = shard(jax.tree_util.tree_map(np.asarray, next(train_dataloader_iter)))
-            state, metrics = training_step(state, batch, use_pgd)
-            average_meter.update(**unreplicate(metrics))
-
-
-        if step%epoch_per_step==0:
-            epoch=step//epoch_per_step
-            mix_ratio_state.update_mix_ratio(epoch,configs['training_epoch'])
-
-        if (
-                jax.process_index() == 0
-                and log_interval > 0
-                and step % log_interval == 0
-        ):
-            metrics = average_meter.summary(prefix="train/")
-            metrics["processed_samples"] = step * configs['dataset']['train_batch_size']
-            metrics["mix_ratio"] = mix_ratio_state.ratio
-            wandb.log(metrics, step)
-
-        if eval_interval > 0 and (
-                step % eval_interval == 0 or step == training_steps
-        ):
-            if valid_dataloader is None:
-                continue
-            try:
-                metrics = evaluate(state, valid_dataloader)
-
-                if metrics["val/advacc1"] > max_val_acc1:
-                    if use_orbax_save:
-                        ckpt = {'model': jax.device_get(jax.tree_util.tree_map(lambda x: x[0], state))}
-                        save_args = orbax_utils.save_args_from_target(ckpt)
-                        checkpointer.save(filename, ckpt, save_args=save_args, force=True)
-                    else:
-                        if jax.process_index() == 0:
-                            params_bytes = msgpack_serialize(unreplicate(state.ema_params))
-                            save_checkpoint_in_background(filename, params_bytes, postfix="last")
-
-                    max_val_acc1 = metrics["val/advacc1"]
-                    # save_checkpoint_in_background(args, params_bytes, postfix="best")
-
-                metrics["val/acc1/best"] = max_val_acc1
-                metrics["processed_samples"] = step * configs['dataset']['train_batch_size']
-                if jax.process_index() == 0:
-                    wandb.log(metrics, step)
-            except Exception as e:
-                print(e)
-    if use_orbax_save:
-        checkpointer.wait_until_finished()
-    """
 
 
 if __name__ == "__main__":
@@ -393,12 +283,8 @@ if __name__ == "__main__":
     # main(parser.parse_args())
     args = parser.parse_args()
     yaml = read_yaml(args.yaml_path)
-    # yaml = read_yaml('configs/adv/convnext-b-3step.yaml')
-    # yaml = read_yaml('configs/adv/convnext-t-3step.yaml')
     yaml = preprocess_config(yaml)
 
-    # print(yaml)
-    # while True:
-    #     pass
+    jax.distributed.initialize()
 
     main(yaml)
