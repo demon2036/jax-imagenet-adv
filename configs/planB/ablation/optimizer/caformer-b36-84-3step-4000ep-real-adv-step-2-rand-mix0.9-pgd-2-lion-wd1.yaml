@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/planb/ablation/optimizer
-name: caformer-b36-84-3step-4000ep-real-adv-step-2-rand-mix0.9-pgd-2-lion
+name: caformer-b36-84-3step-4000ep-real-adv-step-2-rand-mix0.9-pgd-2-lion-wd1
 project: jax-adv-image-net-optimizer
 steps: 1281167
 training_epoch: 4000
