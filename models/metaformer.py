@@ -60,8 +60,8 @@ class Stem(nn.Module):
 class StarReLU(nn.Module):
     scale_value: float = 1.0
     bias_value: float = 0.0
-    scale_learnable: bool = False
-    bias_learnable: bool = False
+    scale_learnable: bool = True
+    bias_learnable: bool = True
 
     @nn.compact
     def __call__(self, x):
