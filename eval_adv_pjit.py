@@ -95,7 +95,7 @@ def evaluate(state: TrainState, dataloader: DataLoader,validation_adv_step_jited
         batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
 
 
-        jax.debug.inspect_array_sharding(batch[0])
+        jax.debug.inspect_array_sharding(batch[0],callback=print)
 
         metrics = validation_adv_step_jited(state, batch)
         # average_meter.update(**jax.device_get(unreplicate(metrics)))
