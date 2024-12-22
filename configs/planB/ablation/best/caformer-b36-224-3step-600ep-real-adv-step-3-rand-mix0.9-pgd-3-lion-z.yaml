@@ -39,14 +39,14 @@ train_state:
     target: 'train_modules.TrainAdvModule'
     mixup: 0.0
     cutmix: 0.0
-    criterion: ce_z_loss
+    criterion: ce
     label_smoothing: 0.1
     train_adv_step: 3
     train_adv_step_size: 4/3 / 255
 
 
   model:
-    target: 'models.CAFormer'
+    target: 'models.ConvFormer'
     model_kwargs:
       depths: [3, 12, 18, 3]
       dims: [128, 256, 512, 768]
@@ -69,7 +69,7 @@ train_state:
   mixup_seed: 1
   dropout_seed: 1
   ema_decay: 0.9998
-  pretrained_ckpt: 'caformer_b36.sail_in1k'
+  pretrained_ckpt: 'convformer_b36.sail_in1k'
 
 
 
