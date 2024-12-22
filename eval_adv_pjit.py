@@ -198,18 +198,7 @@ def main(configs):
             wandb.init(name=configs['name'], project=configs['project'], config=configs)
         metrics = evaluate(state, valid_dataloader,validation_adv_step_jited,mesh)
         print(metrics)
-        if metrics["val/advacc1"] > max_val_acc1:
-            if use_orbax_save:
-                ckpt = {'model': state}
-                save_args = orbax_utils.save_args_from_target(ckpt)
-                checkpointer.save(filename, ckpt, save_args=save_args, force=True)
-            else:
-                if jax.process_index() == 0:
-                    params_bytes = msgpack_serialize(unreplicate(state.ema_params))
-                    save_checkpoint_in_background(filename, params_bytes, postfix="last")
 
-            max_val_acc1 = metrics["val/advacc1"]
-            # save_checkpoint_in_background(args, params_bytes, postfix="best")
 
         metrics["val/acc1/best"] = max_val_acc1
         if jax.process_index() == 0:
