@@ -4,7 +4,7 @@ name: caformer-b36-84-3step-4000ep-real-adv-step-2-rand-mix0.9-pgd-2-lamb-ft-224
 project: jax-adv-image-net-optimizer
 steps: 1281167
 training_epoch: 30
-warmup_epoch: 10
+warmup_epoch: 0
 log_interval: 100
 eval_epoch: 10
 grad_accum_steps: 1
@@ -12,7 +12,7 @@ grad_accum_steps: 1
 #resume: True
 
 dataset:
-  train_batch_size: 16384
+  train_batch_size: 1024
   valid_batch_size: 2048
   train_loader_workers: 20
   valid_loader_workers: 10
