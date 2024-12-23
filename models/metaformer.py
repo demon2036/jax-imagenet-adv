@@ -1,6 +1,6 @@
 from dataclasses import field
 from functools import partial
-from typing import Callable, Optional, Sequence, Union
+from typing import Callable, Optional, Sequence, Union, Any
 
 import einops
 import jax.experimental.pallas.ops.tpu.flash_attention
@@ -410,6 +410,7 @@ class MetaFormer(nn.Module):
     norm_layers: Union[Callable, Sequence[Callable]] = partial(nn.LayerNorm,use_fast_variance=use_fast_variance,use_bias=False)
     output_norm: Callable = nn.LayerNorm
     use_mlp_head: bool = True
+    mlp_head_act: Any =SquaredReLU
 
     @nn.compact
     def __call__(self, x,det=True):
@@ -455,7 +456,12 @@ class MetaFormer(nn.Module):
         x = self.output_norm(name='out_norm')(x.mean(axis=(1, 2)))  # Global pooling, assuming (B, H, W, C)
         if self.num_classes > 0:
             if self.use_mlp_head:
-                x = MlpHead(dims[-1],self.num_classes,name='fc',head_dropout=self.drop_rate)(x,det)
+                if self.mlp_head_act=='silu':
+                    mlp_head_act=Silu
+                else:
+                    mlp_head_act=self.mlp_head_act
+
+                x = MlpHead(dims[-1],self.num_classes,name='fc',head_dropout=self.drop_rate,act_layer=mlp_head_act)(x,det)
             else:
                 x = Dense(self.num_classes)(x)
         return x
