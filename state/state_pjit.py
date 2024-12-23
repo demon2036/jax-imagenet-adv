@@ -36,7 +36,6 @@ def load_pretrain(pretrained_model='convnext_base.fb_in1k',default_params=None):
     params = flax.traverse_util.unflatten_dict(params, sep=".")
 
     if isinstance(model_torch,ConvNeXt):
-
         model_jax_params = convert_torch_to_flax_conv_next(params, sep='',default_params=default_params)
     elif isinstance(model_torch,MetaFormer):
         model_jax_params = convert_torch_to_flax_meta_former(params, sep='', )
