@@ -32,6 +32,8 @@ dataset:
   generated_dataset_shards:
     ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar']
   dataset_mix_ratio: 0.0
+  max_syn_ratio: 0.0
+  min_syn_ratio: 0.0
 
 
 train_state:
@@ -60,7 +62,7 @@ train_state:
       learning_rate: 3.0e-4
       weight_decay: 0
       b1: 0.9
-      b2: 0.999
+      b2: 0.99
 #      eps: 1.0e-8
 #      lr_decay: 1.0
 #      clip_grad: 0.0
