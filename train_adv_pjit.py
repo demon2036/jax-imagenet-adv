@@ -131,7 +131,15 @@ def main(configs):
     filename = os.path.join(output_dir, f"{name}-{postfix}")
     print(filename)
 
+    mesh_dim = '-1,1,1'
+    # mesh_dim = '1,1,-1'
+    # mesh_dim = '1,1,-1'
+    # mesh_dim = '1,-1,1'
 
+    mesh = get_jax_mesh2(mesh_dim)
+    print(mesh)
+    sharding = jax.sharding.NamedSharding(
+        mesh, jax.sharding.PartitionSpec("dp",'fsdp','mp'))
     print(sharding)
     data_spec=[["dp",'fsdp','mp']]
     # data_spec=["dp",'fsdp','mp']
@@ -257,8 +265,19 @@ def main(configs):
             #     # batch = jax.tree_util.tree_map(lambda x: jax.make_array_from_process_local_data(sharding,np.asarray(x))  , next(train_dataloader_iter))
             #     batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), next(train_dataloader_iter))
             #     batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
+            #     # batch = jtu.tree_map(go_jit, batch)
+            #     # images, labels = batch
+            #     # print(f'{images.shape=}   {images.addressable_data(0).shape=}')
+            #     # jax.debug.visualize_array_sharding(labels,max_width=200)
+            #     # di=flax.traverse_util.flatten_dict(state.params,sep='.')
+            #     # print(di.keys())
+            #     # jax.debug.visualize_array_sharding(di['model.MetaFormerStage_2.MetaFormerBlock_7.mlp.fc1.kernel'])
+            #     # print(jax.devices())
+            #     # while True:
+            #     #     pass
             #
             #     state, metrics = training_step_pjit(state, batch, use_pgd)
+            # #     # state, metrics = training_step(state, batch, use_pgd)
             #     average_meter.update(**metrics)
             #
             #
