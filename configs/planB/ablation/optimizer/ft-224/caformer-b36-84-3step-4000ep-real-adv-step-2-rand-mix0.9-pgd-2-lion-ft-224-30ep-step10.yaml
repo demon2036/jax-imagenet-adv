@@ -59,7 +59,7 @@ train_state:
     target: 'lion'
     optimizer_kwargs:
       schedule: stable
-      learning_rate: 3.0e-4
+      learning_rate: 3.0e-5
       weight_decay: 0
       b1: 0.9
       b2: 0.99
