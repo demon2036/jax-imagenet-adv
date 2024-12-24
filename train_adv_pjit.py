@@ -318,7 +318,9 @@ def main(configs):
                             params_bytes = msgpack_serialize(unreplicate(state.ema_params))
                             save_checkpoint_in_background(filename, params_bytes, postfix="last")
 
-                    max_val_acc1 = metrics["val/advacc1"]
+                    max_val_acc1 = now_acc1
+
+
                     # save_checkpoint_in_background(args, params_bytes, postfix="best")
 
                 metrics["val/acc1/best"] = max_val_acc1
