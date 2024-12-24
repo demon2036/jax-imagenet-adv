@@ -303,7 +303,7 @@ def main(configs):
                 metrics = evaluate(state, valid_dataloader,validation_adv_step_jited,mesh)
                 print(metrics)
 
-                if ["val/advacc1"] in metrics:
+                if "val/advacc1" in metrics:
                     now_acc1=metrics["val/advacc1"]
                 else:
                     now_acc1=metrics["val/acc1"]
