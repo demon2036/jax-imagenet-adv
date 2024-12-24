@@ -111,7 +111,7 @@ def main(configs):
     epoch_per_step = configs['steps'] // configs['dataset']['train_batch_size']
     log_interval = configs['log_interval']
     use_orbax_save = configs.pop('use_orbax_save', True)
-    valid_fn = configs.pop('valid_step_fn', validation_adv_step)
+    valid_fn = configs.pop('valid_fn', validation_adv_step)
 
 
     if use_orbax_save:
@@ -463,7 +463,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     yaml = read_yaml(args.yaml_path)
     # yaml = read_yaml('configs/adv/convnext-b-3step.yaml')
-    yaml = read_yaml('configs/planB/ablation/standard/caformer-b-36-silu-standard-300ep-mix0.9-modified_lion.yaml')
+    # yaml = read_yaml('configs/planB/ablation/standard/caformer-b-36-silu-standard-300ep-mix0.9-modified_lion.yaml')
     yaml = preprocess_config(yaml)
 
     # print(yaml)
