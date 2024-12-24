@@ -114,12 +114,11 @@ def main(configs):
     valid_fn = configs.pop('valid_fn', validation_adv_step)
 
 
-    if use_orbax_save:
-        # os.environ['JAX_PLATFORMS']='cpu'
-        # os.environ["XLA_FLAGS"] = '--xla_force_host_platform_device_count=8'
-        # jax.config.update('jax_platform_name', 'cpu')
-        pass
-        # jax.distributed.initialize()
+    # os.environ['JAX_PLATFORMS']='cpu'
+    # os.environ["XLA_FLAGS"] = '--xla_force_host_platform_device_count=8'
+    # jax.config.update('jax_platform_name', 'cpu')
+    # pass
+    jax.distributed.initialize()
 
     use_pgd = configs.pop('use_pgd', True)
     grad_accum_steps = configs.pop('grad_accum_steps', 1)
