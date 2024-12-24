@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/planb/ablation/standard
-name: caformer-b-36-silu-standard-300ep-mix0.9
+name: caformer-b-36-silu-standard-300ep-mix0.9-modified_lion
 project: deit3-jax-ablation-standard
 steps: 1281167
 training_epoch: 300
@@ -52,12 +52,13 @@ train_state:
 #      ls_init_value: null
 
   optimizer:
-    target: 'lion'
+    target: 'modified_lion'
     optimizer_kwargs:
       learning_rate: 1.0e-4
-      weight_decay: 0.5
-      b1: 0.9
-      b2: 0.99
+      weight_decay: [
+        ['.*/fc/.*/kernel', 1.0],
+        ['.*/kernel', 0.01],
+      ]
 #      eps: 1.0e-8
 #      lr_decay: 1.0
 #      clip_grad: 0.0

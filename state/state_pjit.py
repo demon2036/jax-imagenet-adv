@@ -1,5 +1,6 @@
 import copy
 import json
+import time
 from functools import partial
 
 import flax
@@ -150,7 +151,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         )
 
 
-    def init_fn(params):
+    def init_fn(params)->TrainState:
         tx = create_optimizer_fn(learning_rate)
 
         if grad_accum_steps > 1:
@@ -184,7 +185,6 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
 
 
 
-
     # print(train_state_sharding)
     # state=jax.jit(init_fn, #in_shardings=(train_state_partition.params, ),
     #     out_shardings=train_state_sharding,
@@ -197,7 +197,13 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
                   )(params)
 
     # return state, train_state_partition, train_state_sharding
-
+    # state.apply_gradients(grads=jax.tree_util.tree_map(lambda x:x,state.params))
+    #
+    #
+    # while True:
+    #     print(1)
+    #     time.sleep(100)
+    #     params
 
     # def p(p,f):
     #     print(p,f.sharding)
@@ -205,6 +211,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     # print()
     # while True:
     #     pass
+
 
 
 

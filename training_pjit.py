@@ -62,17 +62,17 @@ class TrainState(train_state.TrainState):
 
 
 
-@partial(jax.pmap, axis_name="batch")
-def validation_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
-    metrics = state.apply_fn(
-        {"params": state.ema_params},
-        images=batch[0],
-        labels=jnp.where(batch[1] != -1, batch[1], 0),
-        det=True,
-    )
-    metrics["num_samples"] = batch[1] != -1
-    metrics = jax.tree_map(lambda x: (x * (batch[1] != -1)).sum(), metrics)
-    return jax.lax.psum(metrics, axis_name="batch")
+# @partial(jax.pmap, axis_name="batch")
+# def validation_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
+#     metrics = state.apply_fn(
+#         {"params": state.ema_params},
+#         images=batch[0],
+#         labels=jnp.where(batch[1] != -1, batch[1], 0),
+#         det=True,
+#     )
+#     metrics["num_samples"] = batch[1] != -1
+#     metrics = jax.tree_map(lambda x: (x * (batch[1] != -1)).sum(), metrics)
+#     return jax.lax.psum(metrics, axis_name="batch")
 
 
 # @partial(jax.pmap, axis_name="batch")
@@ -187,3 +187,13 @@ def validation_adv_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
 
 
 
+def validation_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
+    metrics = state.apply_fn(
+        {"params": state.ema_params},
+        images=batch[0],
+        labels=jnp.where(batch[1] != -1, batch[1], 0),
+        det=True,
+    )
+    metrics["num_samples"] = batch[1] != -1
+    metrics = jax.tree_map(lambda x: (x * (batch[1] != -1)).sum(), metrics)
+    return metrics

@@ -42,6 +42,7 @@ from tensorboard.plugins.image.summary import image
 from torch.nn.parallel import replicate
 from torch.utils.data import DataLoader
 
+from pre_define import TRAIN_EVAL_FN_COLLECTION
 from state import create_train_state
 from test_dataset_fork2 import create_dataloaders, DynamicMixRatioState
 # from test_dataset_fork import create_dataloaders
@@ -110,14 +111,15 @@ def main(configs):
     epoch_per_step = configs['steps'] // configs['dataset']['train_batch_size']
     log_interval = configs['log_interval']
     use_orbax_save = configs.pop('use_orbax_save', True)
+    valid_fn = configs.pop('valid_step_fn', validation_adv_step)
 
 
     if use_orbax_save:
         # os.environ['JAX_PLATFORMS']='cpu'
         # os.environ["XLA_FLAGS"] = '--xla_force_host_platform_device_count=8'
         # jax.config.update('jax_platform_name', 'cpu')
-        # pass
-        jax.distributed.initialize()
+        pass
+        # jax.distributed.initialize()
 
     use_pgd = configs.pop('use_pgd', True)
     grad_accum_steps = configs.pop('grad_accum_steps', 1)
@@ -232,7 +234,10 @@ def main(configs):
                                      # in_shardings=(train_state_sharding, sharding,),
                                      )
 
-        validation_adv_step_jited=jax.jit(validation_adv_step,
+
+        valid_step=TRAIN_EVAL_FN_COLLECTION[valid_fn]
+
+        validation_adv_step_jited=jax.jit(valid_step,
                                           # donate_argnums=(0,),
                                           out_shardings=None
         )
@@ -302,7 +307,13 @@ def main(configs):
                 try:
                     metrics = evaluate(state, valid_dataloader,validation_adv_step_jited,mesh)
                     print(metrics)
-                    if metrics["val/advacc1"] > max_val_acc1:
+
+                    if ["val/advacc1"] in metrics:
+                        now_acc1=metrics["val/advacc1"]
+                    else:
+                        now_acc1=metrics["val/acc1"]
+
+                    if now_acc1 > max_val_acc1:
                         if use_orbax_save:
                             ckpt = {'model': state}
                             save_args = orbax_utils.save_args_from_target(ckpt)
@@ -452,7 +463,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     yaml = read_yaml(args.yaml_path)
     # yaml = read_yaml('configs/adv/convnext-b-3step.yaml')
-    # yaml = read_yaml('configs/adv/convnext-t-3step.yaml')
+    yaml = read_yaml('configs/planB/ablation/standard/caformer-b-36-silu-standard-300ep-mix0.9-modified_lion.yaml')
     yaml = preprocess_config(yaml)
 
     # print(yaml)
