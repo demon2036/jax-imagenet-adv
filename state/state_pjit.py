@@ -173,7 +173,9 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         )
         return state
 
-    train_state_shapes = jax.eval_shape(partial(init_fn,tx_target=tx_target), params,)
+    init_fn=partial(init_fn,tx_target=tx_target)
+
+    train_state_shapes = jax.eval_shape(init_fn, params,)
     train_state_partition = match_partition_rules(get_partition_rules_caformer(), train_state_shapes)
     # jax.sharding.NamedSharding(mesh,train_state_partition)
     train_state_sharding = jax.tree_util.tree_map(lambda x: jax.sharding.NamedSharding(mesh, x), train_state_partition)
@@ -192,7 +194,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     #               )(params)
 
 
-    init_fn_jited=jax.jit(partial(init_fn,tx_target=tx_target), #in_shardings=(train_state_partition.params, ),
+    init_fn_jited=jax.jit(init_fn, #in_shardings=(train_state_partition.params, ),
         out_shardings=train_state_sharding
         # donate_argnums=(0, )
                   )
@@ -203,13 +205,13 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
 
 
 
-    if pretrained_ckpt is  None:
-        pass
-    elif 'gs://' in pretrained_ckpt:
-        abstract_state = jax.eval_shape(partial(init_fn, tx_target=tx_restore_target), params, )
-        params = load_pretrained_params(pretrained_ckpt,abstract_state )
-    else:
-        params = load_pretrain(pretrained_model=pretrained_ckpt,default_params=params)
+    # if pretrained_ckpt is  None:
+    #     pass
+    # elif 'gs://' in pretrained_ckpt:
+    #     abstract_state = jax.eval_shape(partial(init_fn, tx_target=tx_restore_target), params, )
+    #     params = load_pretrained_params(pretrained_ckpt,abstract_state )
+    # else:
+    #     params = load_pretrain(pretrained_model=pretrained_ckpt,default_params=params)
 
     params=jax.tree_util.tree_map(jnp.asarray,params)
 
