@@ -191,7 +191,6 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     # print(logical_state_sharding)
 
 
-
     # print(train_state_sharding)
     # state=jax.jit(init_fn, #in_shardings=(train_state_partition.params, ),
     #     out_shardings=train_state_sharding,
@@ -204,7 +203,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         # donate_argnums=(0, )
                   )
 
-    abstract_state=init_fn_jited.eval_shape()
+    abstract_state=init_fn_jited.eval_shape(params)
 
 
 
