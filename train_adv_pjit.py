@@ -111,7 +111,7 @@ def main(configs):
     epoch_per_step = configs['steps'] // configs['dataset']['train_batch_size']
     log_interval = configs['log_interval']
     use_orbax_save = configs.pop('use_orbax_save', True)
-    valid_fn = configs.pop('valid_fn', validation_adv_step)
+    valid_fn = configs.pop('valid_fn', "validation_adv_step")
 
 
     # os.environ['JAX_PLATFORMS']='cpu'
