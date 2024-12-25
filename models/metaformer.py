@@ -164,7 +164,7 @@ class SepConv(nn.Module):
 
 class Attention(nn.Module):
     dim: int
-    head_dim: int = 32 #128
+    head_dim: int = 128
     num_heads: int = None
     qkv_bias: bool = False
     attn_drop: float = 0.0
@@ -470,6 +470,8 @@ class MetaFormer(nn.Module):
 
 ReMatSepConv=nn.remat(SepConv)
 ReMatAttention=nn.remat(Attention)
+
+
 
 CAFormer=partial(MetaFormer,token_mixers=(SepConv,SepConv,Attention,Attention))
 # CAFormer=partial(MetaFormer,token_mixers=(ReMatSepConv,ReMatSepConv,ReMatAttention,ReMatAttention))
