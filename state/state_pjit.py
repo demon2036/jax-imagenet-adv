@@ -5,6 +5,7 @@ from functools import partial
 
 import flax
 import jax
+import numpy as np
 import optax
 import timm
 from jax._src.pjit import pjit
@@ -20,15 +21,34 @@ from convert_model_pytorch import convert_torch_to_flax_conv_next,convert_torch_
 import orbax.checkpoint as ocp
 from timm.models import MetaFormer,ConvNeXt
 
-def load_pretrained_params(pretrained_ckpt):
+# def load_pretrained_params(pretrained_ckpt,abstract_state):
+#
+#
+#
+#
+#
+#
+#     checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
+#     state = checkpointer.restore(pretrained_ckpt )['model']
+#     # params = state['ema_params']
+#     params = state['params']
+#     return params
+#     # jax.tree_util.tree_map(jnp.asarray, params)
+#     # print(params.keys())
+#     # return {'model': params}
+
+def load_pretrained_params(pretrained_ckpt, abstract_state):
     checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
-    state = checkpointer.restore(pretrained_ckpt )['model']
-    # params = state['ema_params']
-    params = state['params']
+    ckpt = {'model': abstract_state}
+    restore_kwargs = {
+        "restore_args": jax.tree_map(
+            lambda _: ocp.RestoreArgs(restore_type=np.ndarray), ckpt
+        )
+    }
+    state = checkpointer.restore(pretrained_ckpt, item=ckpt, **restore_kwargs)['model']
+    params = state.ema_params
     return params
-    # jax.tree_util.tree_map(jnp.asarray, params)
-    # print(params.keys())
-    # return {'model': params}
+
 
 
 
@@ -92,23 +112,9 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     params = module.init(init_rngs, **example_inputs,det=False)["params"]
 
 
-    #
-    def p(p,x):
-        print(p,x.shape)
 
-    # di = flax.traverse_util.flatten_dict(params, sep='.')
-    # jax.tree_util.tree_map_with_path(p,di)
-    # while True:
-    #     params
 
-    if pretrained_ckpt is  None:
-        pass
-    elif 'gs://' in pretrained_ckpt:
-        params = load_pretrained_params(pretrained_ckpt )
-    else:
-        params = load_pretrain(pretrained_model=pretrained_ckpt,default_params=params)
 
-    params=jax.tree_util.tree_map(jnp.asarray,params)
 
     # if args.grad_accum > 1:
     #     grad_accum = jax.tree_map(jnp.zeros_like, params)
@@ -192,27 +198,30 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     #     # donate_argnums=(0, )
     #               )(params)
 
-    state=jax.jit(init_fn, #in_shardings=(train_state_partition.params, ),
+
+    init_fn_jited=jax.jit(init_fn, #in_shardings=(train_state_partition.params, ),
         out_shardings=train_state_sharding,
         # donate_argnums=(0, )
-                  )(params)
+                  )
 
-    # return state, train_state_partition, train_state_sharding
-    # state.apply_gradients(grads=jax.tree_util.tree_map(lambda x:x,state.params))
-    #
-    #
-    # while True:
-    #     print(1)
-    #     time.sleep(100)
-    #     params
+    abstract_state=init_fn_jited.eval_shape()
 
-    # def p(p,f):
-    #     print(p,f.sharding)
-    # jax.tree_util.tree_map_with_path(p,state.params)
-    # print()
-    # while True:
-    #     pass
 
+
+
+
+    if pretrained_ckpt is  None:
+        pass
+    elif 'gs://' in pretrained_ckpt:
+        params = load_pretrained_params(pretrained_ckpt,abstract_state )
+    else:
+        params = load_pretrain(pretrained_model=pretrained_ckpt,default_params=params)
+
+    params=jax.tree_util.tree_map(jnp.asarray,params)
+
+
+
+    state=init_fn_jited(params)
 
 
 
