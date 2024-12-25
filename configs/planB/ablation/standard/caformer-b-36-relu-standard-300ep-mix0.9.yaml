@@ -51,7 +51,7 @@ train_state:
 #      ls_init_value: null
 
   optimizer:
-    target: 'liom'
+    target: 'lion'
     optimizer_kwargs:
       learning_rate: 1.0e-4
       weight_decay: 0.5
