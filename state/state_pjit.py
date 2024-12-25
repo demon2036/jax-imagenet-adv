@@ -213,10 +213,6 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         # donate_argnums=(0, )
                   )
 
-    # abstract_state=init_fn_jited.eval_shape(params,tx_restore_target)
-
-
-
     state=init_fn_jited(params)
 
 
