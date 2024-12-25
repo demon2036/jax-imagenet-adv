@@ -141,7 +141,13 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
 
 
     if schedule !='cosine':
-        learning_rate=lr
+        learning_rate = optax.warmup_cosine_decay_schedule(
+            init_value=lr,
+            peak_value=lr,
+            warmup_steps=warmup_steps,
+            decay_steps=training_steps,
+            end_value=lr,
+        )
     else:
         learning_rate = optax.warmup_cosine_decay_schedule(
             init_value=1e-6,
