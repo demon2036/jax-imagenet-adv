@@ -192,12 +192,12 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     #               )(params)
 
 
-    init_fn_jited=jax.jit(init_fn, #in_shardings=(train_state_partition.params, ),
+    init_fn_jited=jax.jit(partial(init_fn,tx_target=tx_target), #in_shardings=(train_state_partition.params, ),
         out_shardings=train_state_sharding,static_argnums=(1,)
         # donate_argnums=(0, )
                   )
-
-    abstract_state=init_fn_jited.eval_shape(params,tx_restore_target)
+    abstract_state = jax.eval_shape(partial(init_fn,tx_target=tx_restore_target), params,)
+    # abstract_state=init_fn_jited.eval_shape(params,tx_restore_target)
 
 
 
