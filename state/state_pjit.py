@@ -153,7 +153,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
 
 
     def init_fn(params,tx_target)->TrainState:
-        tx = create_optimizer_fn(learning_rate,tx_target)
+        tx = create_optimizer_fn(copy.deepcopy(learning_rate),tx_target)
 
         if grad_accum_steps > 1:
             grad_accum = jax.tree_map(jnp.zeros_like, params)
@@ -212,8 +212,6 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         params = load_pretrain(pretrained_model=pretrained_ckpt,default_params=params)
 
     params=jax.tree_util.tree_map(jnp.asarray,params)
-
-
 
     state=init_fn_jited(params)
 
