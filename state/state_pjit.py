@@ -152,8 +152,8 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         )
 
 
-    def init_fn(params)->TrainState:
-        tx = create_optimizer_fn(learning_rate)
+    def init_fn(params,tx_target)->TrainState:
+        tx = create_optimizer_fn(learning_rate,tx_target)
 
         if grad_accum_steps > 1:
             grad_accum = jax.tree_map(jnp.zeros_like, params)
