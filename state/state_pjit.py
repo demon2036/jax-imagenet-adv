@@ -127,7 +127,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     tx_target = OPTIMIZER_COLLECTION[optimizer_config['target']]
     tx_restore_target = OPTIMIZER_COLLECTION['lamb']
 
-    @partial(optax.inject_hyperparams, hyperparam_dtype=jnp.float32,static_args=('optax.inject_hyperparams',))
+    @partial(optax.inject_hyperparams, hyperparam_dtype=jnp.float32,static_args=('tx_target',))
     def create_optimizer_fn(
             learning_rate: optax.Schedule,tx_target
     ) -> optax.GradientTransformation:
