@@ -174,7 +174,20 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         return state
 
     init_fn_restore=partial(init_fn, tx_target=tx_restore_target)
+
+
+    if pretrained_ckpt is  None:
+        pass
+    elif 'gs://' in pretrained_ckpt:
+        abstract_state = jax.eval_shape(init_fn_restore, params, )
+        params = load_pretrained_params(pretrained_ckpt,abstract_state )
+    else:
+        params = load_pretrain(pretrained_model=pretrained_ckpt,default_params=params)
+
+    params=jax.tree_util.tree_map(jnp.asarray,params)
+
     init_fn=partial(init_fn,tx_target=tx_target)
+
 
     train_state_shapes = jax.eval_shape(init_fn, params,)
     train_state_partition = match_partition_rules(get_partition_rules_caformer(), train_state_shapes)
@@ -203,18 +216,6 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     # abstract_state=init_fn_jited.eval_shape(params,tx_restore_target)
 
 
-
-
-
-    if pretrained_ckpt is  None:
-        pass
-    elif 'gs://' in pretrained_ckpt:
-        abstract_state = jax.eval_shape(init_fn_restore, params, )
-        params = load_pretrained_params(pretrained_ckpt,abstract_state )
-    else:
-        params = load_pretrain(pretrained_model=pretrained_ckpt,default_params=params)
-
-    params=jax.tree_util.tree_map(jnp.asarray,params)
 
     state=init_fn_jited(params)
 
