@@ -173,7 +173,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         )
         return state
 
-    train_state_shapes = jax.eval_shape(init_fn, params,tx_target)
+    train_state_shapes = jax.eval_shape(partial(init_fn,tx_target=tx_target), params,)
     train_state_partition = match_partition_rules(get_partition_rules_caformer(), train_state_shapes)
     # jax.sharding.NamedSharding(mesh,train_state_partition)
     train_state_sharding = jax.tree_util.tree_map(lambda x: jax.sharding.NamedSharding(mesh, x), train_state_partition)
@@ -230,7 +230,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
 
 
 
-
+"""
 
 
 
@@ -357,7 +357,7 @@ def create_train_state_restore(train_state_config, image_size: int = 224, warmup
 
 
 
-
+"""
 
 
 
