@@ -164,7 +164,7 @@ class SepConv(nn.Module):
 
 class Attention(nn.Module):
     dim: int
-    head_dim: int = 128
+    head_dim: int = 32
     num_heads: int = None
     qkv_bias: bool = False
     attn_drop: float = 0.0
