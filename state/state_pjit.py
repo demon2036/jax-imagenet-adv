@@ -193,7 +193,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
 
 
     init_fn_jited=jax.jit(init_fn, #in_shardings=(train_state_partition.params, ),
-        out_shardings=train_state_sharding,static_argnums=(0,)
+        out_shardings=train_state_sharding,static_argnums=(1,)
         # donate_argnums=(0, )
                   )
 
