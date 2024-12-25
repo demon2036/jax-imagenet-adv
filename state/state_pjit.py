@@ -193,10 +193,10 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
 
 
     init_fn_jited=jax.jit(partial(init_fn,tx_target=tx_target), #in_shardings=(train_state_partition.params, ),
-        out_shardings=train_state_sharding,static_argnums=(1,)
+        out_shardings=train_state_sharding
         # donate_argnums=(0, )
                   )
-    abstract_state = jax.eval_shape(partial(init_fn,tx_target=tx_restore_target), params,)
+
     # abstract_state=init_fn_jited.eval_shape(params,tx_restore_target)
 
 
@@ -206,6 +206,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     if pretrained_ckpt is  None:
         pass
     elif 'gs://' in pretrained_ckpt:
+        abstract_state = jax.eval_shape(partial(init_fn, tx_target=tx_restore_target), params, )
         params = load_pretrained_params(pretrained_ckpt,abstract_state )
     else:
         params = load_pretrain(pretrained_model=pretrained_ckpt,default_params=params)
