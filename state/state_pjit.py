@@ -124,24 +124,18 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
 
     # Create learning rate scheduler and optimizer with gradient clipping. The learning
     # rate will be recorded at `hyperparams` by `optax.inject_hyperparameters`.
-    @partial(optax.inject_hyperparams, hyperparam_dtype=jnp.float32)
+    tx_target = OPTIMIZER_COLLECTION[optimizer_config['target']]
+    tx_restore_target = OPTIMIZER_COLLECTION['lamb']
+
+    @partial(optax.inject_hyperparams, hyperparam_dtype=jnp.float32,static_args=(1,))
     def create_optimizer_fn(
-            learning_rate: optax.Schedule,
+            learning_rate: optax.Schedule,tx_target
     ) -> optax.GradientTransformation:
-        tx = OPTIMIZER_COLLECTION[optimizer_config['target']](
+        tx = tx_target(
             learning_rate=learning_rate,
             **optimizer_config['optimizer_kwargs'],
             mask=partial(jax.tree_util.tree_map_with_path, lambda kp, *_: kp[-1].key == "kernel"),
         )
-        # if args.lr_decay < 1.0:
-        #     layerwise_scales = {
-        #         i: optax.scale(args.lr_decay ** (args.layers - i))
-        #         for i in range(args.layers + 1)
-        #     }
-        #     label_fn = partial(get_layer_index_fn, num_layers=args.layers)
-        #     label_fn = partial(tree_map_with_path, label_fn)
-        #     tx = optax.chain(tx, optax.multi_transform(layerwise_scales, label_fn))
-        # if args.clip_grad > 0:
         tx = optax.chain(optax.clip_by_global_norm(1.0), tx)
         return tx
 
@@ -179,7 +173,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         )
         return state
 
-    train_state_shapes = jax.eval_shape(init_fn, params)
+    train_state_shapes = jax.eval_shape(init_fn, params,tx_target)
     train_state_partition = match_partition_rules(get_partition_rules_caformer(), train_state_shapes)
     # jax.sharding.NamedSharding(mesh,train_state_partition)
     train_state_sharding = jax.tree_util.tree_map(lambda x: jax.sharding.NamedSharding(mesh, x), train_state_partition)
@@ -203,7 +197,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         # donate_argnums=(0, )
                   )
 
-    abstract_state=init_fn_jited.eval_shape(params)
+    abstract_state=init_fn_jited.eval_shape(params,tx_restore_target)
 
 
 
