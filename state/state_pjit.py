@@ -127,7 +127,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     tx_target = OPTIMIZER_COLLECTION[optimizer_config['target']]
     tx_restore_target = OPTIMIZER_COLLECTION['lamb']
 
-    @partial(optax.inject_hyperparams, hyperparam_dtype=jnp.float32,static_args=(1,))
+    @partial(optax.inject_hyperparams, hyperparam_dtype=jnp.float32,static_args=('optax.inject_hyperparams',))
     def create_optimizer_fn(
             learning_rate: optax.Schedule,tx_target
     ) -> optax.GradientTransformation:
@@ -282,32 +282,19 @@ def create_train_state_restore(train_state_config, image_size: int = 224, warmup
 
     # Create learning rate scheduler and optimizer with gradient clipping. The learning
     # rate will be recorded at `hyperparams` by `optax.inject_hyperparameters`.
-    # @partial(optax.inject_hyperparams, hyperparam_dtype=jnp.float32)
-    # def create_optimizer_fn(
-    #         learning_rate: optax.Schedule,
-    # ) -> optax.GradientTransformation:
-    #     tx = OPTIMIZER_COLLECTION[optimizer_config['target']](
-    #         learning_rate=learning_rate,
-    #         **optimizer_config['optimizer_kwargs'],
-    #         mask=partial(jax.tree_util.tree_map_with_path, lambda kp, *_: kp[-1].key == "kernel"),
-    #     )
-    #     tx = optax.chain(optax.clip_by_global_norm(1.0), tx)
-    #     return tx
-
-    tx_target = OPTIMIZER_COLLECTION[optimizer_config['target']]
-    tx_restore_target = OPTIMIZER_COLLECTION['lamb']
-
-    @partial(optax.inject_hyperparams, hyperparam_dtype=jnp.float32,static_args=(1,))
+    @partial(optax.inject_hyperparams, hyperparam_dtype=jnp.float32)
     def create_optimizer_fn(
-            learning_rate: optax.Schedule,tx_target
+            learning_rate: optax.Schedule,
     ) -> optax.GradientTransformation:
-        tx = tx_target(
+        tx = OPTIMIZER_COLLECTION[optimizer_config['target']](
             learning_rate=learning_rate,
             **optimizer_config['optimizer_kwargs'],
             mask=partial(jax.tree_util.tree_map_with_path, lambda kp, *_: kp[-1].key == "kernel"),
         )
         tx = optax.chain(optax.clip_by_global_norm(1.0), tx)
         return tx
+
+
 
 
 
@@ -344,7 +331,7 @@ def create_train_state_restore(train_state_config, image_size: int = 224, warmup
         )
         return state
 
-    train_state_shapes = jax.eval_shape(init_fn, params,tx_restore_target)
+    train_state_shapes = jax.eval_shape(init_fn, params)
     train_state_partition = match_partition_rules(get_partition_rules_caformer(), train_state_shapes)
     train_state_sharding = jax.tree_util.tree_map(lambda x: jax.sharding.NamedSharding(mesh, x), train_state_partition)
 
@@ -352,7 +339,7 @@ def create_train_state_restore(train_state_config, image_size: int = 224, warmup
 
     state=jax.jit(init_fn, #in_shardings=(train_state_partition.params, ),
         out_shardings=train_state_sharding,
-                  )(params,tx_target)
+                  )(params)
 
 
     if jax.process_index()==0:
