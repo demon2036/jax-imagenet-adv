@@ -162,6 +162,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         tx = create_optimizer_fn(copy.deepcopy(learning_rate),tx_target)
 
         if grad_accum_steps > 1:
+            print(f'{grad_accum_steps=}')
             grad_accum = jax.tree_map(jnp.zeros_like, params)
 
         state= TrainState.create(
