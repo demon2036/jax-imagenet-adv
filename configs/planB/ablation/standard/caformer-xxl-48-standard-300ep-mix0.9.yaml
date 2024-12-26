@@ -48,15 +48,17 @@ train_state:
       depths: [8,8,24,8]
       dims: [384, 768, 1536, 2304]
       drop_path_rate: 0.2
+      drop_rate: 0.5
 #      ls_init_value: null
 
   optimizer:
-    target: 'lion'
+    target: 'modified_lion'
     optimizer_kwargs:
       learning_rate: 1.0e-4
-      weight_decay: 0.5
-      b1: 0.9
-      b2: 0.99
+      weight_decay: [
+        ['.*/fc/fc2/kernel', 3.0],
+        ['.*/kernel', 0.1],
+      ]
 #      eps: 1.0e-8
 #      lr_decay: 1.0
 #      clip_grad: 0.0
