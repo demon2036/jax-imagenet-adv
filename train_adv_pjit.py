@@ -122,6 +122,7 @@ def main(configs):
 
     use_pgd = configs.pop('use_pgd', True)
     grad_accum_steps = configs.pop('grad_accum_steps', 1)
+    mesh_dim = configs.pop('mesh_dim', '-1,1,1')
 
 
 
@@ -131,7 +132,6 @@ def main(configs):
     filename = os.path.join(output_dir, f"{name}-{postfix}")
     print(filename)
 
-    mesh_dim = '-1,1,1'
     # mesh_dim = '1,1,-1'
     # mesh_dim = '1,1,-1'
     # mesh_dim = '1,-1,1'

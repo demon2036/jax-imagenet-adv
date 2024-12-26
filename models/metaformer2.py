@@ -192,6 +192,10 @@ class Attention(nn.Module):
             k=nn.LayerNorm(dtype=dtype)(k)
 
 
+        if self.v_norm:
+            v=nn.LayerNorm(dtype=dtype,reduction_axes=-2,feature_axes=-2)(v)
+            print(v.shape)
+
 
         if N==256:
             x=jax.experimental.pallas.ops.tpu.flash_attention.flash_attention(q,k,v)
