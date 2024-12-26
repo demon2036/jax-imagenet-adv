@@ -194,7 +194,6 @@ class Attention(nn.Module):
 
         if self.v_norm:
             v=nn.LayerNorm(dtype=dtype,reduction_axes=-2,feature_axes=-2,use_bias=False,use_scale=False)(v)
-            print(v.shape)
 
 
         if N==256:
