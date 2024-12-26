@@ -118,13 +118,16 @@ def main(configs):
     # os.environ["XLA_FLAGS"] = '--xla_force_host_platform_device_count=8'
     # jax.config.update('jax_platform_name', 'cpu')
     # pass
-    jax.distributed.initialize()
+    # jax.distributed.initialize()
 
     use_pgd = configs.pop('use_pgd', True)
     grad_accum_steps = configs.pop('grad_accum_steps', 1)
-    mesh_dim = configs.pop('mesh_dim', '-1,1,1')
 
+    dp = configs.pop('dp', -1)
+    fsdp = configs.pop('fsdp', 1)
+    tp = configs.pop('tp', 1)
 
+    mesh_dim = f'{dp},{fsdp},{tp}' #  '-1,1,1'
 
     postfix = "ema"
     name = configs['name']
@@ -458,7 +461,7 @@ if __name__ == "__main__":
     # main(parser.parse_args())
     args = parser.parse_args()
     yaml = read_yaml(args.yaml_path)
-    # yaml = read_yaml('configs/adv/convnext-b-3step.yaml')
+    yaml = read_yaml('configs/planB/ablation/standard/caformer-xxl-48-standard-192-400ep-mix0.9-v64.yaml')
     # yaml = read_yaml('configs/planB/ablation/standard/caformer-b-36-silu-standard-300ep-mix0.9-modified_lion.yaml')
     yaml = preprocess_config(yaml)
 
