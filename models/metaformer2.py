@@ -172,6 +172,7 @@ class Attention(nn.Module):
     proj_bias: bool = False
     fused_attn: bool = False  # Assume the use_fused_attn() logic will be passed explicitly
     qk_norm:bool = True
+    v_norm:bool =True
 
     @nn.compact
     def __call__(self, x,det=True):
@@ -188,7 +189,9 @@ class Attention(nn.Module):
 
         if self.qk_norm:
             q=nn.LayerNorm(dtype=dtype)(q)
-            v=nn.LayerNorm(dtype=dtype)(v)
+            k=nn.LayerNorm(dtype=dtype)(k)
+
+
 
         if N==256:
             x=jax.experimental.pallas.ops.tpu.flash_attention.flash_attention(q,k,v)
