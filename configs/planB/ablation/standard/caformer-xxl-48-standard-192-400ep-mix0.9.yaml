@@ -29,8 +29,8 @@ dataset:
   shuffle_seed: 1
   image_size: 192
   generated_dataset_shards:
-    ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps/shards-{00000..01119}.tar',]
-  dataset_mix_ratio: 0.9
+    ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar']
+  dataset_mix_ratio: 0.2
 
 train_state:
   train_module:
@@ -48,6 +48,7 @@ train_state:
       depths: [8,8,24,8]
       dims: [384, 768, 1536, 2304]
       drop_path_rate: 0.2
+      drop_rate: 0.5
 #      ls_init_value: null
 
   optimizer:
