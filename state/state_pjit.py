@@ -129,8 +129,10 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
 
     if 'target_restore' not in optimizer_config:
         tx_restore_target=tx_target
+        optimizer_config_restore={}
     else:
         tx_restore_target=optimizer_config['target_restore']
+        optimizer_config_restore = optimizer_config
     # if 'optimizer_config_restore' not in optimizer_config:
     #     optimizer_config_restore
 
@@ -138,7 +140,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
 
     @partial(optax.inject_hyperparams, hyperparam_dtype=jnp.float32,static_args=('tx_target',))
     def create_optimizer_fn(
-            learning_rate: optax.Schedule,tx_target
+            learning_rate: optax.Schedule,tx_target,optimizer_config
     ) -> optax.GradientTransformation:
         tx = tx_target(
             learning_rate=learning_rate,
@@ -167,8 +169,8 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         )
 
 
-    def init_fn(params,tx_target)->TrainState:
-        tx = create_optimizer_fn(copy.deepcopy(learning_rate),tx_target)
+    def init_fn(params,tx_target,optimizer_config)->TrainState:
+        tx = create_optimizer_fn(copy.deepcopy(learning_rate),tx_target,optimizer_config)
 
         if grad_accum_steps > 1:
             print(f'{grad_accum_steps=}')
@@ -189,7 +191,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         )
         return state
 
-    init_fn_restore=partial(init_fn, tx_target=tx_restore_target)
+    init_fn_restore=partial(init_fn, tx_target=tx_restore_target,optimizer_config=optimizer_config_restore)
 
 
     if pretrained_ckpt is  None:
@@ -202,7 +204,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
 
     params=jax.tree_util.tree_map(jnp.asarray,params)
 
-    init_fn=partial(init_fn,tx_target=tx_target)
+    init_fn=partial(init_fn,tx_target=tx_target,optimizer_config=optimizer_config)
 
 
     train_state_shapes = jax.eval_shape(init_fn, params,)
