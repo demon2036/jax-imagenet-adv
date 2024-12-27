@@ -111,6 +111,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
 
 
 
+    params = module.init(init_rngs, **example_inputs,det=False)["params"]
 
 
 
@@ -147,7 +148,6 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         tx = optax.chain(optax.clip_by_global_norm(1.0), tx)
         return tx
 
-    params = module.init(init_rngs, **example_inputs,det=False)["params"]
 
     if schedule !='cosine':
         learning_rate = optax.warmup_cosine_decay_schedule(
