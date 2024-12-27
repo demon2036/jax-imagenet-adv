@@ -46,7 +46,7 @@ train_state:
 
 
   model:
-    target: 'models.CAFormerQKNorm'
+    target: 'models.CAFormer'
     model_kwargs:
       depths: [8,8,24,8]
       dims: [384, 768, 1536, 2304]
