@@ -57,8 +57,13 @@ train_state:
   optimizer:
     target: 'lion'
     optimizer_kwargs:
+    target: 'modified_lion'
+    optimizer_kwargs:
       learning_rate: 1.0e-4
-      weight_decay: 0.5
+      weight_decay: [
+        ['.*/fc/.*/kernel', 3.0],
+        ['.*/kernel', 0.03],
+      ]
       b1: 0.9
       b2: 0.99
 #      eps: 1.0e-8
