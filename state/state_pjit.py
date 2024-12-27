@@ -120,14 +120,21 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     #     grad_accum = jax.tree_map(jnp.zeros_like, params)
     lr = optimizer_config['optimizer_kwargs'].pop('learning_rate')
     end_lr = optimizer_config['optimizer_kwargs'].pop('end_learning_rate',1e-5)
+    init_value = optimizer_config['optimizer_kwargs'].pop('init_value', 1e-6)
     schedule = optimizer_config['optimizer_kwargs'].pop('schedule','cosine')
 
     # Create learning rate scheduler and optimizer with gradient clipping. The learning
     # rate will be recorded at `hyperparams` by `optax.inject_hyperparameters`.
     tx_target = OPTIMIZER_COLLECTION[optimizer_config['target']]
+    optimizer_config=['optimizer_kwargs']
 
     if 'target_restore' not in optimizer_config:
         tx_restore_target=tx_target
+    else:
+        tx_restore_target=optimizer_config['target_restore']
+    # if 'optimizer_config_restore' not in optimizer_config:
+    #     optimizer_config_restore
+
 
     # tx_restore_target = OPTIMIZER_COLLECTION['lamb']
 
@@ -154,7 +161,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         )
     else:
         learning_rate = optax.warmup_cosine_decay_schedule(
-            init_value=1e-6,
+            init_value=init_value,
             peak_value=lr,
             warmup_steps=warmup_steps,
             decay_steps=training_steps,

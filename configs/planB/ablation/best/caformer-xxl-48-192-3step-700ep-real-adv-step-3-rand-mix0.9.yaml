@@ -55,16 +55,18 @@ train_state:
 #      drop_rate: 0.5
 
   optimizer:
+    target_restore: 'lion'
     target: 'modified_lion'
     optimizer_kwargs:
       learning_rate: 4.0e-5
-      end_learning_rate: 4.0e-6
+      init_value: 1.0e-7
+      end_learning_rate: 1.0e-6
       weight_decay: [
         ['.*/fc/.*/kernel', 3.0],
         ['.*/kernel', 0.03],
       ]
-      b1: 0.9
-      b2: 0.99
+      b1: 0.95
+      b2: 0.98
 #      eps: 1.0e-8
 #      lr_decay: 1.0
 #      clip_grad: 0.0
