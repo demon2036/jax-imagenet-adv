@@ -1,3 +1,4 @@
+import functools
 from dataclasses import field
 from functools import partial
 from typing import Callable, Optional, Sequence, Union, Any
@@ -482,8 +483,9 @@ class MetaFormer(nn.Module):
 ReMatSepConv=nn.remat(SepConv)
 ReMatAttention=nn.remat(Attention)
 
-
+AttentionQKNorm=functools.partial(Attention,  qk_norm = True,v_norm=False)
 
 CAFormer=partial(MetaFormer,token_mixers=(SepConv,SepConv,Attention,Attention))
+CAFormerQKNorm=partial(MetaFormer,token_mixers=(SepConv,SepConv,AttentionQKNorm,AttentionQKNorm))
 # CAFormer=partial(MetaFormer,token_mixers=(ReMatSepConv,ReMatSepConv,ReMatAttention,ReMatAttention))
 ConvFormer=partial(MetaFormer,token_mixers=(SepConv,SepConv,SepConv,SepConv))
