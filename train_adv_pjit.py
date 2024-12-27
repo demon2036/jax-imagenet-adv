@@ -461,7 +461,7 @@ if __name__ == "__main__":
     # main(parser.parse_args())
     args = parser.parse_args()
     yaml = read_yaml(args.yaml_path)
-    yaml = read_yaml('configs/planB/ablation/standard/caformer-xxl-48-standard-192-400ep-mix0.9-v64.yaml')
+    # yaml = read_yaml('configs/planB/ablation/standard/caformer-xxl-48-standard-192-400ep-mix0.9-v64.yaml')
     # yaml = read_yaml('configs/planB/ablation/standard/caformer-b-36-silu-standard-300ep-mix0.9-modified_lion.yaml')
     yaml = preprocess_config(yaml)
 
