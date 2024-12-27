@@ -308,6 +308,8 @@ class MetaFormerStage(nn.Module):
     res_scale_init_value: float = None
     grad_checkpointing: bool = False
     use_nchw: bool = True
+    qk_norm:bool =True
+    v_norm: bool =True
 
     @nn.compact
     def __call__(self, x,det=True):
@@ -319,15 +321,17 @@ class MetaFormerStage(nn.Module):
 
         B, H, W,C = x.shape
         use_nchw = True
+        token_mixer=self.token_mixer
         if  issubclass(self.token_mixer,Attention):
             use_nchw=False
             x=einops.rearrange(x,'b  h w c-> b (h w) c')
+            token_mixer=functools.partial(token_mixer,qk_norm=True,v_norm =True)
 
         # Create MetaFormerBlocks
         for i in range(self.depth):
             block = MetaFormerBlock(
                 dim=self.out_chs,
-                token_mixer=self.token_mixer,
+                token_mixer=token_mixer,
                 mlp_act=self.mlp_act,
                 mlp_bias=self.mlp_bias,
                 norm_layer=self.norm_layer,
@@ -423,6 +427,8 @@ class MetaFormer(nn.Module):
     output_norm: Callable = nn.LayerNorm
     use_mlp_head: bool = True
     mlp_head_act: Any =SquaredReLU
+    qk_norm:bool =True
+    v_norm: bool =False
 
     @nn.compact
     def __call__(self, x,det=True):
@@ -458,7 +464,9 @@ class MetaFormer(nn.Module):
                     res_scale_init_value=res_scale_init_values[i],
                     downsample_norm=self.downsample_norm,
                     norm_layer=norm_layers[i],
-                    depth=self.depths[i]
+                    depth=self.depths[i],
+                    qk_norm=self.qk_norm,
+                    v_norm=self.v_norm
                 )
 
             prev_dim = dims[i]
@@ -483,9 +491,7 @@ class MetaFormer(nn.Module):
 ReMatSepConv=nn.remat(SepConv)
 ReMatAttention=nn.remat(Attention)
 
-AttentionQKNorm=functools.partial(Attention,  qk_norm = True,v_norm=False)
 
 CAFormer=partial(MetaFormer,token_mixers=(SepConv,SepConv,Attention,Attention))
-CAFormerQKNorm=partial(MetaFormer,token_mixers=(SepConv,SepConv,AttentionQKNorm,AttentionQKNorm))
 # CAFormer=partial(MetaFormer,token_mixers=(ReMatSepConv,ReMatSepConv,ReMatAttention,ReMatAttention))
 ConvFormer=partial(MetaFormer,token_mixers=(SepConv,SepConv,SepConv,SepConv))
