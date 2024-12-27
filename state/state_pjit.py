@@ -125,7 +125,11 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     # Create learning rate scheduler and optimizer with gradient clipping. The learning
     # rate will be recorded at `hyperparams` by `optax.inject_hyperparameters`.
     tx_target = OPTIMIZER_COLLECTION[optimizer_config['target']]
-    tx_restore_target = OPTIMIZER_COLLECTION['lamb']
+
+    if 'target_restore' not in optimizer_config:
+        tx_restore_target=tx_target
+
+    # tx_restore_target = OPTIMIZER_COLLECTION['lamb']
 
     @partial(optax.inject_hyperparams, hyperparam_dtype=jnp.float32,static_args=('tx_target',))
     def create_optimizer_fn(
