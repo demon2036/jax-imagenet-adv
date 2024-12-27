@@ -109,7 +109,6 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
                               depth=2,compute_flops=True,console_kwargs={'width': 160},
                               compute_vjp_flops=True))
 
-    params = module.init(init_rngs, **example_inputs,det=False)["params"]
 
 
 
@@ -126,7 +125,6 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     # Create learning rate scheduler and optimizer with gradient clipping. The learning
     # rate will be recorded at `hyperparams` by `optax.inject_hyperparameters`.
     tx_target = OPTIMIZER_COLLECTION[optimizer_config['target']]
-    optimizer_config=['optimizer_kwargs']
 
     if 'target_restore' not in optimizer_config:
         tx_restore_target=tx_target
@@ -134,7 +132,6 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         tx_restore_target=optimizer_config['target_restore']
     # if 'optimizer_config_restore' not in optimizer_config:
     #     optimizer_config_restore
-
 
     # tx_restore_target = OPTIMIZER_COLLECTION['lamb']
 
@@ -150,6 +147,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         tx = optax.chain(optax.clip_by_global_norm(1.0), tx)
         return tx
 
+    params = module.init(init_rngs, **example_inputs,det=False)["params"]
 
     if schedule !='cosine':
         learning_rate = optax.warmup_cosine_decay_schedule(
