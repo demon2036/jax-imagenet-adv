@@ -1,12 +1,12 @@
 
 output_dir: $GCS_MODEL_DIR/planb/ablation/best
-name: caformer-xxl36-224-3step-600ep-real-adv-step-3-rand-mix0.9
+name: caformer-xxl36-192-3step-600ep-real-adv-step-3-rand-mix0.9
 project: jax-adv-image-net-best
 steps: 1281167
-training_epoch: 600
-warmup_epoch: 50
+training_epoch: 700
+warmup_epoch: 70
 log_interval: 100
-eval_epoch: 10
+eval_epoch: 20
 grad_accum_steps: 1
 
 #resume: True
@@ -28,7 +28,7 @@ dataset:
   augment_repeats: 3
   test_crop_ratio: 0.875
   shuffle_seed: 1
-  image_size: 224
+  image_size: 192
   generated_dataset_shards:
     ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar']
   dataset_mix_ratio: 0.9
