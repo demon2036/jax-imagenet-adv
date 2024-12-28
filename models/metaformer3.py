@@ -52,8 +52,7 @@ class Mlp(nn.Module):
         if self.norm_layer:
             x = self.norm_layer()(x)
 
-        if not self.use_conv:
-            x=nn.LayerNorm(dtype=dtype,reduction_axes=-2,feature_axes=-2,use_bias=False,use_scale=False)(x)
+
 
 
         # Second layer
@@ -249,6 +248,9 @@ class Attention(nn.Module):
             x = jnp.einsum("...nm,...md->...nd", attn, v)
 
         x = x.transpose((0, 2, 1, 3)).reshape(B, N, C)
+
+        x = nn.LayerNorm(dtype=dtype, reduction_axes=-2, feature_axes=-2, use_bias=False, use_scale=False)(x)
+
         x = nn.Dense(C, use_bias=self.proj_bias, name="proj",dtype = dtype)(x)
         x = nn.Dropout(self.proj_drop)(x, deterministic=det)
         return x
