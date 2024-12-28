@@ -60,7 +60,7 @@ train_state:
     optimizer_kwargs:
       learning_rate: 1.0e-4
       weight_decay: [
-        ['.*/qkv/kernel', 3.0],
+        ['.*/qkv/kernel', 30.0],
         ['.*/kernel', 0.03],
       ]
 #      eps: 1.0e-8
