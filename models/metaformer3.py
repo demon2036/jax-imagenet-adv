@@ -472,7 +472,7 @@ class MetaFormer(nn.Module):
     use_mlp_head: bool = True
     mlp_head_act: Any =SquaredReLU
     qk_norm:bool =True
-    v_norm: bool =False
+    v_norm: bool =True
 
     @nn.compact
     def __call__(self, x,det=True):
