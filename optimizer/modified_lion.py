@@ -153,7 +153,6 @@ def add_decayed_weights(
 
 
 
-
 def modified_lion(
     learning_rate: base.ScalarOrSchedule,
     b1: float = 0.9,
