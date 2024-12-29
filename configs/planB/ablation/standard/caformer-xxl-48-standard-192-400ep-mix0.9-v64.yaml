@@ -52,8 +52,10 @@ train_state:
     model_kwargs:
       depths: [8,8,24,8]
       dims: [384, 768, 1536, 2304]
-      drop_path_rate: 0.2
-      drop_rate: 0.5
+      qk_norm: False
+      v_norm: False
+      drop_path_rate: 0.5
+#      drop_rate: 0.5
 #      ls_init_value: null
 
   optimizer:
