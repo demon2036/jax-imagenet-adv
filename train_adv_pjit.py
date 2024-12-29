@@ -112,7 +112,7 @@ def main(configs):
     log_interval = configs['log_interval']
     use_orbax_save = configs.pop('use_orbax_save', True)
     valid_fn = configs.pop('valid_fn', "validation_adv_step")
-    train_fn = configs.pop('valid_fn', "training_step")
+    train_fn = configs.pop('train_fn', "training_step")
 
 
 
