@@ -11,6 +11,7 @@ grad_accum_steps: 2
 dp: 1
 fsdp: 1
 tp: -1
+train_fn: train_step_test
 valid_fn: validation_step
 #resume: True
 
@@ -58,10 +59,10 @@ train_state:
   optimizer:
     target: 'lion'
     optimizer_kwargs:
-      learning_rate: 1.0e-4
+      learning_rate: 4.0e-4
       weight_decay: 0.5
       b1: 0.9
-      b2: 0.99
+      b2: 0.999
 #      eps: 1.0e-8
 #      lr_decay: 1.0
 #      clip_grad: 0.0

@@ -112,6 +112,8 @@ def main(configs):
     log_interval = configs['log_interval']
     use_orbax_save = configs.pop('use_orbax_save', True)
     valid_fn = configs.pop('valid_fn', "validation_adv_step")
+    train_fn = configs.pop('valid_fn', "training_step")
+
 
 
     # os.environ['JAX_PLATFORMS']='cpu'
@@ -210,6 +212,8 @@ def main(configs):
 
 
     with mesh, nn_partitioning.axis_rules(logical_axis_rules):
+        valid_step = TRAIN_EVAL_FN_COLLECTION[valid_fn]
+        train_step = TRAIN_EVAL_FN_COLLECTION[train_fn]
 
         state, train_state_partition,train_state_sharding = create_train_state(configs['train_state'],
                                                           warmup_steps=warmup_steps,
@@ -226,14 +230,14 @@ def main(configs):
                        )
 
 
-        training_step_pjit = jax.jit(training_step, static_argnums=(2,),
+        training_step_pjit = jax.jit(train_step, static_argnums=(2,),
                                      donate_argnums=(0,),
                                      out_shardings=(train_state_sharding, None),
                                      # in_shardings=(train_state_sharding, sharding,),
                                      )
 
 
-        valid_step=TRAIN_EVAL_FN_COLLECTION[valid_fn]
+
 
         validation_adv_step_jited=jax.jit(valid_step,
                                           # donate_argnums=(0,),
