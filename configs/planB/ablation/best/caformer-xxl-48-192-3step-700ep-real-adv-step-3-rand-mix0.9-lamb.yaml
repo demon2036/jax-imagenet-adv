@@ -5,14 +5,14 @@ project: jax-adv-image-net-best
 steps: 1281167
 training_epoch: 700
 warmup_epoch: 20
-log_interval: 100
+log_interval: 1
 eval_epoch: 10
 grad_accum_steps: 1
 
 #resume: True
 
 dataset:
-  train_batch_size: 4096
+  train_batch_size: 1024
   valid_batch_size: 1024
   train_loader_workers: 20
   valid_loader_workers: 10
@@ -48,18 +48,21 @@ train_state:
   model:
     target: 'models.CAFormer'
     model_kwargs:
-      depths: [8,8,24,8]
-      dims: [384, 768, 1536, 2304]
+#      depths: [8,8,24,8]
+#      dims: [384, 768, 1536, 2304]
+      dims: [128, 256, 512, 768]
       v_norm: False
 #      drop_path_rate: 0.6
 #      drop_rate: 0.5
 
   optimizer:
     target_restore: 'lion'
-    target: 'lamb'
+    target: 'lion'
     optimizer_kwargs:
-      learning_rate: 8.0e-4
-      weight_decay: 0.05
+      learning_rate: 4.0e-4
+      init_value: 1.0e-7
+      end_learning_rate: 1.0e-6
+      weight_decay: 0.5
       b1: 0.9
       b2: 0.999
 #      eps: 1.0e-8
@@ -71,7 +74,8 @@ train_state:
   mixup_seed: 1
   dropout_seed: 1
   ema_decay: 0.9998
-  pretrained_ckpt: '$GCS_MODEL_DIR/planb/ablation/standard/caformer-xxl-48-standard-300ep-mix0.9-ema'
+  pretrained_ckpt: None
+#  pretrained_ckpt: '$GCS_MODEL_DIR/planb/ablation/standard/caformer-xxl-48-standard-300ep-mix0.9-ema'
 
 
 

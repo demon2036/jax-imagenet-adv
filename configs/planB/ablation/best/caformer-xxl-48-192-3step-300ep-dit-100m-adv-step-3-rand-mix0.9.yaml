@@ -9,7 +9,7 @@ log_interval: 100
 eval_epoch: 10
 grad_accum_steps: 1
 
-resume: True
+#resume: True
 
 dataset:
   train_batch_size: 4096
@@ -64,7 +64,7 @@ train_state:
       end_learning_rate: 1.0e-6
       weight_decay: [
 #        ['.*/fc/.*/kernel', 3.0],
-        ['.*/kernel', 0.03],
+        ['.*/kernel', 0.5],
       ]
       b1: 0.95
       b2: 0.95

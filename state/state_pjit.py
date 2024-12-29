@@ -189,6 +189,8 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
             micro_in_mini=grad_accum_steps,
             grad_accum=grad_accum if grad_accum_steps > 1 else None,
         )
+
+
         return state
 
     init_fn_restore=partial(init_fn, tx_target=tx_restore_target,optimizer_config=optimizer_config_restore)
@@ -208,6 +210,10 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
 
 
     train_state_shapes = jax.eval_shape(init_fn, params,)
+
+
+
+
     train_state_partition = match_partition_rules(get_partition_rules_caformer(), train_state_shapes)
     # jax.sharding.NamedSharding(mesh,train_state_partition)
     train_state_sharding = jax.tree_util.tree_map(lambda x: jax.sharding.NamedSharding(mesh, x), train_state_partition)
@@ -233,6 +239,8 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
 
     state=init_fn_jited(params)
 
+
+    # print(state.opt_state)
 
 
     if jax.process_index()==0:
