@@ -42,7 +42,7 @@ OPTIMIZER_COLLECTION = {
 TRAIN_EVAL_FN_COLLECTION = {
     'validation_step':validation_step,
     'validation_adv_step':validation_adv_step,
-    'train_step':training_step,
-    'train_step_test':training_step_test,
+    'training_step':training_step,
+    'training_step_test':training_step_test,
 }
 

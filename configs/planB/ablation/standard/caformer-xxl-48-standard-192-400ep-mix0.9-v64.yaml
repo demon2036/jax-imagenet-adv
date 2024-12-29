@@ -11,7 +11,7 @@ grad_accum_steps: 2
 dp: 1
 fsdp: 1
 tp: -1
-train_fn: train_step_test
+train_fn: training_step_test
 valid_fn: validation_step
 #resume: True
 
