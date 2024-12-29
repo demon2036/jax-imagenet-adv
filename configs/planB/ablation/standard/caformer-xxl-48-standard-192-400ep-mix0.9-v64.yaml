@@ -5,7 +5,7 @@ project: deit3-jax-ablation-standard
 steps: 1281167
 training_epoch: 400
 warmup_epoch: 20
-log_interval: 100
+log_interval: 1
 eval_epoch: 10
 grad_accum_steps: 1
 dp: 1
