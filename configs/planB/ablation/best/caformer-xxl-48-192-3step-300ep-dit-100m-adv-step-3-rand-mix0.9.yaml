@@ -67,7 +67,7 @@ train_state:
         ['.*/kernel', 0.5],
       ]
       b1: 0.9
-      b2: 0.99
+      b2: 0.0
 #      eps: 1.0e-8
 #      lr_decay: 1.0
 #      clip_grad: 0.0
