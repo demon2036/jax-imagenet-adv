@@ -166,8 +166,8 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
         )
 
 
-    def init_fn(params,tx_target,optimizer_config)->TrainState:
-        tx = create_optimizer_fn(copy.deepcopy(learning_rate),tx_target,optimizer_config)
+    def init_fn(params,tx_target,optimizer_config,clip_grad)->TrainState:
+        tx = create_optimizer_fn(copy.deepcopy(learning_rate),tx_target,optimizer_config,clip_grad)
 
         if grad_accum_steps > 1:
             print(f'{grad_accum_steps=}')
