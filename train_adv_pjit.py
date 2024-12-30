@@ -285,6 +285,7 @@ def main(configs):
                 state, metrics = training_step_pjit(state, batch, use_pgd)
             #     # state, metrics = training_step(state, batch, use_pgd)
                 average_meter.update(**metrics)
+                print(metrics)
 
 
             if step % epoch_per_step == 0:
@@ -307,7 +308,6 @@ def main(configs):
                 if valid_dataloader is None:
                     continue
                 metrics = evaluate(state, valid_dataloader,validation_adv_step_jited,mesh)
-                print(metrics)
 
                 if "val/advacc1" in metrics:
                     now_acc1=metrics["val/advacc1"]
