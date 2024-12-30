@@ -285,7 +285,7 @@ def main(configs):
                 state, metrics = training_step_pjit(state, batch, use_pgd)
             #     # state, metrics = training_step(state, batch, use_pgd)
                 average_meter.update(**metrics)
-                print(metrics)
+                # print(metrics)
 
 
             if step % epoch_per_step == 0:

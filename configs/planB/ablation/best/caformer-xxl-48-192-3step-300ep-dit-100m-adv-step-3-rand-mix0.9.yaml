@@ -5,7 +5,7 @@ project: jax-adv-image-net-best
 steps: 1281167
 training_epoch: 300
 warmup_epoch: 20
-log_interval: 100
+log_interval: 10
 eval_epoch: 10
 grad_accum_steps: 1
 train_fn: training_step_test
@@ -30,8 +30,8 @@ dataset:
   shuffle_seed: 1
   image_size: 192
   generated_dataset_shards:
-    ['$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..12799}.tar']
-#    ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar']
+#    ['$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..12799}.tar']
+    ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar']
   dataset_mix_ratio: 0.95
 
 
