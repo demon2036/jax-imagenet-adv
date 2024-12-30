@@ -202,7 +202,7 @@ def training_step_test(state: TrainState, batch: ArrayTree, use_pgd) -> tuple[Tr
 
 
     def rms(x):
-        rms = jnp.sqrt(jnp.mean(jnp.square(x), ))
+        rms = jnp.sqrt(jnp.mean(jnp.square(x), )  +1e-7 )
         return rms
 
 
