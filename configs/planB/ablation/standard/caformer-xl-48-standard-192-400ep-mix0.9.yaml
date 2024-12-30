@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/planb/ablation/standard
-name: caformer-xxl-48-standard-300ep-mix0.9
+name: caformer-xl-48-standard-300ep-mix0.9
 project: deit3-jax-ablation-standard
 steps: 1281167
 training_epoch: 400
