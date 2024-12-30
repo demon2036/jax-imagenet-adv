@@ -464,10 +464,10 @@ if __name__ == "__main__":
     # main(parser.parse_args())
     args = parser.parse_args()
     yaml = read_yaml(args.yaml_path)
-    # yaml = read_yaml('configs/planB/ablation/best/caformer-xxl-48-192-3step-700ep-real-adv-step-3-rand-mix0.9-lamb.yaml')
+    yaml = read_yaml('configs/planB/ablation/best/caformer-xxl-48-192-3step-700ep-real-adv-step-3-rand-mix0.9-lamb.yaml')
     # yaml = read_yaml('configs/planB/ablation/standard/caformer-b-36-silu-standard-300ep-mix0.9-modified_lion.yaml')
     yaml = preprocess_config(yaml)
-    jax.distributed.initialize()
+    # jax.distributed.initialize()
 
 
     # print(yaml)
