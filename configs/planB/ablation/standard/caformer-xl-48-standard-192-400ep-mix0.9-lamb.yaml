@@ -8,6 +8,9 @@ warmup_epoch: 20
 log_interval: 100
 eval_epoch: 10
 valid_fn: validation_step
+dp: 1
+fsdp: 1
+tp: -1
 #resume: True
 
 dataset:
