@@ -132,10 +132,6 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
 
     else:
         tx_restore_target=OPTIMIZER_COLLECTION[optimizer_config['target_restore']]
-        # optimizer_config_restore = optimizer_config
-    # if 'optimizer_config_restore' not in optimizer_config:
-    #     optimizer_config_restore
-
     # tx_restore_target = OPTIMIZER_COLLECTION['lamb']
 
     @partial(optax.inject_hyperparams, hyperparam_dtype=jnp.float32,static_args=('tx_target','optimizer_config'))
