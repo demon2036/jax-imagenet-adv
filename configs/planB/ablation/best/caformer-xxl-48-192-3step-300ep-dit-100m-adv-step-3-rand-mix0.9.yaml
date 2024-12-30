@@ -8,7 +8,7 @@ warmup_epoch: 20
 log_interval: 100
 eval_epoch: 10
 grad_accum_steps: 1
-
+train_fn: training_step_test
 #resume: True
 
 dataset:
@@ -66,8 +66,8 @@ train_state:
 #        ['.*/fc/.*/kernel', 3.0],
         ['.*/kernel', 0.5],
       ]
-      b1: 0.95
-      b2: 0.95
+      b1: 0.9
+      b2: 0.99
 #      eps: 1.0e-8
 #      lr_decay: 1.0
 #      clip_grad: 0.0
