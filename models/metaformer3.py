@@ -231,13 +231,13 @@ class Attention(nn.Module):
         qkv = qkv.reshape(B, N, 3, num_heads, head_dim).transpose((2, 0, 3, 1, 4))
         q, k, v = qkv[0], qkv[1], qkv[2]
 
-        if self.qk_norm:
-            q=nn.LayerNorm(dtype=dtype)(q)
-            k=nn.LayerNorm(dtype=dtype)(k)
-
-
-        if self.v_norm:
-            v=nn.LayerNorm(dtype=dtype,reduction_axes=-2,feature_axes=-2,use_bias=False,use_scale=False)(v)
+        # if self.qk_norm:
+        #     q=nn.LayerNorm(dtype=dtype)(q)
+        #     k=nn.LayerNorm(dtype=dtype)(k)
+        #
+        #
+        # if self.v_norm:
+        #     v=nn.LayerNorm(dtype=dtype,reduction_axes=-2,feature_axes=-2,use_bias=False,use_scale=False)(v)
 
 
         if N==256:
