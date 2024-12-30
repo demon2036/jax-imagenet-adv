@@ -371,7 +371,7 @@ class MetaFormerStage(nn.Module):
         if  issubclass(self.token_mixer,Attention):
             use_nchw=False
             x=einops.rearrange(x,'b  h w c-> b (h w) c')
-            token_mixer=functools.partial(token_mixer,qk_norm=True,v_norm =True)
+            token_mixer=functools.partial(token_mixer,qk_norm=self.qk_norm,v_norm =self.v_norm)
 
         # Create MetaFormerBlocks
         for i in range(self.depth):
