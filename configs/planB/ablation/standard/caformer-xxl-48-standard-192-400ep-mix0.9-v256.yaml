@@ -6,7 +6,7 @@ steps: 1281167
 training_epoch: 400
 warmup_epoch: 20
 log_interval: 1
-eval_epoch: 10
+eval_epoch: 100
 grad_accum_steps: 1
 dp: -1
 fsdp: 1
@@ -16,7 +16,7 @@ valid_fn: validation_step
 #resume: True
 
 dataset:
-  train_batch_size: 2048
+  train_batch_size: 4096
   valid_batch_size: 2048
   train_loader_workers: 20
   valid_loader_workers: 10

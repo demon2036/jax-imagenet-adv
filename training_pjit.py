@@ -201,7 +201,6 @@ def training_step_test(state: TrainState, batch: ArrayTree, use_pgd) -> tuple[Tr
     # metrics = jax.lax.pmean(metrics, axis_name="batch")
 
 
-
     def rms(x):
         return (jnp.sqrt(x).mean())**0.5
 
