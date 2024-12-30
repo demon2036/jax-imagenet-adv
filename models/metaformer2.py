@@ -309,7 +309,7 @@ class MetaFormerStage(nn.Module):
     grad_checkpointing: bool = False
     use_nchw: bool = True
     qk_norm:bool =True
-    v_norm: bool =True
+    v_norm: bool =False
 
     @nn.compact
     def __call__(self, x,det=True):
@@ -325,7 +325,7 @@ class MetaFormerStage(nn.Module):
         if  issubclass(self.token_mixer,Attention):
             use_nchw=False
             x=einops.rearrange(x,'b  h w c-> b (h w) c')
-            token_mixer=functools.partial(token_mixer,qk_norm=True,v_norm =True)
+            token_mixer=functools.partial(token_mixer,qk_norm=self.qk_norm,v_norm =self.v_norm)
 
         # Create MetaFormerBlocks
         for i in range(self.depth):
