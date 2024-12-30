@@ -173,7 +173,7 @@ class Attention(nn.Module):
     proj_bias: bool = False
     fused_attn: bool = False  # Assume the use_fused_attn() logic will be passed explicitly
     qk_norm:bool = True
-    v_norm:bool =True
+    v_norm:bool =False
 
     @nn.compact
     def __call__(self, x,det=True):
