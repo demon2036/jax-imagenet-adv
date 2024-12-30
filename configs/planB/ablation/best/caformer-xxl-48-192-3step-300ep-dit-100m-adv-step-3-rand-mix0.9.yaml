@@ -9,7 +9,7 @@ log_interval: 100
 eval_epoch: 10
 grad_accum_steps: 1
 train_fn: training_step_test
-#resume: True
+resume: True
 
 dataset:
   train_batch_size: 4096
