@@ -210,7 +210,7 @@ def training_step_test(state: TrainState, batch: ArrayTree, use_pgd) -> tuple[Tr
     mu_embed=state.opt_state.inner_state[1][0].mu['model']['stem']['conv']['kernel']
     metrics['g_embed']=rms(g_embed)
     metrics['mu_embed']=rms(mu_embed)
-    metrics['g_d_mu_embed']=rms(g_embed/mu_embed)
+    metrics['g_d_mu_embed']=rms(g_embed/(mu_embed+1e-8))
 
 
     # Update parameters with the gradients. If the gradient accumulation is enabled,
