@@ -202,7 +202,8 @@ def training_step_test(state: TrainState, batch: ArrayTree, use_pgd) -> tuple[Tr
 
 
     def rms(x):
-        return (jnp.sqrt(x).mean())**0.5
+        rms = jnp.sqrt(jnp.mean(jnp.square(x), ))
+        return rms
 
 
     g_embed=grads['model']['stem']['conv']['kernel']
