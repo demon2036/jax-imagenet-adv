@@ -174,10 +174,11 @@ def main(configs):
 
 
         state, init_step,train_state_sharding = init_state(configs['train_state'],
-                                                          warmup_steps=warmup_steps,
-                                                          training_steps=training_steps,
-                                                          grad_accum_steps=grad_accum_steps, mesh=mesh,
-                                                            remote_model_path=filename)
+                                            warmup_steps=warmup_steps,
+                                            training_steps=training_steps,
+                                            grad_accum_steps=grad_accum_steps, mesh=mesh,
+                                            restore_state_config=configs['restore_state'] if 'restore_state_config' in configs else None,
+                                            remote_model_path=filename)
 
 
         training_step_pjit = jax.jit(train_step, static_argnums=(2,),

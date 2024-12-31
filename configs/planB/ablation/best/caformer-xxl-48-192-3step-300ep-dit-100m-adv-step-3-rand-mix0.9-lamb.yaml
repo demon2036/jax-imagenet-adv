@@ -61,7 +61,7 @@ train_state:
 
   optimizer:
     target: 'lamb'
-#    target: 'lion'
+
     optimizer_kwargs:
       learning_rate: 1.0e-3
       init_value: 1.0e-6
@@ -73,25 +73,16 @@ train_state:
 #      lr_decay: 1.0
 #      clip_grad: 0.0
 
-  pretrained_ckpt: '$GCS_MODEL_DIR/planb/ablation/standard/caformer-xxl-48-standard-300ep-mix0.9-ema'
   init_seed: 1
   mixup_seed: 1
   dropout_seed: 1
   ema_decay: 0.9998
-#  pretrained_ckpt: '$GCS_MODEL_DIR/planb/ablation/standard/caformer-xxl-48-standard-300ep-mix0.9-ema'
+  pretrained_ckpt: '$GCS_MODEL_DIR/planb/ablation/standard/caformer-xxl-48-standard-300ep-mix0.9-ema'
 
 
 
+restore_state:
+  optimizer:
+      target: 'lion'
 
 
-
-#    --init-seed 1 \
-#    --grad-accum 1 \
-#    --warmup-steps $((1281167 * 5 / $TRAIN_BATCH_SIZE)) \
-#    --training-steps $((1281167 * 300 / $TRAIN_BATCH_SIZE)) \
-#    --log-interval 100 \
-#    --eval-interval $((1281167 * 10 / $TRAIN_BATCH_SIZE)) \
-#    --project deit3-jax \
-#    --name $(basename $0 .sh) \
-#    --ipaddr $(curl -s ifconfig.me) \
-#    --hostname $(hostname)
