@@ -173,8 +173,8 @@ def main(configs):
         train_step = TRAIN_EVAL_FN_COLLECTION[train_fn]
 
 
-
-        print(configs)
+        if jax.process_index()==0:
+            print(configs['train_state'])
         while True:
             pass
 
@@ -185,13 +185,6 @@ def main(configs):
                                                           grad_accum_steps=grad_accum_steps, mesh=mesh)
 
 
-        def go(x):
-            return x
-
-        go_jit=jax.jit(go,
-                       # out_shardings=sharding
-                       out_shardings=jax.NamedSharding(mesh,P('dp'))
-                       )
 
 
         training_step_pjit = jax.jit(train_step, static_argnums=(2,),
