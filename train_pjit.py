@@ -177,7 +177,7 @@ def main(configs):
                                             warmup_steps=warmup_steps,
                                             training_steps=training_steps,
                                             grad_accum_steps=grad_accum_steps, mesh=mesh,
-                                            restore_state_config=configs['restore_state'] if 'restore_state_config' in configs else None,
+                                            restore_state_config=configs['restore_state'] if 'restore_state' in configs else None,
                                             remote_model_path=filename)
 
 
