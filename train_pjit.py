@@ -208,6 +208,7 @@ def main(configs):
                 # batch = jax.tree_util.tree_map(lambda x: jax.make_array_from_process_local_data(sharding,np.asarray(x))  , next(train_dataloader_iter))
                 batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), next(train_dataloader_iter))
                 batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
+                print(batch[0].shape)
                 # batch = jtu.tree_map(go_jit, batch)
                 # images, labels = batch
                 # print(f'{images.shape=}   {images.addressable_data(0).shape=}')
