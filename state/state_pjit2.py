@@ -259,7 +259,7 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
     pretrained_ckpt = restore_state_config.pop('pretrained_ckpt', None)
 
     if pretrained_ckpt is not None:
-        state = resume_checkpoint(remote_model_path, state_shapes, train_state_sharding)
+        state = resume_checkpoint(pretrained_ckpt, state_shapes, train_state_sharding)
         params=state['model'].ema_params
         state=jax.jit(init_by_params_fn,out_shardings=train_state_sharding)(params)
     else:
