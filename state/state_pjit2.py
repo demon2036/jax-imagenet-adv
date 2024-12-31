@@ -246,8 +246,20 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
             lambda _: ocp.RestoreArgs(restore_type=np.ndarray), ckpt
         )
     }
+
+    def set_sharding(x: jax.ShapeDtypeStruct,sharding) -> jax.ShapeDtypeStruct:
+        x.sharding = sharding
+        return x
+
+    change_sharding_abstract_state=jax.tree_util.tree_map(set_sharding,x,train_state_sharding)
+
+
     # state = checkpointer.restore(pretrained_ckpt, item=ckpt, **restore_kwargs)['model']
-    state = checkpointer.restore(pretrained_ckpt, item=ckpt,strict=False)['model']
+    state = checkpointer.restore(pretrained_ckpt, item=ckpt,
+                                 args=ocp.args.StandardRestore(change_sharding_abstract_state),
+
+
+                                 )['model']
     print('restore success')
     while True:
         pass
