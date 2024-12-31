@@ -55,8 +55,7 @@ train_state:
       depths: [8,8,24,8]
       dims: [384, 768, 1536, 2304]
       v_norm: False
-#      drop_path_rate: 0.6
-#      drop_rate: 0.5
+
 
   optimizer:
     target: 'adamw'
