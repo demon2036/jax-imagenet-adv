@@ -187,6 +187,10 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     train_state_partition = match_partition_rules(get_partition_rules_caformer(), state_shapes)
     # jax.sharding.NamedSharding(mesh,train_state_partition)
     train_state_sharding = jax.tree_util.tree_map(lambda x: jax.sharding.NamedSharding(mesh, x), train_state_partition)
+
+
+    return state_shapes,train_state_sharding
+
     """
     logical_state_spec = flax.linen.get_partition_spec(train_state_shapes)
 
@@ -231,11 +235,21 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
 
 
 
-    create_train_state(restore_state_config, image_size, warmup_steps, training_steps,
-    grad_accum_steps, mesh, logical_axis_rules)
+    state_shapes,train_state_sharding=create_train_state(restore_state_config, image_size, warmup_steps, training_steps,
+                                        grad_accum_steps, mesh, logical_axis_rules)
 
 
+    pretrained_ckpt = restore_state_config.pop('pretrained_ckpt', None)
 
+    checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
+    ckpt = {'model': state_shapes}
+    restore_kwargs = {
+        "restore_args": jax.tree_map(
+            lambda _: ocp.RestoreArgs(restore_type=np.ndarray), ckpt
+        )
+    }
+    state = checkpointer.restore(pretrained_ckpt, item=ckpt, **restore_kwargs)['model']
+    print('restore success')
     while True:
         pass
 
