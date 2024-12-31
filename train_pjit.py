@@ -173,18 +173,11 @@ def main(configs):
         train_step = TRAIN_EVAL_FN_COLLECTION[train_fn]
 
 
-        if jax.process_index()==0:
-            print(configs['train_state'])
-
-
-
         state, init_step,train_state_sharding = init_state(configs['train_state'],
                                                           warmup_steps=warmup_steps,
                                                           training_steps=training_steps,
                                                           grad_accum_steps=grad_accum_steps, mesh=mesh,
                                                             remote_model_path=filename)
-
-
 
 
         training_step_pjit = jax.jit(train_step, static_argnums=(2,),

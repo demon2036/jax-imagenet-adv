@@ -243,23 +243,25 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
 
 
 
-    (state_shapes,
-     train_state_sharding,init_fn,
-     init_by_params_fn,init_rngs,example_inputs)=create_train_state(restore_state_config, image_size, warmup_steps, training_steps,
+    (restore_state_shapes,
+     restore_state_sharding,*_)=create_train_state(restore_state_config, image_size, warmup_steps, training_steps,
                                         grad_accum_steps, mesh, logical_axis_rules)
 
 
-
+    (state_shapes,
+     train_state_sharding,init_fn,
+     init_by_params_fn,init_rngs,example_inputs)=create_train_state(train_state_config, image_size, warmup_steps, training_steps,
+                                        grad_accum_steps, mesh, logical_axis_rules)
 
 
     if resume:
-        state=resume_checkpoint(remote_model_path,state_shapes,train_state_sharding)
+        state=resume_checkpoint(remote_model_path,restore_state_shapes,restore_state_sharding)
         return state
 
     pretrained_ckpt = restore_state_config.pop('pretrained_ckpt', None)
 
     if pretrained_ckpt is not None:
-        state = resume_checkpoint(pretrained_ckpt, state_shapes, train_state_sharding)
+        state = resume_checkpoint(pretrained_ckpt, restore_state_shapes, restore_state_sharding)
         params=state['model'].ema_params
         state=jax.jit(init_by_params_fn,out_shardings=train_state_sharding)(params)
     else:
@@ -267,7 +269,7 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
 
 
     print('restore success')
-    return state,1
+    return state,1,train_state_sharding
 
 
 
