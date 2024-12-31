@@ -9,6 +9,7 @@ import numpy as np
 import optax
 import timm
 from jax._src.pjit import pjit
+from orbax.checkpoint._src.handlers.standard_checkpoint_handler import StandardRestoreArgs
 
 import train_modules
 from pre_define import CRITERION_COLLECTION, OPTIMIZER_COLLECTION
@@ -247,16 +248,26 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
         )
     }
 
-    def set_sharding(x: jax.ShapeDtypeStruct,sharding) -> jax.ShapeDtypeStruct:
+    def set_sharding(x: jax.ShapeDtypeStruct,sharding) -> StandardRestoreArgs:
         x.sharding = sharding
-        return x
+        return ocp.args.StandardRestore(x)
+        # return x
 
-    change_sharding_abstract_state=jax.tree_util.tree_map(set_sharding,state_shapes,train_state_sharding)
+
+
+
+
+    restore_kwargs = {
+        "restore_args": jax.tree_util.tree_map(set_sharding,state_shapes,train_state_sharding)
+    }
+
+
+    # change_sharding_abstract_state=jax.tree_util.tree_map(set_sharding,state_shapes,train_state_sharding)
 
 
     # state = checkpointer.restore(pretrained_ckpt, item=ckpt, **restore_kwargs)['model']
-    state = checkpointer.restore(pretrained_ckpt, item=ckpt,
-                                 args=ocp.args.StandardRestore(change_sharding_abstract_state),
+    state = checkpointer.restore(pretrained_ckpt, item=ckpt,**restore_kwargs
+                                 # args=ocp.args.StandardRestore(change_sharding_abstract_state),
 
 
                                  )['model']
