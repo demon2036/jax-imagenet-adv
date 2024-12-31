@@ -247,7 +247,7 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
         )
     }
     # state = checkpointer.restore(pretrained_ckpt, item=ckpt, **restore_kwargs)['model']
-    state = checkpointer.restore(pretrained_ckpt, item=ckpt,args=ocp.args.StandardRestore(state_shapes),)['model']
+    state = checkpointer.restore(pretrained_ckpt, item=ckpt,strict=False)['model']
     print('restore success')
     while True:
         pass
