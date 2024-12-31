@@ -114,6 +114,8 @@ def main(configs):
     valid_fn = configs.pop('valid_fn', "validation_adv_step")
     train_fn = configs.pop('train_fn', "training_step")
     grad_accum_steps=configs['train_state'].get('grad_accum_steps',1)
+    resume=configs.get('resume',False)
+
 
 
     # os.environ['JAX_PLATFORMS']='cpu'
@@ -176,7 +178,7 @@ def main(configs):
                                             warmup_steps=warmup_steps,
                                             training_steps=training_steps, mesh=mesh,
                                             restore_state_config=configs['restore_state'] if 'restore_state' in configs else None,
-                                            remote_model_path=filename)
+                                            remote_model_path=filename,resume=resume)
 
 
         training_step_pjit = jax.jit(train_step, static_argnums=(2,),
