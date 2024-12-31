@@ -277,7 +277,7 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
 
     # state = checkpointer.restore(pretrained_ckpt, item=ckpt, **restore_kwargs)['model']
     try:
-        state = checkpointer.restore(pretrained_ckpt, #item=ckpt,
+        state = checkpointer.restore(pretrained_ckpt, item=ckpt,restore_args=restore_args
                                     # **restore_kwargs
                                      # args=ocp.args.StandardRestore(change_sharding_abstract_state),
 
