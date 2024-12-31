@@ -236,7 +236,7 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
     state_shapes,train_state_sharding=create_train_state(restore_state_config, image_size, warmup_steps, training_steps,
                                         grad_accum_steps, mesh, logical_axis_rules)
 
-
+    state_shapes=flax.linen.meta.unbox(state_shapes)
 
     pretrained_ckpt = restore_state_config.pop('pretrained_ckpt', None)
 
