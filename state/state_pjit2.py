@@ -64,7 +64,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     model_config = train_state_config['model']
     optimizer_config = train_state_config['optimizer']
     train_module_config = train_state_config['train_module']
-    pretrained_ckpt = train_state_config.pop('pretrained_ckpt', None)
+    # pretrained_ckpt = train_state_config.pop('pretrained_ckpt', None)
 
     model = get_obj_from_str(model_config['target'])(**model_config['model_kwargs'])
     print(f'{train_module_config=}')
@@ -90,9 +90,6 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     }
 
     init_rngs = {"params": jax.random.PRNGKey(train_state_config['init_seed'])}
-
-
-
 
 
     # if args.grad_accum > 1:
@@ -238,10 +235,7 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
     state_shapes,train_state_sharding=create_train_state(restore_state_config, image_size, warmup_steps, training_steps,
                                         grad_accum_steps, mesh, logical_axis_rules)
 
-    print(restore_state_config)
 
-    while True:
-        pass
 
     pretrained_ckpt = restore_state_config.pop('pretrained_ckpt', None)
 
