@@ -235,22 +235,22 @@ def resume_checkpoint(pretrained_ckpt,state_shapes,train_state_sharding):
 def init_state(train_state_config, image_size: int = 224, warmup_steps=1, training_steps=10,
     grad_accum_steps=1, mesh=None, logical_axis_rules=None,restore_state_config=None,resume=False,remote_model_path=None):
 
-    print(restore_state_config)
 
     if restore_state_config is not None:
         train_state_config_cpy=copy.deepcopy(train_state_config)
-        train_state_config_cpy_unflatten=flax.traverse_util.unflatten_dict(train_state_config_cpy)
-        restore_state_config_unflatten=flax.traverse_util.unflatten_dict(restore_state_config)
+        train_state_config_cpy_unflatten=flax.traverse_util.unflatten_dict(train_state_config_cpy,sep='/')
+        restore_state_config_unflatten=flax.traverse_util.unflatten_dict(restore_state_config,sep='/')
 
         if jax.process_index()==0:
             print(train_state_config_cpy_unflatten)
             print(restore_state_config_unflatten)
+            print(restore_state_config)
 
         while True:
             pass
 
         restore_state_config_unflatten=train_state_config_cpy_unflatten | restore_state_config_unflatten
-        restore_state_config=flax.traverse_util.flatten_dict(restore_state_config_unflatten)
+        restore_state_config=flax.traverse_util.flatten_dict(restore_state_config_unflatten,sep='/')
         print(restore_state_config)
     else:
         restore_state_config = copy.deepcopy(train_state_config)
