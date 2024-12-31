@@ -175,8 +175,7 @@ def main(configs):
 
         if jax.process_index()==0:
             print(configs['train_state'])
-        while True:
-            pass
+
 
 
         state, train_state_partition,train_state_sharding = init_state(configs['train_state'],

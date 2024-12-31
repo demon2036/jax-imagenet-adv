@@ -230,8 +230,8 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
     if restore_state_config is None:
         restore_state_config=copy.deepcopy(train_state_config)
 
-
-
+    if jax.process_index() == 0:
+        print(restore_state_config)
 
 
 
@@ -239,6 +239,10 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
                                         grad_accum_steps, mesh, logical_axis_rules)
 
     print(restore_state_config)
+
+    while True:
+        pass
+
     pretrained_ckpt = restore_state_config.pop('pretrained_ckpt', None)
 
     checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
