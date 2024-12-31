@@ -265,9 +265,9 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
 
 
 
-    restore_kwargs = {
-        "restore_args": jax.tree_util.tree_map(set_sharding,ckpt,train_state_sharding)
-    }
+    # restore_kwargs = {
+    #     "restore_args": jax.tree_util.tree_map(set_sharding,ckpt,train_state_sharding)
+    # }
 
     # change_sharding_abstract_state = jax.tree_util.tree_map(
     #     set_sharding, ckpt,train_state_sharding)
