@@ -238,6 +238,14 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
 
     state_shapes=flax.linen.meta.unbox(state_shapes)
 
+
+    if jax.process_index()==0:
+        print(state_shapes,type(state_shapes),)
+
+
+    while True:
+        pass
+
     pretrained_ckpt = restore_state_config.pop('pretrained_ckpt', None)
 
     checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
