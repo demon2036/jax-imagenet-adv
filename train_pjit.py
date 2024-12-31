@@ -113,7 +113,7 @@ def main(configs):
     use_orbax_save = configs.pop('use_orbax_save', True)
     valid_fn = configs.pop('valid_fn', "validation_adv_step")
     train_fn = configs.pop('train_fn', "training_step")
-
+    grad_accum_steps=configs['train_state'].get('grad_accum_steps',1)
 
 
     # os.environ['JAX_PLATFORMS']='cpu'
