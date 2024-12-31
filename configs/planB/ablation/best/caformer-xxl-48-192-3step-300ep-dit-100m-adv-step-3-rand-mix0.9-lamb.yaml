@@ -60,9 +60,8 @@ train_state:
 #      drop_rate: 0.5
 
   optimizer:
-    target_restore: 'lion'
-#    target: 'lamb'
-    target: 'lion'
+    target: 'lamb'
+#    target: 'lion'
     optimizer_kwargs:
       learning_rate: 1.0e-3
       init_value: 1.0e-6

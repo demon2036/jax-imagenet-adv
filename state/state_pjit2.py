@@ -238,10 +238,6 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
     if restore_state_config is None:
         restore_state_config=copy.deepcopy(train_state_config)
 
-    if jax.process_index() == 0:
-        print(restore_state_config)
-
-
 
     (restore_state_shapes,
      restore_state_sharding,*_)=create_train_state(restore_state_config, image_size, warmup_steps, training_steps,
@@ -256,7 +252,7 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
 
     if resume:
         state=resume_checkpoint(remote_model_path,restore_state_shapes,restore_state_sharding)
-        return state
+        return state,int(state.step) + 1,train_state_sharding
 
     pretrained_ckpt = restore_state_config.pop('pretrained_ckpt', None)
 
@@ -268,7 +264,7 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
         state=jax.jit(init_fn,out_shardings=train_state_sharding)(init_rngs,example_inputs)
 
 
-    print('restore success')
+    # print('restore success')
     return state,1,train_state_sharding
 
 
