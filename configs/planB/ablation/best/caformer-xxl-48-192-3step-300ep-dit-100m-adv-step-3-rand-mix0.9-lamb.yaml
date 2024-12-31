@@ -61,7 +61,7 @@ train_state:
 
   optimizer:
     target_restore: 'lion'
-    target: 'lamblion'
+    target: 'lamb'
     optimizer_kwargs:
       learning_rate: 1.0e-3
       init_value: 1.0e-6
