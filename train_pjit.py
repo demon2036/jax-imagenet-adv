@@ -178,7 +178,7 @@ def main(configs):
 
 
 
-        state, train_state_partition,train_state_sharding = init_state(configs['train_state'],
+        state, init_step,train_state_sharding = init_state(configs['train_state'],
                                                           warmup_steps=warmup_steps,
                                                           training_steps=training_steps,
                                                           grad_accum_steps=grad_accum_steps, mesh=mesh,
@@ -200,19 +200,19 @@ def main(configs):
                                           # donate_argnums=(0,),
                                           out_shardings=None
         )
-
-        if use_orbax_save:
-            checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
-            ckpt = {'model': state}
-
-            if 'resume' in configs:
-                state = checkpointer.restore(filename, item=ckpt)['model']
-                init_step = int(state.step) + 1
-                del ckpt
-            else:
-                init_step = 1
-        else:
-            init_step = 1
+        checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
+        # if use_orbax_save:
+        #     checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
+        #     ckpt = {'model': state}
+        #
+        #     if 'resume' in configs:
+        #         state = checkpointer.restore(filename, item=ckpt)['model']
+        #         init_step = int(state.step) + 1
+        #         del ckpt
+        #     else:
+        #         init_step = 1
+        # else:
+        #     init_step = 1
 
         average_meter, max_val_acc1 = AverageMeter(use_latest=["learning_rate"]), 0.0
 
