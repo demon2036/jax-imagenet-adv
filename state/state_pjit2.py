@@ -10,6 +10,7 @@ import optax
 import timm
 from jax._src.pjit import pjit
 from orbax.checkpoint._src.handlers.standard_checkpoint_handler import StandardRestoreArgs
+from orbax.checkpoint._src.serialization.type_handlers import ArrayRestoreArgs
 
 import train_modules
 from pre_define import CRITERION_COLLECTION, OPTIMIZER_COLLECTION
@@ -256,10 +257,11 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
         )
     }
 
-    def set_sharding(x: jax.ShapeDtypeStruct,sharding) -> StandardRestoreArgs:
-        x.sharding = sharding
+    def set_sharding(x: jax.ShapeDtypeStruct,sharding) -> ArrayRestoreArgs:
+        # x.sharding = sharding
+        return ocp.ArrayRestoreArgs(sharding=sharding)
         # return ocp.args.ArrayRestore(x)
-        return x
+        # return x
 
     restore_args={'model':jax.tree_util.tree_map(set_sharding,state_shapes,train_state_sharding)}
 
@@ -277,9 +279,9 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
 
     # state = checkpointer.restore(pretrained_ckpt, item=ckpt, **restore_kwargs)['model']
     try:
-        state = checkpointer.restore(pretrained_ckpt, #item=ckpt,#restore_args=restore_args
+        state = checkpointer.restore(pretrained_ckpt, item=ckpt,restore_args=restore_args
                                     # **restore_kwargs
-                                     args=ocp.args.PyTreeRestore(change_sharding_abstract_state),
+                                    #  args=ocp.args.PyTreeRestore(change_sharding_abstract_state),
 
 
                                      )['model']
