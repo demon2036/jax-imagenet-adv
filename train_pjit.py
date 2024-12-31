@@ -122,7 +122,6 @@ def main(configs):
     # pass
 
     use_pgd = configs.pop('use_pgd', True)
-    grad_accum_steps = configs.pop('grad_accum_steps', 1)
 
     dp = configs.pop('dp', -1)
     fsdp = configs.pop('fsdp', 1)
@@ -175,8 +174,7 @@ def main(configs):
 
         state, init_step,train_state_sharding = init_state(configs['train_state'],
                                             warmup_steps=warmup_steps,
-                                            training_steps=training_steps,
-                                            grad_accum_steps=grad_accum_steps, mesh=mesh,
+                                            training_steps=training_steps, mesh=mesh,
                                             restore_state_config=configs['restore_state'] if 'restore_state' in configs else None,
                                             remote_model_path=filename)
 
@@ -195,18 +193,6 @@ def main(configs):
                                           out_shardings=None
         )
         checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
-        # if use_orbax_save:
-        #     checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
-        #     ckpt = {'model': state}
-        #
-        #     if 'resume' in configs:
-        #         state = checkpointer.restore(filename, item=ckpt)['model']
-        #         init_step = int(state.step) + 1
-        #         del ckpt
-        #     else:
-        #         init_step = 1
-        # else:
-        #     init_step = 1
 
         average_meter, max_val_acc1 = AverageMeter(use_latest=["learning_rate"]), 0.0
 

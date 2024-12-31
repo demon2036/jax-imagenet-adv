@@ -7,7 +7,7 @@ training_epoch: 300
 warmup_epoch: 20
 log_interval: 10
 eval_epoch: 10
-grad_accum_steps: 1
+grad_accum_steps: 4
 train_fn: training_step_test
 dp: 1
 fsdp: 1
@@ -72,7 +72,7 @@ train_state:
 #      eps: 1.0e-8
 #      lr_decay: 1.0
 #      clip_grad: 0.0
-
+  grad_accum_steps: 4
   init_seed: 1
   mixup_seed: 1
   dropout_seed: 1
@@ -82,6 +82,7 @@ train_state:
 
 
 restore_state:
+  grad_accum_steps: 1
   optimizer:
       target: 'lion'
 

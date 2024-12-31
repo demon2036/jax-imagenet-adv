@@ -59,14 +59,15 @@ def load_pretrain(pretrained_model='convnext_base.fb_in1k', default_params=None)
 
 
 
-def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1, training_steps=10,
-                       grad_accum_steps=1, mesh=None, logical_axis_rules=None
+def create_train_state(train_state_config, image_size: int = 224,
+                       warmup_steps=1, training_steps=10, mesh=None, logical_axis_rules=None
                        ):  # -> TrainState:
 
     model_config = train_state_config['model']
     optimizer_config = train_state_config['optimizer']
     train_module_config = train_state_config['train_module']
-    # pretrained_ckpt = train_state_config.pop('pretrained_ckpt', None)
+    grad_accum_steps=train_state_config.pop('grad_accum_steps', 1)
+
 
     model = get_obj_from_str(model_config['target'])(**model_config['model_kwargs'])
     print(f'{train_module_config=}')
@@ -233,24 +234,15 @@ def resume_checkpoint(pretrained_ckpt,state_shapes,train_state_sharding):
 
 
 def init_state(train_state_config, image_size: int = 224, warmup_steps=1, training_steps=10,
-    grad_accum_steps=1, mesh=None, logical_axis_rules=None,restore_state_config=None,resume=False,remote_model_path=None):
+         mesh=None, logical_axis_rules=None,restore_state_config=None,resume=False,remote_model_path=None):
 
 
     if restore_state_config is not None:
         train_state_config_cpy=copy.deepcopy(train_state_config)
-        train_state_config_cpy_unflatten=flax.traverse_util.flatten_dict(train_state_config_cpy,sep='/')
-        restore_state_config_unflatten=flax.traverse_util.flatten_dict(restore_state_config,sep='/')
-
-        if jax.process_index()==0:
-            print(train_state_config_cpy_unflatten)
-            print(restore_state_config_unflatten)
-            print(restore_state_config)
-
-
-
-        restore_state_config_unflatten=train_state_config_cpy_unflatten | restore_state_config_unflatten
-        restore_state_config=flax.traverse_util.unflatten_dict(restore_state_config_unflatten,sep='/')
-        print(restore_state_config)
+        train_state_config_cpy_flatten=flax.traverse_util.flatten_dict(train_state_config_cpy,sep='/')
+        restore_state_config_flatten=flax.traverse_util.flatten_dict(restore_state_config,sep='/')
+        restore_state_config_flatten=train_state_config_cpy_flatten | restore_state_config_flatten
+        restore_state_config=flax.traverse_util.unflatten_dict(restore_state_config_flatten,sep='/')
     else:
         restore_state_config = copy.deepcopy(train_state_config)
 
@@ -260,13 +252,13 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
 
     (restore_state_shapes,
      restore_state_sharding,*_)=create_train_state(restore_state_config, image_size, warmup_steps, training_steps,
-                                        grad_accum_steps, mesh, logical_axis_rules)
+                                         mesh, logical_axis_rules)
 
 
     (state_shapes,
      train_state_sharding,init_fn,
      init_by_params_fn,init_rngs,example_inputs)=create_train_state(train_state_config, image_size, warmup_steps, training_steps,
-                                        grad_accum_steps, mesh, logical_axis_rules)
+                                         mesh, logical_axis_rules)
 
 
     if resume:
