@@ -141,60 +141,17 @@ def main(configs):
     # mesh_dim = '1,-1,1'
 
     mesh = get_jax_mesh2(mesh_dim)
-    print(mesh)
+    # print(mesh)
     sharding = jax.sharding.NamedSharding(
         mesh, jax.sharding.PartitionSpec("dp",'fsdp','mp'))
-    print(sharding)
+    # print(sharding)
     data_spec=[["dp",'fsdp','mp']]
     # data_spec=["dp",'fsdp','mp']
     data_spec=P(*data_spec)
     print(data_spec)
     sharding=jtu.tree_map(lambda p:NamedSharding(mesh,p),data_spec)
-    print(sharding.addressable_devices,mesh.axis_names)
+    # print(sharding.addressable_devices,mesh.axis_names)
 
-    num_model_replicas_per_process = 4  # set according to your parallelism strategy
-    num_model_replicas_total = num_model_replicas_per_process * jax.process_count()
-
-    # Create an example `Mesh` for per-process data parallelism. Make sure all devices
-    # are grouped by process, and then resize so each row is a model replica.
-    # mesh_devices = np.array([jax.local_devices(process_idx)
-    #                          for process_idx in range(jax.process_count())])
-    #
-    # print(mesh_devices.shape)
-    # mesh= mesh_devices.reshape(4,1, -1)
-    # mesh = einops.rearrange(mesh_devices, 'a ( b c)-> a b c',b=1,c=4)
-    # print(mesh)
-
-    # mesh=Mesh(mesh, ('dp', 'fsdp', 'mp'))
-    """
-    mesh_devices = mesh_devices.reshape(num_model_replicas_total,1, -1)
-    mesh_devices=einops.rearrange(mesh_devices,'a b c -> c b a')
-    print(mesh_devices.shape)
-    mesh_data = jax.sharding.Mesh(mesh_devices, ['dp','fsdp','mp'])
-
-    # Shard the data across model replicas. You don't shard across the
-    # data_parallelism mesh axis, meaning each per-replica shard will be replicated
-    # across that axis.
-    sharding = jax.sharding.NamedSharding(
-        mesh_data, jax.sharding.PartitionSpec("mp"))
-
-    """
-    # while True:
-    #     pass
-
-    # x=jnp.ones((128,3,224,224))
-    # batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), x)
-    # jax.debug.visualize_array_sharding(batch[:,:,0,0,])
-    # print('\n'*5)
-    #
-    # @partial(jax.jit,out_shardings=sharding)
-    # def test(x):
-    #     return x
-    #
-    # jax.debug.visualize_array_sharding(test(batch[:,:,0,0,]))
-    # print(1)
-    # while True:
-    #     pass
 
 
     train_dataloader_iter, valid_dataloader, mix_ratio_state = create_dataloaders(**configs['dataset'],
@@ -214,6 +171,13 @@ def main(configs):
     with mesh, nn_partitioning.axis_rules(logical_axis_rules):
         valid_step = TRAIN_EVAL_FN_COLLECTION[valid_fn]
         train_step = TRAIN_EVAL_FN_COLLECTION[train_fn]
+
+
+
+        print(configs)
+        while True:
+            pass
+
 
         state, train_state_partition,train_state_sharding = init_state(configs['train_state'],
                                                           warmup_steps=warmup_steps,
