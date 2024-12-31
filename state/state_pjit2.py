@@ -238,19 +238,18 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
 
     if restore_state_config is not None:
         train_state_config_cpy=copy.deepcopy(train_state_config)
-        train_state_config_cpy_unflatten=flax.traverse_util.unflatten_dict(train_state_config_cpy,sep='/')
-        restore_state_config_unflatten=flax.traverse_util.unflatten_dict(restore_state_config,sep='/')
+        train_state_config_cpy_unflatten=flax.traverse_util.flatten_dict(train_state_config_cpy,sep='/')
+        restore_state_config_unflatten=flax.traverse_util.flatten_dict(restore_state_config,sep='/')
 
         if jax.process_index()==0:
             print(train_state_config_cpy_unflatten)
             print(restore_state_config_unflatten)
             print(restore_state_config)
 
-        while True:
-            pass
+
 
         restore_state_config_unflatten=train_state_config_cpy_unflatten | restore_state_config_unflatten
-        restore_state_config=flax.traverse_util.flatten_dict(restore_state_config_unflatten,sep='/')
+        restore_state_config=flax.traverse_util.unflatten_dict(restore_state_config_unflatten,sep='/')
         print(restore_state_config)
     else:
         restore_state_config = copy.deepcopy(train_state_config)
