@@ -66,10 +66,7 @@ train_state:
       learning_rate: 1.0e-3
       init_value: 1.0e-6
       end_learning_rate: 1.0e-5
-      weight_decay: [
-#        ['.*/fc/.*/kernel', 3.0],
-        ['.*/kernel', 0.05],
-      ]
+      weight_decay: 0.05
       b1: 0.9
       b2: 0.999
 #      eps: 1.0e-8
