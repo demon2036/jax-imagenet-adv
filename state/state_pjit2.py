@@ -250,7 +250,7 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
 
     def set_sharding(x: jax.ShapeDtypeStruct,sharding) -> StandardRestoreArgs:
         x.sharding = sharding
-        return ocp.args.StandardRestore(x)
+        return ocp.args.ArrayRestore(x)
         # return x
 
 
