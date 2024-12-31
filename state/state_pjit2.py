@@ -261,14 +261,17 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
         "restore_args": jax.tree_util.tree_map(set_sharding,state_shapes,train_state_sharding)
     }
 
+    change_sharding_abstract_state = jax.tree_util.tree_map(
+        set_sharding, ckpt,train_state_sharding)
+
 
     # change_sharding_abstract_state=jax.tree_util.tree_map(set_sharding,state_shapes,train_state_sharding)
 
 
     # state = checkpointer.restore(pretrained_ckpt, item=ckpt, **restore_kwargs)['model']
     state = checkpointer.restore(pretrained_ckpt, #item=ckpt,
-                                 **restore_kwargs
-                                 # args=ocp.args.StandardRestore(change_sharding_abstract_state),
+                                 # **restore_kwargs
+                                 args=ocp.args.StandardRestore(change_sharding_abstract_state),
 
 
                                  )['model']
