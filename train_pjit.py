@@ -181,7 +181,8 @@ def main(configs):
         state, train_state_partition,train_state_sharding = init_state(configs['train_state'],
                                                           warmup_steps=warmup_steps,
                                                           training_steps=training_steps,
-                                                          grad_accum_steps=grad_accum_steps, mesh=mesh)
+                                                          grad_accum_steps=grad_accum_steps, mesh=mesh,
+                                                            remote_model_path=filename)
 
 
 

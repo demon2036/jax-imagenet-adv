@@ -188,7 +188,7 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
     train_state_sharding = jax.tree_util.tree_map(lambda x: jax.sharding.NamedSharding(mesh, x), train_state_partition)
 
 
-    return state_shapes,train_state_sharding
+    return state_shapes,train_state_sharding,init_fn,init_by_params_fn,init_rngs,example_inputs
 
     """
     logical_state_spec = flax.linen.get_partition_spec(train_state_shapes)
@@ -220,11 +220,20 @@ def create_train_state(train_state_config, image_size: int = 224, warmup_steps=1
 
 
 
+def resume_checkpoint(pretrained_ckpt,state_shapes,train_state_sharding):
+    checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
+    ckpt = {'model': state_shapes}
 
+    def set_sharding(sharding) -> ArrayRestoreArgs:
+        return ocp.ArrayRestoreArgs(sharding=sharding)
+
+    restore_args = {'model': jax.tree_util.tree_map(set_sharding, train_state_sharding)}
+    state = checkpointer.restore(pretrained_ckpt, item=ckpt, restore_args=restore_args)
+    return state
 
 
 def init_state(train_state_config, image_size: int = 224, warmup_steps=1, training_steps=10,
-    grad_accum_steps=1, mesh=None, logical_axis_rules=None,restore_state_config=None):
+    grad_accum_steps=1, mesh=None, logical_axis_rules=None,restore_state_config=None,resume=False,remote_model_path=None):
 
     if restore_state_config is None:
         restore_state_config=copy.deepcopy(train_state_config)
@@ -234,61 +243,34 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
 
 
 
-    state_shapes,train_state_sharding=create_train_state(restore_state_config, image_size, warmup_steps, training_steps,
+    (state_shapes,
+     train_state_sharding,init_fn,
+     init_by_params_fn,init_rngs,example_inputs)=create_train_state(restore_state_config, image_size, warmup_steps, training_steps,
                                         grad_accum_steps, mesh, logical_axis_rules)
 
-    # state_shapes=flax.linen.meta.unbox(state_shapes)
 
 
-    # if jax.process_index()==0:
-    #     print(state_shapes,type(state_shapes),)
-    #
-    #
-    # while True:
-    #     pass
+
+
+    if resume:
+        state=resume_checkpoint(remote_model_path,state_shapes,train_state_sharding)
+        return state
 
     pretrained_ckpt = restore_state_config.pop('pretrained_ckpt', None)
 
-    checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
-    ckpt = {'model': state_shapes}
-    restore_kwargs = {
-        "restore_args": jax.tree_map(
-            lambda _: ocp.RestoreArgs(restore_type=np.ndarray), ckpt
-        )
-    }
+    # if pretrained_ckpt is not None:
+    #     state = resume_checkpoint(remote_model_path, state_shapes, train_state_sharding)
+    #     params=state['model'].ema_params
+    #     state=jax.jit(init_by_params_fn,out_shardings=train_state_sharding)(params)
 
-    def set_sharding(x: jax.ShapeDtypeStruct,sharding) -> ArrayRestoreArgs:
-        # x.sharding = sharding
-        return ocp.ArrayRestoreArgs(sharding=sharding)
-        # return ocp.args.ArrayRestore(x)
-        # return x
-
-    restore_args={'model':jax.tree_util.tree_map(set_sharding,state_shapes,train_state_sharding)}
-
-    change_sharding_abstract_state=restore_args
-    # restore_kwargs = {
-    #     "restore_args": jax.tree_util.tree_map(set_sharding,ckpt,train_state_sharding)
-    # }
-
-    # change_sharding_abstract_state = jax.tree_util.tree_map(
-    #     set_sharding, ckpt,train_state_sharding)
+    state=jax.jit(init_fn,out_shardings=train_state_sharding)(init_rngs,example_inputs)
 
 
-    # change_sharding_abstract_state=jax.tree_util.tree_map(set_sharding,state_shapes,train_state_sharding)
 
 
-    # state = checkpointer.restore(pretrained_ckpt, item=ckpt, **restore_kwargs)['model']
-    try:
-        state = checkpointer.restore(pretrained_ckpt, item=ckpt,restore_args=restore_args
-                                    # **restore_kwargs
-                                    #  args=ocp.args.PyTreeRestore(change_sharding_abstract_state),
 
 
-                                     )['model']
 
-    except Exception as e:
-        if jax.process_index()==0:
-            print(e)
 
     print('restore success')
     while True:
