@@ -3,16 +3,16 @@ output_dir: $GCS_MODEL_DIR/planb/ablation/best
 name: caformer-xl-48-192-3step-300ep-dit-100m-adv-step-3-rand-mix0.9-lamb
 project: jax-adv-image-net-best
 steps: 1281167
-training_epoch: 300
+training_epoch: 700
 warmup_epoch: 20
-log_interval: 10
+log_interval: 100
 eval_epoch: 10
 grad_accum_steps: 1
 #train_fn: training_step_test
 dp: -1
 fsdp: 1
 tp: 1
-#resume: True
+resume: True
 
 dataset:
   train_batch_size: 4096
@@ -33,8 +33,8 @@ dataset:
   shuffle_seed: 1
   image_size: 192
   generated_dataset_shards:
-    ['$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..12799}.tar']
-#    ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar']
+#    ['$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..12799}.tar']
+    ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar']
   dataset_mix_ratio: 0.9
 
 
