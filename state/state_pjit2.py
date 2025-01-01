@@ -64,7 +64,7 @@ def warmup_stable_cosine_decay_schedule(
         decay_steps: int,
         end_value: float = 0.0,
         exponent: float = 1.0,
-) -> base.Schedule:
+) :
     r"""Linear warmup followed by cosine decay.
 
     Args:
