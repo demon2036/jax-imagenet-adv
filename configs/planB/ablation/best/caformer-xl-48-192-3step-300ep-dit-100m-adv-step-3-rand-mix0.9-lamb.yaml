@@ -12,10 +12,10 @@ grad_accum_steps: 1
 dp: -1
 fsdp: 1
 tp: 1
-resume: True
+#resume: True
 
 dataset:
-  train_batch_size: 16384
+  train_batch_size: 4096
   valid_batch_size: 1024
   train_loader_workers: 20
   valid_loader_workers: 10
@@ -61,6 +61,7 @@ train_state:
   optimizer:
     target: 'lamb'
     optimizer_kwargs:
+      schedule: wsd
       learning_rate: 1.0e-3
       init_value: 1.0e-6
       end_learning_rate: 1.0e-5
