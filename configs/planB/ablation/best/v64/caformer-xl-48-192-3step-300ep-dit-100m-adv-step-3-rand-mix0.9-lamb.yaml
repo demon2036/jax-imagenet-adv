@@ -70,7 +70,7 @@ train_state:
 #      eps: 1.0e-8
 #      lr_decay: 1.0
 #      clip_grad: 0.0
-  grad_accum_steps: 2
+  grad_accum_steps: 4
   init_seed: 1
   mixup_seed: 1
   dropout_seed: 1
