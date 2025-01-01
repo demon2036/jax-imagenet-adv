@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/planb/ablation/best
-name: caformer-xl-48-192-3step-300ep-dit-100m-adv-step-3-rand-mix0.9-lamb
+name: caformer-xl-48-192-3step-300ep-sit-50m-adv-step-3-rand-mix0.9-lamb
 project: jax-adv-image-net-best
 steps: 1281167
 training_epoch: 700
@@ -12,7 +12,7 @@ grad_accum_steps: 1
 dp: -1
 fsdp: 1
 tp: 1
-resume: True
+#resume: True
 
 dataset:
   train_batch_size: 4096
