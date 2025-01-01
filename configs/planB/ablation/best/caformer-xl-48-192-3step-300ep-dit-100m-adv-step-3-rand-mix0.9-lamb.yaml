@@ -12,7 +12,6 @@ train_fn: training_step_test
 dp: -1
 fsdp: 1
 tp: 1
-
 resume: True
 
 dataset:
