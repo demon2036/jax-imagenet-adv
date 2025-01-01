@@ -84,6 +84,9 @@ def warmup_stable_cosine_decay_schedule(
         A function that maps step counts to values
     """
     alpha = 0.0 if peak_value == 0.0 else end_value / peak_value
+
+    stable_steps=int(decay_steps*2/3)
+
     schedules = [
         optax.schedules.linear_schedule(
             init_value=init_value,
@@ -95,12 +98,12 @@ def warmup_stable_cosine_decay_schedule(
         ),
         optax.schedules.cosine_decay_schedule(
             init_value=peak_value,
-            decay_steps=decay_steps - warmup_steps,
+            decay_steps=decay_steps - warmup_steps-stable_steps,
             alpha=alpha,
             exponent=exponent,
         ),
     ]
-    return _join.join_schedules(schedules, [warmup_steps,int(decay_steps*2/3)])
+    return _join.join_schedules(schedules, [warmup_steps,warmup_steps+stable_steps])
 
 
 def create_train_state(train_state_config, image_size: int = 224,
