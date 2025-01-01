@@ -111,12 +111,16 @@ def create_train_state(train_state_config, image_size: int = 224,
     def create_optimizer_fn(
             learning_rate: optax.Schedule,
     ) -> optax.GradientTransformation:
+
+        clip_grad=optimizer_config['optimizer_kwargs'].pop('clip_grad',1.0)
+
         tx = OPTIMIZER_COLLECTION[optimizer_config['target']](
             learning_rate=learning_rate,
             **optimizer_config['optimizer_kwargs'],
             mask=partial(jax.tree_util.tree_map_with_path, lambda kp, *_: kp[-1].key == "kernel"),
         )
-        tx = optax.chain(optax.clip_by_global_norm(1.0), tx)
+        if clip_grad is not None:
+            tx = optax.chain(optax.clip_by_global_norm(clip_grad), tx)
         return tx
 
 
