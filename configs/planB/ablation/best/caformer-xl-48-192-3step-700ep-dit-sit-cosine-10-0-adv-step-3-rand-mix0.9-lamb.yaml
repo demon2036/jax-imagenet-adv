@@ -12,10 +12,10 @@ grad_accum_steps: 1
 dp: -1
 fsdp: 1
 tp: 1
-resume: True
+#resume: True
 
 dataset:
-  train_batch_size: 16384
+  train_batch_size: 4096
   valid_batch_size: 1024
   train_loader_workers: 20
   valid_loader_workers: 10
@@ -64,7 +64,7 @@ train_state:
   optimizer:
     target: 'lamb'
     optimizer_kwargs:
-      learning_rate: 2.0e-3
+      learning_rate: 1.0e-3
       init_value: 1.0e-6
       end_learning_rate: 1.0e-5
       weight_decay: 0.05
@@ -77,7 +77,7 @@ train_state:
   init_seed: 1
   mixup_seed: 1
   dropout_seed: 1
-  ema_decay: 0.999
+  ema_decay: 0.9999
   pretrained_ckpt: '$GCS_MODEL_DIR/planb/ablation/standard/caformer-xl-48-standard-300ep-mix0.9-ema'
 
 
