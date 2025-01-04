@@ -37,7 +37,6 @@ class ScaleByAdamState(NamedTuple):
   count: chex.Array  # shape=(), dtype=jnp.int32.
   mu: base.Updates
   nu: base.Updates
-  scale:base.Updates
 
 
 def scale_by_adam(
@@ -73,15 +72,7 @@ def scale_by_adam(
   def init_fn(params):
     mu = otu.tree_zeros_like(params, dtype=mu_dtype)  # First moment
     nu = otu.tree_zeros_like(params)  # Second moment
-
-    scale = jax.tree.map(
-        lambda m, v: None if m is None else get_scale(m,v),
-        mu,
-        nu,
-        is_leaf=lambda x: x is None,
-    )
-
-    return ScaleByAdamState(count=jnp.zeros([], jnp.int32), mu=mu, nu=nu,scale=scale)
+    return ScaleByAdamState(count=jnp.zeros([], jnp.int32), mu=mu, nu=nu,)
 
   def update_fn(updates, state, params=None):
     del params
@@ -119,8 +110,6 @@ def scale_by_adam(
     #     is_leaf=lambda x: x is None,
     # )
 
-
-
     scale=jax.tree.map(get_scale,updates,nu_hat,is_leaf=lambda x: x is None,)
 
 
@@ -136,7 +125,7 @@ def scale_by_adam(
     mu = otu.tree_cast(mu, mu_dtype)
     # return (updates,scale), ScaleByAdamState(count=count_inc, mu=mu, nu=nu)
 
-    return updates, ScaleByAdamState(count=count_inc, mu=mu, nu=nu,scale=scale)
+    return {'updates':updates,'scale':scale}, ScaleByAdamState(count=count_inc, mu=mu, nu=nu)
 
   return base.GradientTransformation(init_fn, update_fn)
 
@@ -173,6 +162,7 @@ def add_decayed_weights(
     #     params,scale,
     #     is_leaf=lambda x: x is None,
     # )
+    updates,scale=updates['updates'],updates['scale']
 
     updates = jax.tree.map(
         lambda g, p: None if g is None else g + weight_decay * p,
@@ -180,7 +170,7 @@ def add_decayed_weights(
         params,
         is_leaf=lambda x: x is None,
     )
-    return updates, state
+    return {'updates':updates,'scale':scale}, state
 
   # If mask is not `None`, apply mask to the gradient transformation.
   # E.g. it is common to skip weight decay on bias units and batch stats.
@@ -208,32 +198,18 @@ def scale_by_scale(
   """
 
 
-  def init_fn(params):
-    mu = otu.tree_zeros_like(params, )  # First moment
-    nu = otu.tree_zeros_like(params)  # Second moment
-
-    scale = jax.tree.map(
-        lambda m, v: None if m is None else get_scale(m,v),
-        mu,
-        nu,
-        is_leaf=lambda x: x is None,
-    )
-
-    return ScaleByAdamState(count=jnp.zeros([], jnp.int32), mu=mu, nu=nu,scale=scale)
-
-
   def update_fn(updates,state, params):
-
+    updates, scale = updates['updates'], updates['scale']
     updates = jax.tree.map(
         lambda g,s: None if g is None else s*g,
         updates,
-        state.scale,
+        scale,
         is_leaf=lambda x: x is None,
     )
     return updates, state
 
 
-  return base.GradientTransformation(init_fn, update_fn)
+  return base.GradientTransformation(base.init_empty_state, update_fn)
 
 
 
