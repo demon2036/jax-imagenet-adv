@@ -65,6 +65,7 @@ train_state:
     target: 'modified_lamb2'
     optimizer_kwargs:
       clip_grad: None
+      eps: 1.0e-7
       learning_rate: 1.0e-3
       init_value: 1.0e-6
       end_learning_rate: 1.0e-5
