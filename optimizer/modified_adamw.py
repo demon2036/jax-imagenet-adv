@@ -100,10 +100,12 @@ def scale_by_adam(
     # )
 
     def get_scale(x,v):
+        if x is None:
+            return None
         rms=jnp.sqrt(jnp.mean(jnp.square(x**2/ (v+eps )  ), ) +eps )
         return 1/rms
 
-    scale=jax.tree_util.tree_map(get_scale,updates,nu_hat)
+    scale=jax.tree.map(get_scale,updates,nu_hat,is_leaf=lambda x: x is None,)
 
 
     updates = jax.tree.map(

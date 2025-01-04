@@ -164,6 +164,7 @@ def create_train_state(train_state_config, image_size: int = 224,
             **optimizer_config['optimizer_kwargs'],
             mask=partial(jax.tree_util.tree_map_with_path, lambda kp, *_: kp[-1].key == "kernel"),
         )
+        print(f'{clip_grad=}')
         if clip_grad is not None:
             tx = optax.chain(optax.clip_by_global_norm(clip_grad), tx)
         return tx
