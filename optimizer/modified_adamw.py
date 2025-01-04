@@ -82,41 +82,41 @@ def scale_by_adam(
     nu_hat = otu.tree_bias_correction(nu, b2, count_inc)
 
 
-    def adam_fn(v,u,g):
-        if v is None:
-            return None
+    # def adam_fn(v,u,g):
+    #     if v is None:
+    #         return None
+    #
+    #
+    #     rms = jnp.sqrt(jnp.mean(jnp.square(g**2/ (u+eps )  ), ) +eps )
+    #     scale=1/jnp.maximum(1,rms)
+    #     return scale*v/(jnp.sqrt(u + eps_root) + eps)
+    #
+    #
+    # updates = jax.tree.map(
+    #     adam_fn,
+    #     mu_hat,
+    #     nu_hat,updates,
+    #     is_leaf=lambda x: x is None,
+    # )
 
+    def get_scale(x,v):
+        rms=jnp.sqrt(jnp.mean(jnp.square(x**2/ (v+eps )  ), ) +eps )
+        return 1/rms
 
-        rms = jnp.sqrt(jnp.mean(jnp.square(g**2/ (u+eps )  ), ) +eps )
-        scale=1/jnp.maximum(1,rms)
-        return scale*v/(jnp.sqrt(u + eps_root) + eps)
+    scale=jax.tree_util.tree_map(get_scale,updates,nu_hat)
 
 
     updates = jax.tree.map(
-        adam_fn,
+        lambda m, v: None if m is None else m / (jnp.sqrt(v + eps_root) + eps),
         mu_hat,
-        nu_hat,updates,
+        nu_hat,
         is_leaf=lambda x: x is None,
     )
-
-    # def scale(x,v):
-    #     rms=jnp.sqrt(jnp.mean(jnp.square(x**2/ (v+eps )  ), ) +eps )
-    #     return 1/rms
-    #
-    # scale=jax.tree_util.tree_map(rms,updates,nu_hat)
-
-
-    # updates = jax.tree.map(
-    #     lambda m, v: None if m is None else m / (jnp.sqrt(v + eps_root) + eps),
-    #     mu_hat,
-    #     nu_hat,
-    #     is_leaf=lambda x: x is None,
-    # )
 
 
 
     mu = otu.tree_cast(mu, mu_dtype)
-    return updates, ScaleByAdamState(count=count_inc, mu=mu, nu=nu)
+    return (updates,scale), ScaleByAdamState(count=count_inc, mu=mu, nu=nu)
 
   return base.GradientTransformation(init_fn, update_fn)
 
@@ -141,13 +141,17 @@ def add_decayed_weights(
     A :class:`optax.GradientTransformation` object.
   """
 
-  def update_fn(updates, state, params):
+  def update_fn(carry, state, params):
+
     if params is None:
       raise ValueError(base.NO_PARAMS_MSG)
+
+    updates, scale=carry
+
     updates = jax.tree.map(
-        lambda g, p: None if g is None else g + weight_decay * p,
+        lambda g, p,s: None if g is None else s*(g + weight_decay * p),
         updates,
-        params,
+        params,scale,
         is_leaf=lambda x: x is None,
     )
     return updates, state
