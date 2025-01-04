@@ -118,7 +118,9 @@ def scale_by_adam(
 
 
     mu = otu.tree_cast(mu, mu_dtype)
-    return (updates,scale), ScaleByAdamState(count=count_inc, mu=mu, nu=nu)
+    # return (updates,scale), ScaleByAdamState(count=count_inc, mu=mu, nu=nu)
+
+    return updates, ScaleByAdamState(count=count_inc, mu=mu, nu=nu)
 
   return base.GradientTransformation(init_fn, update_fn)
 
@@ -143,19 +145,28 @@ def add_decayed_weights(
     A :class:`optax.GradientTransformation` object.
   """
 
-  def update_fn(carry, state, params):
+  def update_fn(updates, state, params):
 
     if params is None:
       raise ValueError(base.NO_PARAMS_MSG)
 
-    updates, scale=carry
+    # updates, scale=carry
+
+    # updates = jax.tree.map(
+    #     lambda g, p,s: None if g is None else s*(g + weight_decay * p),
+    #     updates,
+    #     params,scale,
+    #     is_leaf=lambda x: x is None,
+    # )
+
 
     updates = jax.tree.map(
-        lambda g, p,s: None if g is None else s*(g + weight_decay * p),
+        lambda g, p: None if g is None else g + weight_decay * p,
         updates,
-        params,scale,
+        params,
         is_leaf=lambda x: x is None,
     )
+
     return updates, state
 
   # If mask is not `None`, apply mask to the gradient transformation.
