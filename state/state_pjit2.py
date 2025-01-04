@@ -324,6 +324,7 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
     if resume:
         print(remote_model_path)
         state=resume_checkpoint(remote_model_path,state_shapes,train_state_sharding)['model']
+        state=state.replace(params=state.ema_params)
         return state,int(state.step) + 1,train_state_sharding
 
     pretrained_ckpt = restore_state_config.pop('pretrained_ckpt', None)
