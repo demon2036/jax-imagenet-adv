@@ -80,7 +80,6 @@ def scale_by_adam(
         nu,
         is_leaf=lambda x: x is None,
     )
-    # scale=
 
     return ScaleByAdamState(count=jnp.zeros([], jnp.int32), mu=mu, nu=nu,scale=scale)
 
@@ -137,7 +136,7 @@ def scale_by_adam(
     mu = otu.tree_cast(mu, mu_dtype)
     # return (updates,scale), ScaleByAdamState(count=count_inc, mu=mu, nu=nu)
 
-    return updates,scale, ScaleByAdamState(count=count_inc, mu=mu, nu=nu,scale=scale)
+    return updates, ScaleByAdamState(count=count_inc, mu=mu, nu=nu,scale=scale)
 
   return base.GradientTransformation(init_fn, update_fn)
 
