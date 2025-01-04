@@ -187,3 +187,25 @@ def stable_adamw(
       add_decayed_weights(weight_decay, mask),
       transform.scale_by_learning_rate(learning_rate),
   )
+
+
+
+
+
+
+def modified_lamb2(
+        learning_rate: optax.ScalarOrSchedule,
+        b1: float = 0.9,
+        b2: float = 0.999,
+        eps: float = 1e-6,
+        eps_root: float = 0.0,
+        weight_decay: float = 0.0,
+        mask: optax.MaskOrFn = None,
+) -> optax.GradientTransformation:
+    return optax.chain(
+        scale_by_adam(b1=b1, b2=b2, eps=eps, eps_root=eps_root),
+        add_decayed_weights(weight_decay=weight_decay, mask=mask),
+        # Change to use trust ratio on weight decay parameters only.
+        optax.masked(optax.scale_by_trust_ratio(), mask=mask),
+        optax.scale_by_learning_rate(learning_rate),
+    )

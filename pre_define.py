@@ -3,7 +3,7 @@ from __future__ import annotations
 import jax.numpy
 import optax
 
-from optimizer.modified_adamw import stable_adamw
+from optimizer.modified_adamw import stable_adamw, modified_lamb2
 from optimizer.modified_lion import modified_lion
 from optimizer.muon import muon
 from training_pjit import validation_step, validation_adv_step,training_step_test,training_step
@@ -31,6 +31,7 @@ CRITERION_COLLECTION = {
 OPTIMIZER_COLLECTION = {
     "adamw": optax.adamw,
     "lamb": modified_lamb,
+    "modified_lamb2":modified_lamb2,
     'muon': muon,
     "modified_lion": modified_lion,
     # "lamb": optax.lamb,
