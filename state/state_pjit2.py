@@ -198,8 +198,9 @@ def create_train_state(train_state_config, image_size: int = 224,
             end_value=end_lr,
         )
 
-    tx = create_optimizer_fn(learning_rate, )
+
     def init_by_params_fn(params, ) -> TrainState:
+        tx = create_optimizer_fn(learning_rate, )
         if grad_accum_steps > 1:
             print(f'{grad_accum_steps=}')
             grad_accum = jax.tree_map(jnp.zeros_like, params)
@@ -227,7 +228,7 @@ def create_train_state(train_state_config, image_size: int = 224,
         if grad_accum_steps > 1:
             print(f'{grad_accum_steps=}')
             grad_accum = jax.tree_map(jnp.zeros_like, params)
-
+        tx = create_optimizer_fn(learning_rate, )
         state = TrainState.create(
             apply_fn=module.apply,
             params=params,
