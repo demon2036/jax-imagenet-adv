@@ -16,7 +16,7 @@ import regex
 from jax._src.util import safe_map
 
 from optax import tree_utils as otu
-from optax._src import base
+from optax._src import base, wrappers
 from optax._src import combine
 from optax._src import numerics
 from optax._src import transform
@@ -88,7 +88,7 @@ def scale_by_adam(
 
 
         rms = jnp.sqrt(jnp.mean(jnp.square(g**2/ (u+eps )  ), ) +eps )
-        scale=jnp.maximum(1,rms)
+        scale=1/jnp.maximum(1,rms)
         return scale*v/(jnp.sqrt(u + eps_root) + eps)
 
 
@@ -98,10 +98,67 @@ def scale_by_adam(
         nu_hat,updates,
         is_leaf=lambda x: x is None,
     )
+
+    # def scale(x,v):
+    #     rms=jnp.sqrt(jnp.mean(jnp.square(x**2/ (v+eps )  ), ) +eps )
+    #     return 1/rms
+    #
+    # scale=jax.tree_util.tree_map(rms,updates,nu_hat)
+
+
+    updates = jax.tree.map(
+        lambda m, v: None if m is None else m / (jnp.sqrt(v + eps_root) + eps),
+        mu_hat,
+        nu_hat,
+        is_leaf=lambda x: x is None,
+    )
+
+
+
     mu = otu.tree_cast(mu, mu_dtype)
     return updates, ScaleByAdamState(count=count_inc, mu=mu, nu=nu)
 
   return base.GradientTransformation(init_fn, update_fn)
+
+
+
+
+
+def add_decayed_weights(
+    weight_decay: Union[float, jax.Array] = 0.0,
+    mask: Optional[Union[Any, Callable[[base.Params], Any]]] = None,
+) -> base.GradientTransformation:
+  """Add parameter scaled by `weight_decay`.
+
+  Args:
+    weight_decay: A scalar weight decay rate.
+    mask: A tree with same structure as (or a prefix of) the params PyTree, or a
+      Callable that returns such a pytree given the params/updates. The leaves
+      should be booleans, `True` for leaves/subtrees you want to apply the
+      transformation to, and `False` for those you want to skip.
+
+  Returns:
+    A :class:`optax.GradientTransformation` object.
+  """
+
+  def update_fn(updates, state, params):
+    if params is None:
+      raise ValueError(base.NO_PARAMS_MSG)
+    updates = jax.tree.map(
+        lambda g, p: None if g is None else g + weight_decay * p,
+        updates,
+        params,
+        is_leaf=lambda x: x is None,
+    )
+    return updates, state
+
+  # If mask is not `None`, apply mask to the gradient transformation.
+  # E.g. it is common to skip weight decay on bias units and batch stats.
+  if mask is not None:
+    return wrappers.masked(
+        base.GradientTransformation(base.init_empty_state, update_fn), mask
+    )
+  return base.GradientTransformation(base.init_empty_state, update_fn)
 
 
 def stable_adamw(
@@ -117,7 +174,7 @@ def stable_adamw(
     nesterov: bool = False,
 ) -> base.GradientTransformation:
 
-
+# transform.scale_by_adam()
   return combine.chain(
       scale_by_adam(
           b1=b1,
@@ -127,6 +184,6 @@ def stable_adamw(
           mu_dtype=mu_dtype,
           nesterov=nesterov,
       ),
-      transform.add_decayed_weights(weight_decay, mask),
+      add_decayed_weights(weight_decay, mask),
       transform.scale_by_learning_rate(learning_rate),
   )
