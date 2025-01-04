@@ -3,6 +3,7 @@ from __future__ import annotations
 import jax.numpy
 import optax
 
+from optimizer.modified_adamw import stable_adamw
 from optimizer.modified_lion import modified_lion
 from optimizer.muon import muon
 from training_pjit import validation_step, validation_adv_step,training_step_test,training_step
@@ -34,7 +35,8 @@ OPTIMIZER_COLLECTION = {
     "modified_lion": modified_lion,
     # "lamb": optax.lamb,
     'lion': optax.lion,
-    'sgd':optax.sgd
+    'sgd':optax.sgd,
+    'stable_adamw':stable_adamw
 }
 
 
