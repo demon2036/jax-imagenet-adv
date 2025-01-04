@@ -29,7 +29,7 @@ def get_scale(x, v):
     if x is None:
         return None
     rms = jnp.sqrt(jnp.mean(jnp.square(x ** 2 / (v + 1e-7)), ) + 1e-7)
-    return 1 / rms
+    return jnp.maximum(1,1 / rms)
 
 class ScaleByAdamState(NamedTuple):
   """State for the Adam algorithm."""
