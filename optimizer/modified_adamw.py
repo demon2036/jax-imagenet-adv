@@ -149,7 +149,7 @@ def add_decayed_weights(
 
     if params is None:
       raise ValueError(base.NO_PARAMS_MSG)
-    print(scale)
+    print(scale.keys())
     # updates, scale=carry
 
     # updates = jax.tree.map(
