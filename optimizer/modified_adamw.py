@@ -73,7 +73,14 @@ def scale_by_adam(
   def init_fn(params):
     mu = otu.tree_zeros_like(params, dtype=mu_dtype)  # First moment
     nu = otu.tree_zeros_like(params)  # Second moment
-    scale=get_scale(mu,nu)
+
+    scale = jax.tree.map(
+        lambda m, v: None if m is None else get_scale,
+        mu,
+        nu,
+        is_leaf=lambda x: x is None,
+    )
+
     return ScaleByAdamState(count=jnp.zeros([], jnp.int32), mu=mu, nu=nu,scale=scale)
 
   def update_fn(updates, state, params=None):
