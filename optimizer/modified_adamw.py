@@ -201,7 +201,7 @@ def modified_lamb2(
         learning_rate: optax.ScalarOrSchedule,
         b1: float = 0.9,
         b2: float = 0.999,
-        eps: float = 1e-6,
+        eps: float = 1e-7,
         eps_root: float = 0.0,
         weight_decay: float = 0.0,
         mask: optax.MaskOrFn = None,
