@@ -88,7 +88,7 @@ def scale_by_adam(
 
 
         rms = jnp.sqrt(jnp.mean(jnp.square(g**2/ (u+eps )  ), ) +eps )
-        scale=jnp.max(1,rms)
+        scale=jnp.maximum(1,rms)
         return scale*v/(jnp.sqrt(u + eps_root) + eps)
 
 
