@@ -20,12 +20,24 @@ from optax._src import base, wrappers
 from optax._src import combine
 from optax._src import numerics
 from optax._src import transform
-from optax._src.transform import ScaleByAdamState
 import  optax._src.utils as utils
 
 # from optax._src import utils
 
 
+def get_scale(x, v):
+    if x is None:
+        return None
+    rms = jnp.sqrt(jnp.mean(jnp.square(x ** 2 / (v + 1e-7)), ) + 1e-7)
+    return 1 / rms
+
+class ScaleByAdamState(NamedTuple):
+  """State for the Adam algorithm."""
+
+  count: chex.Array  # shape=(), dtype=jnp.int32.
+  mu: base.Updates
+  nu: base.Updates
+  scale:base.Updates
 
 
 def scale_by_adam(
@@ -61,7 +73,8 @@ def scale_by_adam(
   def init_fn(params):
     mu = otu.tree_zeros_like(params, dtype=mu_dtype)  # First moment
     nu = otu.tree_zeros_like(params)  # Second moment
-    return ScaleByAdamState(count=jnp.zeros([], jnp.int32), mu=mu, nu=nu)
+    scale=get_scale(mu,nu)
+    return ScaleByAdamState(count=jnp.zeros([], jnp.int32), mu=mu, nu=nu,scale=scale)
 
   def update_fn(updates, state, params=None):
     del params
@@ -99,11 +112,7 @@ def scale_by_adam(
     #     is_leaf=lambda x: x is None,
     # )
 
-    def get_scale(x,v):
-        if x is None:
-            return None
-        rms=jnp.sqrt(jnp.mean(jnp.square(x**2/ (v+eps )  ), ) +eps )
-        return 1/rms
+
 
     scale=jax.tree.map(get_scale,updates,nu_hat,is_leaf=lambda x: x is None,)
 
@@ -120,7 +129,7 @@ def scale_by_adam(
     mu = otu.tree_cast(mu, mu_dtype)
     # return (updates,scale), ScaleByAdamState(count=count_inc, mu=mu, nu=nu)
 
-    return updates,scale, ScaleByAdamState(count=count_inc, mu=mu, nu=nu)
+    return updates,scale, ScaleByAdamState(count=count_inc, mu=mu, nu=nu,scale=scale)
 
   return base.GradientTransformation(init_fn, update_fn)
 
@@ -145,11 +154,10 @@ def add_decayed_weights(
     A :class:`optax.GradientTransformation` object.
   """
 
-  def update_fn(updates, scale,state, params):
+  def update_fn(updates,state, params):
 
     if params is None:
       raise ValueError(base.NO_PARAMS_MSG)
-    print(scale.keys())
     # updates, scale=carry
 
     # updates = jax.tree.map(
@@ -158,7 +166,6 @@ def add_decayed_weights(
     #     params,scale,
     #     is_leaf=lambda x: x is None,
     # )
-
 
     updates = jax.tree.map(
         lambda g, p: None if g is None else g + weight_decay * p,
@@ -176,6 +183,40 @@ def add_decayed_weights(
         base.GradientTransformation(base.init_empty_state, update_fn), mask
     )
   return base.GradientTransformation(base.init_empty_state, update_fn)
+
+
+
+def scale_by_scale(
+) -> base.GradientTransformation:
+  """Add parameter scaled by `weight_decay`.
+
+  Args:
+    weight_decay: A scalar weight decay rate.
+    mask: A tree with same structure as (or a prefix of) the params PyTree, or a
+      Callable that returns such a pytree given the params/updates. The leaves
+      should be booleans, `True` for leaves/subtrees you want to apply the
+      transformation to, and `False` for those you want to skip.
+
+  Returns:
+    A :class:`optax.GradientTransformation` object.
+  """
+
+  def update_fn(updates,state, params):
+
+    updates = jax.tree.map(
+        lambda g,s: None if g is None else s*g,
+        updates,
+        state.scale,
+        is_leaf=lambda x: x is None,
+    )
+    return updates, state
+
+
+  return base.GradientTransformation(base.init_empty_state, update_fn)
+
+
+
+
 
 
 def stable_adamw(
@@ -224,5 +265,6 @@ def modified_lamb2(
         add_decayed_weights(weight_decay=weight_decay, mask=mask),
         # Change to use trust ratio on weight decay parameters only.
         optax.masked(optax.scale_by_trust_ratio(), mask=mask),
+        scale_by_scale(),
         optax.scale_by_learning_rate(learning_rate),
     )
