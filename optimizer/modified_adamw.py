@@ -211,6 +211,21 @@ def scale_by_scale(
     A :class:`optax.GradientTransformation` object.
   """
 
+
+  def init_fn(params):
+    mu = otu.tree_zeros_like(params, )  # First moment
+    nu = otu.tree_zeros_like(params)  # Second moment
+
+    scale = jax.tree.map(
+        lambda m, v: None if m is None else get_scale(m,v),
+        mu,
+        nu,
+        is_leaf=lambda x: x is None,
+    )
+
+    return ScaleByAdamState(count=jnp.zeros([], jnp.int32), mu=mu, nu=nu,scale=scale)
+
+
   def update_fn(updates,state, params):
 
     updates = jax.tree.map(
@@ -222,7 +237,7 @@ def scale_by_scale(
     return updates, state
 
 
-  return base.GradientTransformation(base.init_empty_state, update_fn)
+  return base.GradientTransformation(init_fn, update_fn)
 
 
 
