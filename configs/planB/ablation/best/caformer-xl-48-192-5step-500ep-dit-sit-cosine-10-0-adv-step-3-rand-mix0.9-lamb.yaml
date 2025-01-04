@@ -3,7 +3,7 @@ output_dir: $GCS_MODEL_DIR/planb/ablation/best
 name: caformer-xl-48-192-5step-500ep-dit-sit-cosine-10-0-adv-step-3-rand-mix0.9-lamb.
 project: jax-adv-image-net-best
 steps: 1281167
-training_epoch: 500
+training_epoch: 700
 warmup_epoch: 20
 log_interval: 10
 eval_epoch: 10
@@ -15,7 +15,7 @@ tp: 1
 #resume: True
 
 dataset:
-  train_batch_size: 4096
+  train_batch_size: 16384
   valid_batch_size: 4096
   train_loader_workers: 20
   valid_loader_workers: 10
@@ -48,8 +48,8 @@ train_state:
     cutmix: 0.0
     criterion: ce
     label_smoothing: 0.1
-    train_adv_step: 5
-    train_adv_step_size: 10/5 / 255
+    train_adv_step: 3
+    train_adv_step_size: 8/3 / 255
 
 
   model:
