@@ -106,12 +106,12 @@ def scale_by_adam(
     # scale=jax.tree_util.tree_map(rms,updates,nu_hat)
 
 
-    updates = jax.tree.map(
-        lambda m, v: None if m is None else m / (jnp.sqrt(v + eps_root) + eps),
-        mu_hat,
-        nu_hat,
-        is_leaf=lambda x: x is None,
-    )
+    # updates = jax.tree.map(
+    #     lambda m, v: None if m is None else m / (jnp.sqrt(v + eps_root) + eps),
+    #     mu_hat,
+    #     nu_hat,
+    #     is_leaf=lambda x: x is None,
+    # )
 
 
 
