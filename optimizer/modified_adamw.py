@@ -116,7 +116,7 @@ def scale_by_adam(
 
 
     mu = otu.tree_cast(mu, mu_dtype)
-    return updates, ScaleByAdamState(count=count_inc, mu=mu, nu=nu)
+    return (updates,scale), ScaleByAdamState(count=count_inc, mu=mu, nu=nu)
 
   return base.GradientTransformation(init_fn, update_fn)
 
