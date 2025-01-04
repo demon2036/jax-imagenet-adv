@@ -181,6 +181,9 @@ def add_decayed_weights(
         is_leaf=lambda x: x is None,
     )
 
+    print(state.scale)
+
+
     return updates, state
 
   # If mask is not `None`, apply mask to the gradient transformation.
