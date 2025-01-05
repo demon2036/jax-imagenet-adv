@@ -178,10 +178,7 @@ class TrainAdvModule(nn.Module):
                 #                     )
 
                 def test1():
-                    return  pgd_attack(images, labels, self.model, key=self.make_rng('adv'),epsilon=self.eps,
-                                    step_size=self.train_adv_step_size,  #if train else self.test_adv_step_size ,
-                                    maxiter=self.train_adv_step  #if train else self.test_adv_step
-                                    )
+                    return  images
                 def test2():
                     return  pgd_attack(images, labels, self.model, key=self.make_rng('adv'),epsilon=self.eps,
                                     step_size=self.train_adv_step_size,  #if train else self.test_adv_step_size ,
@@ -189,7 +186,7 @@ class TrainAdvModule(nn.Module):
                                     )
 
 
-                images=jax.lax.cond(jax.random.uniform(self.make_rng('adv'),(1,))[0]<0.5,test1,test2   )
+                images=jax.lax.cond(jax.random.uniform(self.make_rng('adv'),(1,))[0]<0.9,test1,test2   )
 
                 # images = pgd_attack(images, labels, self.model, key=self.make_rng('adv'),epsilon=self.eps,
                 #                     step_size=self.train_adv_step_size,  #if train else self.test_adv_step_size ,
