@@ -176,13 +176,25 @@ class TrainAdvModule(nn.Module):
                 #                     step_size=self.train_adv_step_size,  #if train else self.test_adv_step_size ,
                 #                     maxiter=self.train_adv_step  #if train else self.test_adv_step
                 #                     )
-                plus_one=jax.lax.cond(jax.random.uniform(self.make_rng('adv'),(1,))[0]<0.5,lambda :0,lambda :1    )
-                print(plus_one)
 
-                images = pgd_attack(images, labels, self.model, key=self.make_rng('adv'),epsilon=self.eps,
+                def test1():
+                    return  pgd_attack(images, labels, self.model, key=self.make_rng('adv'),epsilon=self.eps,
                                     step_size=self.train_adv_step_size,  #if train else self.test_adv_step_size ,
-                                    maxiter=self.train_adv_step+plus_one  #if train else self.test_adv_step
+                                    maxiter=self.train_adv_step  #if train else self.test_adv_step
                                     )
+                def test2():
+                    return  pgd_attack(images, labels, self.model, key=self.make_rng('adv'),epsilon=self.eps,
+                                    step_size=self.train_adv_step_size,  #if train else self.test_adv_step_size ,
+                                    maxiter=self.train_adv_step+1  #if train else self.test_adv_step
+                                    )
+
+
+                images=jax.lax.cond(jax.random.uniform(self.make_rng('adv'),(1,))[0]<0.5,test1,test2   )
+
+                # images = pgd_attack(images, labels, self.model, key=self.make_rng('adv'),epsilon=self.eps,
+                #                     step_size=self.train_adv_step_size,  #if train else self.test_adv_step_size ,
+                #                     maxiter=self.train_adv_step+plus_one  #if train else self.test_adv_step
+                #                     )
 
 
             loss = self.criterion((logits := self.model(images, det=det)), labels)
