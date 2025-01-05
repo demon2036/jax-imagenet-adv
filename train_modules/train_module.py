@@ -172,10 +172,17 @@ class TrainAdvModule(nn.Module):
         else:
 
             if use_pgd:
+                # images = pgd_attack(images, labels, self.model, key=self.make_rng('adv'),epsilon=self.eps,
+                #                     step_size=self.train_adv_step_size,  #if train else self.test_adv_step_size ,
+                #                     maxiter=self.train_adv_step  #if train else self.test_adv_step
+                #                     )
+                plus_one=jax.lax.cond(jax.random.uniform(self.make_rng('adv'),(1,))[0]<0.5,lambda :0,lambda :1    )
+
                 images = pgd_attack(images, labels, self.model, key=self.make_rng('adv'),epsilon=self.eps,
                                     step_size=self.train_adv_step_size,  #if train else self.test_adv_step_size ,
-                                    maxiter=self.train_adv_step  #if train else self.test_adv_step
+                                    maxiter=self.train_adv_step+plus_one  #if train else self.test_adv_step
                                     )
+
 
             loss = self.criterion((logits := self.model(images, det=det)), labels)
             labels = labels == labels.max(-1, keepdims=True)
