@@ -21,7 +21,7 @@ dataset:
   valid_loader_workers: 10
   train_dataset_shards: "'$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar'"
   valid_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-validation-{00..63}.tar"
-  random_crop: rrc
+  random_crop: src
   color_jitter: 0.0
   auto_augment: "rand-m9-mstd0.5-inc1"
   random_erasing: 0.0
@@ -44,8 +44,8 @@ dataset:
 train_state:
   train_module:
     target: 'train_modules.TrainAdvModule'
-    mixup: 0.8
-    cutmix: 1.0
+    mixup: 0.0
+    cutmix: 0.0
     criterion: ce
     label_smoothing: 0.1
     train_adv_step: 2
@@ -62,13 +62,13 @@ train_state:
 #      drop_rate: 0.5
 
   optimizer:
-    target: 'lion'
+    target: 'lamb'
     optimizer_kwargs:
 #      clip_grad: None
-      learning_rate: 1.0e-4
+      learning_rate: 1.0e-3
       init_value: 1.0e-6
       end_learning_rate: 1.0e-5
-      weight_decay: 0.5
+      weight_decay: 0.05
       b1: 0.9
       b2: 0.99
 #      eps: 1.0e-8

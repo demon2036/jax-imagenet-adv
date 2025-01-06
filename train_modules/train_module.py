@@ -184,8 +184,8 @@ class TrainAdvModule(nn.Module):
                                       )
                 def test2():
                     return  pgd_attack(images, labels, self.model, key=self.make_rng('adv'),epsilon=self.eps,
-                                    step_size=12/10/255,  #if train else self.test_adv_step_size ,
-                                    maxiter=10  #if train else self.test_adv_step
+                                    step_size=12/8/255,  #if train else self.test_adv_step_size ,
+                                    maxiter=8  #if train else self.test_adv_step
                                     )
 
 
