@@ -174,8 +174,12 @@ def training_step_kl(state: TrainState, batch: ArrayTree, use_pgd) -> tuple[Trai
                                  use_pgd=use_pgd,return_logits=True )
 
 
-        metrics_ref = state.apply_fn({"params": params}, *batch, det=False, rngs=rngs, use_trade=not use_pgd,
+        metrics_ref = state.apply_fn({"params": state.ema_params}, *batch, det=False, rngs=rngs, use_trade=not use_pgd,
                                  use_pgd=use_pgd,return_logits=True ,ref=True)
+
+
+        print(metrics)
+        print(metrics_ref)
 
         kl_loss=optax.kl_divergence(flax.linen.log_softmax(metrics_ref.pop('logits'), axis=1), flax.linen.softmax(metrics.pop('logits'), axis=1))
 
