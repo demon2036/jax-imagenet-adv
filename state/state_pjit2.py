@@ -148,6 +148,7 @@ def create_train_state(train_state_config, image_size: int = 224,
     end_lr = optimizer_config['optimizer_kwargs'].pop('end_learning_rate', 1e-5)
     init_value = optimizer_config['optimizer_kwargs'].pop('init_value', 1e-6)
     schedule = optimizer_config['optimizer_kwargs'].pop('schedule', 'cosine')
+    clip_grad = optimizer_config['optimizer_kwargs'].get('clip_grad', 1.0)
 
     # Create learning rate scheduler and optimizer with gradient clipping. The learning
     # rate will be recorded at `hyperparams` by `optax.inject_hyperparameters`.
@@ -157,7 +158,7 @@ def create_train_state(train_state_config, image_size: int = 224,
             learning_rate: optax.Schedule,
     ) -> optax.GradientTransformation:
 
-        clip_grad=optimizer_config['optimizer_kwargs'].pop('clip_grad',1.0)
+
 
         tx = OPTIMIZER_COLLECTION[optimizer_config['target']](
             learning_rate=learning_rate,

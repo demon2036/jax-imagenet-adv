@@ -56,8 +56,8 @@ train_state:
 
   optimizer:
     target: 'lamb'
+    clip_grad: None
     optimizer_kwargs:
-      clip_grad: None
       learning_rate: 8.0e-3
       weight_decay: 0.05
       b1: 0.9
