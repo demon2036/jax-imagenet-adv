@@ -47,7 +47,7 @@ from state import create_train_state
 from test_dataset_fork2 import create_dataloaders, DynamicMixRatioState
 # from test_dataset_fork import create_dataloaders
 from jax.sharding import PartitionSpec as P
-from training_pjit import TrainState, training_step, validation_adv_step
+from training_pjit import TrainState, training_step, validation_adv_step, training_step_kl
 from utils import AverageMeter, read_yaml, preprocess_config, save_checkpoint_in_background, \
     save_checkpoint_in_background2, match_partition_rules, get_jax_mesh2
 
@@ -230,7 +230,7 @@ def main(configs):
                        )
 
 
-        training_step_pjit = jax.jit(train_step, static_argnums=(2,),
+        training_step_pjit = jax.jit(training_step_kl, static_argnums=(2,),
                                      donate_argnums=(0,),
                                      out_shardings=(train_state_sharding, None),
                                      # in_shardings=(train_state_sharding, sharding,),

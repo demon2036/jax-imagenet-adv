@@ -121,7 +121,7 @@ class TrainAdvModule(nn.Module):
     beta: float = 0.0
 
     def __call__(self, images: Array, labels: Array, det: bool = True, use_pgd=True, use_trade=False,
-                 train=False) -> ArrayTree:
+                 ref=False,return_logits=False) -> ArrayTree:
         # Normalize the pixel values in TPU devices, instead of copying the normalized
         # float values from CPU. This may reduce both memory usage and latency.
         images = jnp.moveaxis(images, 1, 3).astype(jnp.float32) / 0xFF
@@ -133,68 +133,74 @@ class TrainAdvModule(nn.Module):
             labels = optax.smooth_labels(labels, self.label_smoothing)
             images, labels = self.mixup(images, labels)
         print(use_pgd,use_trade,)
-        if use_trade:
-            logits_natural = nn.softmax(self.model(images),axis=1)
-            x_adv = trade_lse(images, self.model, key=self.make_rng('adv'),
-                              step_size=self.train_adv_step_size,  # if train else self.test_adv_step_size ,
-                              maxiter=self.train_adv_step,logits=jax.lax.stop_gradient(logits_natural)  # if train else self.test_adv_step
-                              )
-
-            logits_adv = nn.softmax(self.model(x_adv),axis=1)
-
-            loss_natural = jnp.sum((logits_natural - labels) ** 2, axis=-1)
-            loss_robust = jnp.sum((logits_adv - logits_natural) ** 2, axis=-1)
-            loss_robust = nn.relu(loss_robust - 0)
-            loss = loss_natural.mean() + self.beta * loss_robust.mean()
-
-            labels = labels == labels.max(-1, keepdims=True)
-            #
-            preds = jax.lax.top_k(logits_adv, k=5)[1]
-            accs = jnp.take_along_axis(labels, preds, axis=-1)
-            return {"loss": loss, "acc1": accs[:, 0], "acc5": accs.any(-1),'loss_natural':loss_natural.mean(),'loss_robust':loss_robust.mean()}
 
 
-        elif use_trade:
-            x_adv = trade(images, self.model, key=self.make_rng('adv'),
-                          step_size=self.train_adv_step_size,  # if train else self.test_adv_step_size ,
-                          maxiter=self.train_adv_step  # if train else self.test_adv_step
-                          )
-            logits = self.model(images)
-            logits_adv = self.model(x_adv)
-            loss_ce = jnp.mean(optax.softmax_cross_entropy(logits=logits, labels=labels))
-            trade_loss = optax.kl_divergence(nn.log_softmax(logits_adv, axis=1), nn.softmax(logits, axis=1)).mean()
-            labels = labels == labels.max(-1, keepdims=True)
 
-            preds = jax.lax.top_k(logits, k=5)[1]
-            accs = jnp.take_along_axis(labels, preds, axis=-1)
-            return {"loss": loss_ce + 5 * trade_loss, "loss_ce": loss_ce, "trade_loss": trade_loss, "acc1": accs[:, 0],
-                    "acc5": accs.any(-1)}
+        if ref:
+            pass
         else:
+            if use_trade:
+                logits_natural = nn.softmax(self.model(images),axis=1)
+                x_adv = trade_lse(images, self.model, key=self.make_rng('adv'),
+                                  step_size=self.train_adv_step_size,  # if train else self.test_adv_step_size ,
+                                  maxiter=self.train_adv_step,logits=jax.lax.stop_gradient(logits_natural)  # if train else self.test_adv_step
+                                  )
 
-            if use_pgd:
-                # images = pgd_attack(images, labels, self.model, key=self.make_rng('adv'),epsilon=self.eps,
-                #                     step_size=self.train_adv_step_size,  #if train else self.test_adv_step_size ,
-                #                     maxiter=self.train_adv_step  #if train else self.test_adv_step
-                #                     )
+                logits_adv = nn.softmax(self.model(x_adv),axis=1)
 
-                def test1():
-                    return pgd_attack(images, labels, self.model, key=self.make_rng('adv'), epsilon=self.eps,
-                                      step_size=self.train_adv_step_size,  # if train else self.test_adv_step_size ,
-                                      maxiter=self.train_adv_step   # if train else self.test_adv_step
-                                      )
-                def test2():
-                    return  pgd_attack(images, labels, self.model, key=self.make_rng('adv'),epsilon=self.eps,
-                                    step_size=12/8/255,  #if train else self.test_adv_step_size ,
-                                    maxiter=8  #if train else self.test_adv_step
-                                    )
+                loss_natural = jnp.sum((logits_natural - labels) ** 2, axis=-1)
+                loss_robust = jnp.sum((logits_adv - logits_natural) ** 2, axis=-1)
+                loss_robust = nn.relu(loss_robust - 0)
+                loss = loss_natural.mean() + self.beta * loss_robust.mean()
+
+                labels = labels == labels.max(-1, keepdims=True)
+                #
+                preds = jax.lax.top_k(logits_adv, k=5)[1]
+                accs = jnp.take_along_axis(labels, preds, axis=-1)
+                return {"loss": loss, "acc1": accs[:, 0], "acc5": accs.any(-1),'loss_natural':loss_natural.mean(),'loss_robust':loss_robust.mean()}
 
 
-                images=jax.lax.cond(jax.random.uniform(self.make_rng('adv'),(1,))[0]<0.9,test1,test2   )
+            elif use_trade:
+                x_adv = trade(images, self.model, key=self.make_rng('adv'),
+                              step_size=self.train_adv_step_size,  # if train else self.test_adv_step_size ,
+                              maxiter=self.train_adv_step  # if train else self.test_adv_step
+                              )
+                logits = self.model(images)
+                logits_adv = self.model(x_adv)
+                loss_ce = jnp.mean(optax.softmax_cross_entropy(logits=logits, labels=labels))
+                trade_loss = optax.kl_divergence(nn.log_softmax(logits_adv, axis=1), nn.softmax(logits, axis=1)).mean()
+                labels = labels == labels.max(-1, keepdims=True)
 
-                # images = pgd_attack(images, labels, self.model, key=self.make_rng('adv'),epsilon=self.eps,
-                #                     step_size=self.train_adv_step_size,  #if train else self.test_adv_step_size ,
-                #                     maxiter=self.train_adv_step+plus_one  #if train else self.test_adv_step
-                #                     )
+                preds = jax.lax.top_k(logits, k=5)[1]
+                accs = jnp.take_along_axis(labels, preds, axis=-1)
+                return {"loss": loss_ce + 5 * trade_loss, "loss_ce": loss_ce, "trade_loss": trade_loss, "acc1": accs[:, 0],
+                        "acc5": accs.any(-1)}
+            else:
+
+                if use_pgd:
+                    # images = pgd_attack(images, labels, self.model, key=self.make_rng('adv'),epsilon=self.eps,
+                    #                     step_size=self.train_adv_step_size,  #if train else self.test_adv_step_size ,
+                    #                     maxiter=self.train_adv_step  #if train else self.test_adv_step
+                    #                     )
+
+                    def test1():
+                        return pgd_attack(images, labels, self.model, key=self.make_rng('adv'), epsilon=self.eps,
+                                          step_size=self.train_adv_step_size,  # if train else self.test_adv_step_size ,
+                                          maxiter=self.train_adv_step   # if train else self.test_adv_step
+                                          )
+                    def test2():
+                        return  pgd_attack(images, labels, self.model, key=self.make_rng('adv'),epsilon=self.eps,
+                                        step_size=12/8/255,  #if train else self.test_adv_step_size ,
+                                        maxiter=8  #if train else self.test_adv_step
+                                        )
+
+
+                    # images=jax.lax.cond(jax.random.uniform(self.make_rng('adv'),(1,))[0]<0.9,test1,test2   )
+
+                    images = pgd_attack(images, labels, self.model, key=self.make_rng('adv'),epsilon=self.eps,
+                                        step_size=self.train_adv_step_size,  #if train else self.test_adv_step_size ,
+                                        maxiter=self.train_adv_step  #if train else self.test_adv_step
+                                        )
 
 
             loss = self.criterion((logits := self.model(images, det=det)), labels)
@@ -206,4 +212,7 @@ class TrainAdvModule(nn.Module):
             # classification and also supports multi-label tasks.
             preds = jax.lax.top_k(logits, k=5)[1]
             accs = jnp.take_along_axis(labels, preds, axis=-1)
-            return {"loss": loss, "acc1": accs[:, 0], "acc5": accs.any(-1)}
+            if return_logits:
+                return {"loss": loss, "acc1": accs[:, 0], "acc5": accs.any(-1),'logits':logits}
+            else:
+                return {"loss": loss, "acc1": accs[:, 0], "acc5": accs.any(-1)}

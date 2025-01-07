@@ -161,7 +161,70 @@ def training_step(state: TrainState, batch: ArrayTree, use_pgd) -> tuple[TrainSt
 
 
 
+def training_step_kl(state: TrainState, batch: ArrayTree, use_pgd) -> tuple[TrainState, ArrayTree]:
+    # jax.tree_util.tree_map(lambda x: jax.debug.inspect_array_sharding(x, callback=print), batch)
+    # images,label=batch
+    # print('images')
+    # jax.debug.inspect_array_sharding(images, callback=print)
+    # print('labels')
+    # jax.debug.inspect_array_sharding(label, callback=print)
 
+    def loss_fn(params: ArrayTree) -> ArrayTree:
+        metrics = state.apply_fn({"params": params}, *batch, det=False, rngs=rngs, use_trade=not use_pgd,
+                                 use_pgd=use_pgd,return_logits=True )
+
+
+        metrics_ref = state.apply_fn({"params": params}, *batch, det=False, rngs=rngs, use_trade=not use_pgd,
+                                 use_pgd=use_pgd,return_logits=True ,ref=True)
+
+        kl_loss=optax.kl_divergence(flax.linen.log_softmax(metrics_ref.pop('logits'), axis=1), flax.linen.softmax(metrics.pop('logits'), axis=1))
+
+        metrics['kl_loss']=kl_loss
+        metrics['ce_loss']=metrics['loss']
+        metrics['loss']=metrics['ce_loss']+3*kl_loss
+        metrics = jax.tree_map(jnp.mean, metrics)
+        return metrics["loss"], metrics
+
+    def update_fn(state: TrainState) -> TrainState:
+        # Collect a global gradient from the accumulated gradients and apply actual
+        # parameter update with resetting the accumulations to zero.
+        grads = jax.tree_map(lambda g: g / state.micro_in_mini, state.grad_accum)
+        state = state.apply_gradients(
+            grads=grads,
+            grad_accum=jax.tree_map(jnp.zeros_like, state.grad_accum),
+            micro_step=state.micro_step % state.micro_in_mini,
+        )
+        new_ema_params = jax.tree_util.tree_map(
+            lambda ema, normal: ema * state.ema_decay + (1 - state.ema_decay) * normal,
+            state.ema_params, state.params)
+        state = state.replace(ema_params=new_ema_params)
+
+        return state
+
+    rngs, updates = state.split_rngs()
+    (_, metrics), grads = jax.value_and_grad(loss_fn, has_aux=True)(state.params)
+    # metrics = jax.lax.pmean(metrics, axis_name="batch")
+
+    # Update parameters with the gradients. If the gradient accumulation is enabled,
+    # then the parameters will be updated at the end of each mini-batch step. In every
+    # micro steps, the gradients will be accumulated.
+    if state.grad_accum is None:
+        state = state.apply_gradients(grads=grads)
+
+        new_ema_params = jax.tree_util.tree_map(
+            lambda ema, normal: ema * state.ema_decay + (1 - state.ema_decay) * normal,
+            state.ema_params, state.params)
+        state = state.replace(ema_params=new_ema_params)
+
+    else:
+        state = state.replace(
+            grad_accum=jax.tree_map(lambda ga, g: ga + g, state.grad_accum, grads),
+            micro_step=state.micro_step + 1,
+        )
+        state = jax.lax.cond(
+            state.micro_step == state.micro_in_mini, update_fn, lambda x: x, state
+        )
+    return state.replace(**updates), metrics | state.opt_state.hyperparams
 
 
 
