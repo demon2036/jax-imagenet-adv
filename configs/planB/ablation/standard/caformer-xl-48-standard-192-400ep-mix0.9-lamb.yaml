@@ -8,9 +8,9 @@ warmup_epoch: 20
 log_interval: 100
 eval_epoch: 10
 valid_fn: validation_step
-dp: 1
+dp: -1
 fsdp: 1
-tp: -1
+tp: 1
 #resume: True
 
 dataset:
@@ -57,6 +57,7 @@ train_state:
   optimizer:
     target: 'lamb'
     optimizer_kwargs:
+      clip_grad: None
       learning_rate: 8.0e-3
       weight_decay: 0.05
       b1: 0.9
