@@ -8,7 +8,7 @@ warmup_epoch: 20
 log_interval: 10
 eval_epoch: 10
 grad_accum_steps: 1
-#train_fn: training_step_test
+train_fn: training_step_kl
 dp: -1
 fsdp: 1
 tp: 1
