@@ -6,7 +6,7 @@ import optax
 from optimizer.modified_adamw import stable_adamw, modified_lamb2
 from optimizer.modified_lion import modified_lion
 from optimizer.muon import muon
-from training_pjit import validation_step, validation_adv_step,training_step_test,training_step
+from training_pjit import validation_step, validation_adv_step, training_step_test, training_step, training_step_kl
 from utils import modified_lamb
 import numpy as np
 
@@ -47,5 +47,6 @@ TRAIN_EVAL_FN_COLLECTION = {
     'validation_adv_step':validation_adv_step,
     'training_step':training_step,
     'training_step_test':training_step_test,
+    'training_step_kl':training_step_kl
 }
 
