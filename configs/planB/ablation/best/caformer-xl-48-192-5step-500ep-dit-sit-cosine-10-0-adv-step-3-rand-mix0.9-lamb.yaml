@@ -87,7 +87,8 @@ restore_state:
   grad_accum_steps: 1
   optimizer:
       target: 'lion'
-      optimizer_kwargs:
-        clip_grad: None
+      clip_grad: None
+#      optimizer_kwargs:
+
 
 
