@@ -1,13 +1,16 @@
-import numpy as np
+import jax.numpy as jnp
+import jax.random
 
 
-x=np.array([[1,2,3,4,5]],dtype=np.float32)
-y=np.array([[0,1,0,1,1]]).T
 
-print(x.shape,y.shape)
-print(x)
-print(y)
 
-x[y.T==0]=np.nan
+a=jnp.ones((2,2))
+b=jnp.ones((2,2))+3
+arr1_expanded = a[None, :]  # Shape becomes (1, 3)
+arr2_expanded = b[None, :]  # Shape becomes (1, 3)
 
-print(x)
+# Concatenate along the new axis (axis 0)
+result = jnp.concatenate([arr1_expanded, arr2_expanded], axis=0)
+
+
+print(jax.random.choice(jax.random.PRNGKey(1),result,p=jnp.array([0.9,0.5])))
