@@ -274,11 +274,12 @@ class TrainAdvModule2(nn.Module):
         if ref:
             pass
         else:
-            images = pgd_dynamic_scale_attack(images, labels, self.model, key=self.make_rng('adv'),epsilon=self.eps,
-                                step_size=self.train_adv_step_size,  #if train else self.test_adv_step_size ,
-                                maxiter=self.train_adv_step,  #if train else self.test_adv_step
-                                              dynamic=not det
-                                )
+            if use_pgd:
+                images = pgd_dynamic_scale_attack(images, labels, self.model, key=self.make_rng('adv'),epsilon=self.eps,
+                                    step_size=self.train_adv_step_size,  #if train else self.test_adv_step_size ,
+                                    maxiter=self.train_adv_step,  #if train else self.test_adv_step
+                                                  dynamic=not det
+                                    )
 
 
         loss = self.criterion((logits := self.model(images, det=det)), labels)
