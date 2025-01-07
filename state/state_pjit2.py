@@ -158,8 +158,6 @@ def create_train_state(train_state_config, image_size: int = 224,
             learning_rate: optax.Schedule,
     ) -> optax.GradientTransformation:
 
-
-
         tx = OPTIMIZER_COLLECTION[optimizer_config['target']](
             learning_rate=learning_rate,
             **optimizer_config['optimizer_kwargs'],
