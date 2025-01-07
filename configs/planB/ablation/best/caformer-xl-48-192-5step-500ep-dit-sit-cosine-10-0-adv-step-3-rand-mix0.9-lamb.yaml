@@ -62,13 +62,13 @@ train_state:
 #      drop_rate: 0.5
 
   optimizer:
-    target: 'lamb'
+    target: 'lion'
     optimizer_kwargs:
 #      clip_grad: None
       learning_rate: 1.0e-3
       init_value: 1.0e-6
       end_learning_rate: 1.0e-5
-      weight_decay: 0.05
+      weight_decay: 0.5
       b1: 0.9
       b2: 0.99
 #      eps: 1.0e-8
@@ -78,7 +78,7 @@ train_state:
   init_seed: 1
   mixup_seed: 1
   dropout_seed: 1
-  ema_decay: 0.999
+  ema_decay: 0.9998
   pretrained_ckpt: '$GCS_MODEL_DIR/planb/ablation/standard/caformer-xl-48-standard-300ep-mix0.9-ema'
 
 

@@ -186,7 +186,7 @@ def training_step_kl(state: TrainState, batch: ArrayTree, use_pgd) -> tuple[Trai
 
         metrics['kl_loss']=kl_loss
         metrics['ce_loss']=metrics['loss']
-        metrics['loss']=metrics['ce_loss']+3*kl_loss
+        metrics['loss']=metrics['ce_loss']+0.5*kl_loss
         metrics = jax.tree_map(jnp.mean, metrics)
         return metrics["loss"], metrics
 
