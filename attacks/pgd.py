@@ -124,7 +124,7 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
 
 
     if dynamic:
-        step_size=jax.random.uniform(key2,(image.shape[0]),minval=0.5,maxval=1)*step_size
+        step_size=jax.random.uniform(key2,(image.shape[0]),minval=0.5,maxval=1).reshape((-1,1,1,1))*step_size
         print(step_size.shape)
 
     # print(label)
