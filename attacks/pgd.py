@@ -136,6 +136,8 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
     if dynamic:
         key1, key2 = jax.random.split(key2)
         adv_step_size = jax.random.uniform(key1, (1,), minval=0.5, maxval=1) * step_size
+    else:
+        adv_step_size=step_size
 
     def adversarial_loss(perturbation):
         logits = model(jnp.clip(image + perturbation, 0, 1))
