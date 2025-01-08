@@ -124,7 +124,14 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
 
 
     if dynamic:
-        step_size=jax.random.uniform(key2,(image.shape[0]),minval=0.5,maxval=1).reshape((-1,1,1,1))*step_size
+        image_perturbation_zero=jnp.zeros_like(image)
+
+        image_perturbation = jnp.concatenate([image_perturbation[None,...], image_perturbation_zero], axis=0)
+
+        print(jax.random.choice(jax.random.PRNGKey(key2), image_perturbation, p=jnp.array([0.5, 0.5])))
+
+
+        # step_size=jax.random.uniform(key2,(image.shape[0]),minval=0.5,maxval=1).reshape((-1,1,1,1))*step_size
 
     # print(label)
 
@@ -142,16 +149,16 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
     grad_adversarial = jax.grad(adversarial_loss)
     for _ in range(maxiter):
 
-        if dynamic:
-            key1, key2 = jax.random.split(key2)
-            adv_step_size = jax.random.uniform(key1, (image.shape[0]), minval=0.5, maxval=1).reshape(
-                (-1, 1, 1, 1)) * step_size
+        # if dynamic:
+        #     key1, key2 = jax.random.split(key2)
+        #     adv_step_size = jax.random.uniform(key1, (image.shape[0]), minval=0.5, maxval=1).reshape(
+        #         (-1, 1, 1, 1)) * step_size
 
         # compute gradient of the loss wrt to the image
         sign_grad = jnp.sign(grad_adversarial(image_perturbation))
 
         # heuristic step-size 2 eps / maxiter
-        image_perturbation += adv_step_size * sign_grad
+        image_perturbation += step_size * sign_grad
         # projection step onto the L-infinity ball centered at image
         image_perturbation = jnp.clip(image_perturbation, - epsilon, epsilon)
 
