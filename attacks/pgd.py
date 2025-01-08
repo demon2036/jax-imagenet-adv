@@ -125,9 +125,8 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
 
     if dynamic:
         image_perturbation_zero=jnp.zeros_like(image)
-
         image_perturbation = jnp.concatenate([image_perturbation[None,...], image_perturbation_zero[None,...]], axis=0)
-        image_perturbation=jax.random.choice(jax.random.PRNGKey(key2), image_perturbation, p=jnp.array([0.5, 0.5]))
+        image_perturbation=jax.random.choice(key2, image_perturbation, p=jnp.array([0.5, 0.5]))
 
 
         # step_size=jax.random.uniform(key2,(image.shape[0]),minval=0.5,maxval=1).reshape((-1,1,1,1))*step_size
