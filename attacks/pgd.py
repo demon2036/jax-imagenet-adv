@@ -125,7 +125,6 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
 
     if dynamic:
         step_size=jax.random.uniform(key2,(image.shape[0]),minval=0.5,maxval=1).reshape((-1,1,1,1))*step_size
-        print(step_size.shape)
 
     # print(label)
 
@@ -142,11 +141,17 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
 
     grad_adversarial = jax.grad(adversarial_loss)
     for _ in range(maxiter):
+
+        if dynamic:
+            key1, key2 = jax.random.split(key2)
+            adv_step_size = jax.random.uniform(key1, (image.shape[0]), minval=0.5, maxval=1).reshape(
+                (-1, 1, 1, 1)) * step_size
+
         # compute gradient of the loss wrt to the image
         sign_grad = jnp.sign(grad_adversarial(image_perturbation))
 
         # heuristic step-size 2 eps / maxiter
-        image_perturbation += step_size * sign_grad
+        image_perturbation += adv_step_size * sign_grad
         # projection step onto the L-infinity ball centered at image
         image_perturbation = jnp.clip(image_perturbation, - epsilon, epsilon)
 
