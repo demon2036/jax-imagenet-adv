@@ -49,7 +49,7 @@ train_state:
     criterion: ce
     label_smoothing: 0.1
     train_adv_step: 3
-    train_adv_step_size: 8/3 / 255
+    train_adv_step_size: 2 / 255
 
 
   model:
@@ -63,7 +63,7 @@ train_state:
 
   optimizer:
     target: 'lamb'
-    clip_grad: None
+#    clip_grad: None
     optimizer_kwargs:
 #      clip_grad: None
       learning_rate: 1.0e-3
