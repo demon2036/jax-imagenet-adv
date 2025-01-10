@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/planb/ablation/best
-name: caformer-xl-48-192-3step-700ep-dit-sit-cosine-10-0-adv-step-3-rand-mix0.9-lamb-ft--224-200-lion
+name: caformer-xl-48-192-3step-700ep-dit-sit-cosine-10-0-adv-step-3-rand-mix0.9-lamb-ft-224-200-lamb
 project: jax-adv-image-net-best
 steps: 1281167
 training_epoch: 200
