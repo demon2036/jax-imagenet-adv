@@ -147,7 +147,7 @@ def create_train_state(train_state_config, image_size: int = 224,
     lr = optimizer_config['optimizer_kwargs'].pop('learning_rate')
     end_lr = optimizer_config['optimizer_kwargs'].pop('end_learning_rate', 1e-5)
     init_value = optimizer_config['optimizer_kwargs'].pop('init_value', 1e-6)
-    schedule = optimizer_config['optimizer_kwargs'].pop('schedule', 'cosine')
+    schedule = optimizer_config.get('schedule', 'cosine')
     clip_grad = optimizer_config.get('clip_grad', 1.0)
 
     # Create learning rate scheduler and optimizer with gradient clipping. The learning
