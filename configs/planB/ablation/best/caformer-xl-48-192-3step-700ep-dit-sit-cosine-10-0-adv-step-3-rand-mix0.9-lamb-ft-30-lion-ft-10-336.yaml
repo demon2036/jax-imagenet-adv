@@ -44,8 +44,8 @@ dataset:
 train_state:
   train_module:
     target: 'train_modules.TrainAdvModule'
-    mixup: 0.8
-    cutmix: 1.0
+    mixup: 0.0
+    cutmix: 0.0
     criterion: ce
     label_smoothing: 0.1
     train_adv_step: 10
@@ -66,7 +66,7 @@ train_state:
 #    clip_grad: None
     optimizer_kwargs:
 #      clip_grad: None
-      learning_rate: 4.0e-5
+      learning_rate: 3.0e-5
       init_value: 1.0e-7
       end_learning_rate: 1.0e-6
       weight_decay: 1.0e-8
@@ -79,7 +79,7 @@ train_state:
   init_seed: 1
   mixup_seed: 1
   dropout_seed: 1
-  ema_decay: 0.9998
+  ema_decay: 0.999
   pretrained_ckpt: '$GCS_MODEL_DIR/planb/ablation/best/caformer-xl-48-192-3step-700ep-dit-sit-cosine-10-0-adv-step-3-rand-mix0.9-lamb-ft-30-lion-ema'
 
 
