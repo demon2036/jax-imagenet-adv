@@ -28,9 +28,9 @@ dataset:
   auto_generated_augment: "rand-m9-mstd0.5-inc1"
   color_generated_jitter: 0.0
   random_generated_erasing: 0.0
-  augment_repeats: 3
+  augment_repeats: 1
   test_crop_ratio: 0.875
-  shuffle_seed: 3
+  shuffle_seed: 5
   image_size: 224
   generated_dataset_shards:
 #    ['$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..12799}.tar']
