@@ -345,6 +345,40 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
 
 
 
+def init_state_restore(train_state_config, image_size: int = 224, warmup_steps=1, training_steps=10,
+         mesh=None, logical_axis_rules=None,restore_state_config=None,resume=False,remote_model_path=None):
+
+
+    if restore_state_config is not None:
+        train_state_config_cpy=copy.deepcopy(train_state_config)
+        train_state_config_cpy_flatten=flax.traverse_util.flatten_dict(train_state_config_cpy,sep='/')
+        restore_state_config_flatten=flax.traverse_util.flatten_dict(restore_state_config,sep='/')
+        restore_state_config_flatten=train_state_config_cpy_flatten | restore_state_config_flatten
+        restore_state_config=flax.traverse_util.unflatten_dict(restore_state_config_flatten,sep='/')
+    else:
+        restore_state_config = copy.deepcopy(train_state_config)
+
+
+
+
+
+    (restore_state_shapes,
+     restore_state_sharding,*_)=create_train_state(restore_state_config, image_size, warmup_steps, training_steps,
+                                         mesh, logical_axis_rules)
+
+
+    (state_shapes,
+     train_state_sharding,init_fn,
+     init_by_params_fn,init_rngs,example_inputs)=create_train_state(train_state_config, image_size, warmup_steps, training_steps,
+                                         mesh, logical_axis_rules)
+
+
+    if resume:
+        print(remote_model_path)
+        state=resume_checkpoint(remote_model_path,state_shapes,train_state_sharding)['model']
+        # state=state.replace(params=copy.deepcopy(state.ema_params))
+        return state
+
 
 
 

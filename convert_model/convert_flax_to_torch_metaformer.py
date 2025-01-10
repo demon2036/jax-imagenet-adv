@@ -333,6 +333,19 @@ def convert_flax_to_torch_attention(flax_params, prefix='', sep='.'):
     state_dict.update(convert_flax_to_torch_linear(flax_params['qkv'],prefix='qkv'))
     state_dict.update(convert_flax_to_torch_linear(flax_params['proj'],prefix='proj'))
 
+
+
+
+
+    if 'LayerNorm_0' in flax_params:
+        state_dict.update(convert_flax_to_torch_layer_norm(flax_params['LayerNorm_0'], prefix='q_norm'))
+        state_dict.update(convert_flax_to_torch_layer_norm(flax_params['LayerNorm_1'], prefix='k_norm'))
+
+    # print(state_dict.keys())
+    # while True:
+    #     pass
+
+
     # Convert all parameters to PyTorch tensors
     state_dict = {f'{prefix}{sep}{k}': torch.tensor(np.asarray(v)) for k, v in state_dict.items()}
 
