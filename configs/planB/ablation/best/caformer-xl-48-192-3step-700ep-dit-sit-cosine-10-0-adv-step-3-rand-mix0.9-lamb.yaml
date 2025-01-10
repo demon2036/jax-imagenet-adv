@@ -12,7 +12,7 @@ grad_accum_steps: 1
 dp: -1
 fsdp: 1
 tp: 1
-#resume: True
+resume: True
 
 dataset:
   train_batch_size: 16384
@@ -44,8 +44,8 @@ dataset:
 train_state:
   train_module:
     target: 'train_modules.TrainAdvModule2'
-    mixup: 0.0
-    cutmix: 0.0
+    mixup: 0.8
+    cutmix: 1.0
     criterion: ce
     label_smoothing: 0.1
     train_adv_step: 3
