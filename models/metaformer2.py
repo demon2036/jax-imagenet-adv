@@ -228,11 +228,6 @@ class MetaFormerBlock(nn.Module):
     layer_scale_init_value: float = None
     res_scale_init_value: float = None
 
-
-    # def setup(self) -> None:
-
-
-
     @nn.compact
     def __call__(self, x,det=True):
         # Layer scale and residual scale initializers
@@ -241,12 +236,7 @@ class MetaFormerBlock(nn.Module):
 
         # Norm1, Token Mixer, Drop Path1, Layer Scale1, Residual Scale1
         norm1 = self.norm_layer(name="norm1")
-
-        token_mixer = nn.remat(self.token_mixer, policy=jax.checkpoint_policies.nothing_saveable())
-
-        token_mixer = token_mixer(dim=self.dim, name='token_mixer')
-
-
+        token_mixer = self.token_mixer(dim=self.dim, name='token_mixer')
 
         drop_path1 = DropPath(self.drop_path) if self.drop_path > 0. else Identity()
         layer_scale1 = ls_layer() if self.layer_scale_init_value is not None else Identity()
@@ -322,7 +312,7 @@ class MetaFormerStage(nn.Module):
     qk_norm:bool =True
     v_norm: bool =False
     head_dim:int =128
-    checkpoint:bool=False
+    grad_ckpt:bool=False
 
     @nn.compact
     def __call__(self, x,det=True):
@@ -335,18 +325,15 @@ class MetaFormerStage(nn.Module):
         B, H, W,C = x.shape
         use_nchw = True
         token_mixer=self.token_mixer
-        print(self.token_mixer,issubclass(self.token_mixer,Attention))
         if  issubclass(self.token_mixer,Attention):
             use_nchw=False
             x=einops.rearrange(x,'b  h w c-> b (h w) c')
             token_mixer=functools.partial(token_mixer,qk_norm=self.qk_norm,v_norm =self.v_norm,head_dim=self.head_dim)
 
-
-
-
         # Create MetaFormerBlocks
         for i in range(self.depth):
-            block = MetaFormerBlock(
+            block= nn.remat(MetaFormerBlock,policy=jax.checkpoint_policies.nothing_saveable()) if self.grad_ckpt else MetaFormerBlock
+            block = block(
                 dim=self.out_chs,
                 token_mixer=token_mixer,
                 mlp_act=self.mlp_act,
@@ -447,7 +434,7 @@ class MetaFormer(nn.Module):
     qk_norm:bool =True
     v_norm: bool =False
     head_dim: int = 128
-    checkpoint:bool=False
+    grad_ckpt:bool=True
 
     @nn.compact
     def __call__(self, x,det=True):
@@ -487,7 +474,7 @@ class MetaFormer(nn.Module):
                     qk_norm=self.qk_norm,
                     v_norm=self.v_norm,
                 head_dim=self.head_dim,
-                checkpoint=self.checkpoint
+                grad_ckpt=self.grad_ckpt
                 )
 
             prev_dim = dims[i]
