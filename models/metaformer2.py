@@ -492,8 +492,8 @@ class MetaFormer(nn.Module):
 
 
 
-ReMatSepConv=nn.remat(SepConv)
-ReMatAttention=nn.remat(Attention)
+ReMatSepConv=nn.remat(SepConv,jax.checkpoint_policies.nothing_saveable())
+ReMatAttention=nn.remat(Attention,policy=jax.checkpoint_policies.nothing_saveable())
 
 
 CAFormer=partial(MetaFormer,token_mixers=(SepConv,SepConv,Attention,Attention))
