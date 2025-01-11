@@ -56,10 +56,6 @@ from functools import partial
 import jax.numpy as jnp
 from flax.linen import partitioning as nn_partitioning
 
-# warnings.filterwarnings("ignore")
-# os.environ['LIBTPU_INIT_ARGS']='--xla_enable_async_all_gather=auto '
-# os.environ['XLA_FLAGS'] = '--xla_enable_async_all_gather=auto '
-# os.environ['XLA_FLAGS'] = '--xla_tpu_enable_data_parallel_all_reduce_opt=true --xla_enable_async_all_gather=true   --xla_tpu_enable_async_collective_fusion=true --xla_tpu_megacore_fusion_allow_ags=true'
 
 
 def _build_global_shape_and_sharding(
