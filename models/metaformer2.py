@@ -311,6 +311,7 @@ class MetaFormerStage(nn.Module):
     qk_norm:bool =True
     v_norm: bool =False
     head_dim:int =128
+    checkpoint:bool=False
 
     @nn.compact
     def __call__(self, x,det=True):
@@ -328,6 +329,10 @@ class MetaFormerStage(nn.Module):
             use_nchw=False
             x=einops.rearrange(x,'b  h w c-> b (h w) c')
             token_mixer=functools.partial(token_mixer,qk_norm=self.qk_norm,v_norm =self.v_norm,head_dim=self.head_dim)
+
+
+        token_mixer=functools.partial(token_mixer,name='token_mixer')
+
 
         # Create MetaFormerBlocks
         for i in range(self.depth):
@@ -432,6 +437,7 @@ class MetaFormer(nn.Module):
     qk_norm:bool =True
     v_norm: bool =False
     head_dim: int = 128
+    checkpoint:bool=False
 
     @nn.compact
     def __call__(self, x,det=True):
@@ -470,7 +476,8 @@ class MetaFormer(nn.Module):
                     depth=self.depths[i],
                     qk_norm=self.qk_norm,
                     v_norm=self.v_norm,
-                head_dim=self.head_dim
+                head_dim=self.head_dim,
+                checkpoint=self.checkpoint
                 )
 
             prev_dim = dims[i]
