@@ -221,6 +221,7 @@ def main(configs):
                 # print(jax.devices())
                 # while True:
                 #     pass
+                print(batch[0].sharding)
 
                 state, metrics = training_step_pjit(state, batch, use_pgd)
             #     # state, metrics = training_step(state, batch, use_pgd)
