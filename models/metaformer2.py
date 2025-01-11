@@ -323,6 +323,7 @@ class MetaFormerStage(nn.Module):
         B, H, W,C = x.shape
         use_nchw = True
         token_mixer=self.token_mixer
+        print(self.token_mixer,issubclass(self.token_mixer,Attention))
         if  issubclass(self.token_mixer,Attention):
             use_nchw=False
             x=einops.rearrange(x,'b  h w c-> b (h w) c')
@@ -496,5 +497,5 @@ ReMatAttention=nn.remat(Attention)
 
 
 CAFormer=partial(MetaFormer,token_mixers=(SepConv,SepConv,Attention,Attention))
-# CAFormer=partial(MetaFormer,token_mixers=(ReMatSepConv,ReMatSepConv,ReMatAttention,ReMatAttention))
+ReMatCAFormer=partial(MetaFormer,token_mixers=(ReMatSepConv,ReMatSepConv,ReMatAttention,ReMatAttention))
 ConvFormer=partial(MetaFormer,token_mixers=(SepConv,SepConv,SepConv,SepConv))
