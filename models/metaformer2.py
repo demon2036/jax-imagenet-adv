@@ -229,7 +229,7 @@ class MetaFormerBlock(nn.Module):
     res_scale_init_value: float = None
 
 
-    def setup(self) -> None:
+    # def setup(self) -> None:
 
 
 
