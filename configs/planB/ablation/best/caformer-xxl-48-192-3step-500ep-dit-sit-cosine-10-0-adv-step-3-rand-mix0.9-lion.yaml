@@ -15,7 +15,7 @@ tp: 1
 #resume: True
 
 dataset:
-  train_batch_size: 8192
+  train_batch_size: 4096
   valid_batch_size: 4096
   train_loader_workers: 20
   valid_loader_workers: 10
