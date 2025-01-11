@@ -64,9 +64,10 @@ train_state:
   optimizer:
     target: 'lion'
 #    clip_grad: None
+    schedule: stable
     optimizer_kwargs:
 #      clip_grad: None
-      learning_rate: 3.0e-5
+      learning_rate: 1.0e-5
       init_value: 1.0e-7
       end_learning_rate: 1.0e-6
       weight_decay: 1.0e-8
