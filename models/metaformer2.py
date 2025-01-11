@@ -228,6 +228,11 @@ class MetaFormerBlock(nn.Module):
     layer_scale_init_value: float = None
     res_scale_init_value: float = None
 
+
+    def setup(self) -> None:
+
+
+
     @nn.compact
     def __call__(self, x,det=True):
         # Layer scale and residual scale initializers
@@ -236,9 +241,12 @@ class MetaFormerBlock(nn.Module):
 
         # Norm1, Token Mixer, Drop Path1, Layer Scale1, Residual Scale1
         norm1 = self.norm_layer(name="norm1")
-        token_mixer = self.token_mixer(dim=self.dim, name='token_mixer')
 
-        token_mixer=nn.remat(token_mixer,policy=jax.checkpoint_policies.nothing_saveable())
+        token_mixer = nn.remat(self.token_mixer, policy=jax.checkpoint_policies.nothing_saveable())
+
+        token_mixer = token_mixer(dim=self.dim, name='token_mixer')
+
+
 
         drop_path1 = DropPath(self.drop_path) if self.drop_path > 0. else Identity()
         layer_scale1 = ls_layer() if self.layer_scale_init_value is not None else Identity()
