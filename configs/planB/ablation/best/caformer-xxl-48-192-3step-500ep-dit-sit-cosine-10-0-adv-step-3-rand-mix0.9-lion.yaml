@@ -10,12 +10,12 @@ eval_epoch: 10
 grad_accum_steps: 1
 #train_fn: training_step_kl
 dp: 1
-fsdp: -1
-tp: 1
+fsdp: 1
+tp: -1
 #resume: True
 
 dataset:
-  train_batch_size: 4096
+  train_batch_size: 8192
   valid_batch_size: 4096
   train_loader_workers: 20
   valid_loader_workers: 10
