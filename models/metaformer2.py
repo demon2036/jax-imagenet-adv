@@ -343,7 +343,7 @@ class MetaFormerStage(nn.Module):
                 drop_path=self.dp_rates[i],
                 layer_scale_init_value=self.layer_scale_init_value,
                 res_scale_init_value=self.res_scale_init_value,
-                use_nchw=use_nchw,
+                use_nchw=use_nchw,name=f'MetaFormerBlock_{i}'
             )
             x = block(x,det)
 
