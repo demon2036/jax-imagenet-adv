@@ -434,7 +434,7 @@ class MetaFormer(nn.Module):
     qk_norm:bool =True
     v_norm: bool =False
     head_dim: int = 128
-    grad_ckpt:bool=True
+    grad_ckpt:bool=False
 
     @nn.compact
     def __call__(self, x,det=True):
