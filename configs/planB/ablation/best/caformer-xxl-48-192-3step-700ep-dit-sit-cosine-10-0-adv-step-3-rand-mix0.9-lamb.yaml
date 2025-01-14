@@ -1,0 +1,95 @@
+
+output_dir: $GCS_MODEL_DIR/planb/ablation/best
+name: caformer-xxl-48-192-3step-500ep-dit-sit-cosine-10-0-adv-step-3-rand-mix0.9-lamb
+project: jax-adv-image-net-best
+steps: 1281167
+training_epoch: 700
+warmup_epoch: 20
+log_interval: 10
+eval_epoch: 10
+grad_accum_steps: 1
+#train_fn: training_step_kl
+dp: -1
+fsdp: 1
+tp: 1
+resume: True
+
+dataset:
+  train_batch_size: 4096
+  valid_batch_size: 1024
+  train_loader_workers: 20
+  valid_loader_workers: 10
+  train_dataset_shards: "'$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar'"
+  valid_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-validation-{00..63}.tar"
+  random_crop: src
+  color_jitter: 0.0
+  auto_augment: "rand-m9-mstd0.5-inc1"
+  random_erasing: 0.0
+  auto_generated_augment: "rand-m9-mstd0.5-inc1"
+  color_generated_jitter: 0.0
+  random_generated_erasing: 0.0
+  augment_repeats: 3
+  test_crop_ratio: 0.875
+  shuffle_seed: 4
+  image_size: 192
+  generated_dataset_shards:
+    ['$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..12799}.tar']
+#    ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar']
+  dataset_mix_ratio: 0.9
+  max_syn_ratio: 1.0
+  min_syn_ratio: 0.0
+  scheduler: 'cosine'
+
+
+train_state:
+  train_module:
+    target: 'train_modules.TrainAdvModule2'
+    mixup: 0.8
+    cutmix: 1.0
+    criterion: ce
+    label_smoothing: 0.1
+    train_adv_step: 3
+    train_adv_step_size: 2 / 255
+
+
+  model:
+    target: 'models.CAFormer'
+    model_kwargs:
+      depths: [8,8,24,8]
+      dims: [384, 768, 1536, 2304]
+      v_norm: False
+#      drop_path_rate: 0.6
+#      drop_rate: 0.5
+
+  optimizer:
+    target: 'lamb'
+#    clip_grad: None
+    optimizer_kwargs:
+#      clip_grad: None
+      learning_rate: 1.0e-3
+      init_value: 1.0e-6
+      end_learning_rate: 1.0e-5
+      weight_decay: 0.07
+      b1: 0.9
+      b2: 0.99
+#      eps: 1.0e-8
+#      lr_decay: 1.0
+#      clip_grad: 0.0
+  grad_accum_steps: 1
+  init_seed: 1
+  mixup_seed: 1
+  dropout_seed: 1
+  ema_decay: 0.9998
+  pretrained_ckpt: '$GCS_MODEL_DIR/planb/ablation/standard/caformer-xxl-48-standard-300ep-mix0.9-ema'
+
+
+
+restore_state:
+  grad_accum_steps: 1
+  optimizer:
+      target: 'lion'
+#      clip_grad: None
+#      optimizer_kwargs:
+
+
+
