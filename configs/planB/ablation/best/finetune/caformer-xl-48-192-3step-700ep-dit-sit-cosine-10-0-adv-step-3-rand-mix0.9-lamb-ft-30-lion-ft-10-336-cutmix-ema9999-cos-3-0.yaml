@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/planb/ablation/best/finetune
-name: caformer-xl-48-192-3step-700ep-dit-sit-cosine-10-0-adv-step-3-rand-mix0.9-lamb-ft-30-lion-ft-10-336-cutmix-ema9999-cos-7-0
+name: caformer-xl-48-192-3step-700ep-dit-sit-cosine-10-0-adv-step-3-rand-mix0.9-lamb-ft-30-lion-ft-10-336-cutmix-ema9999-cos-3-0
 project: jax-adv-image-net-best
 steps: 1281167
 training_epoch: 10
@@ -36,7 +36,7 @@ dataset:
 #    ['$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..12799}.tar']
     ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar']
   dataset_mix_ratio: 0.9
-  max_syn_ratio: 0.7
+  max_syn_ratio: 0.3
   min_syn_ratio: 0.0
   scheduler: 'cosine'
 
