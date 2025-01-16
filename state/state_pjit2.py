@@ -330,15 +330,18 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
     pretrained_ckpt = restore_state_config.pop('pretrained_ckpt', None)
 
     if pretrained_ckpt is not None:
-        state = resume_checkpoint(pretrained_ckpt, restore_state_shapes, restore_state_sharding)['model']
-        params=state.ema_params
-        del state
+
+        if 'gs://' in pretrained_ckpt:
+            state = resume_checkpoint(pretrained_ckpt, restore_state_shapes, restore_state_sharding)['model']
+            params=state.ema_params
+            del state
+        else:
+            params = load_pretrain(pretrained_ckpt)
+
         state=jax.jit(init_by_params_fn,out_shardings=train_state_sharding,donate_argnums=(0,))(params)
     else:
         state=jax.jit(init_fn,out_shardings=train_state_sharding)(init_rngs,example_inputs)
 
-
-    # print('restore success')
     return state,1,train_state_sharding
 
 
