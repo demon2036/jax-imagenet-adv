@@ -201,7 +201,7 @@ def main(configs):
             wandb.init(name=configs['name'], project=configs['project'], config=configs)
 
         for step in tqdm.tqdm(range(init_step, training_steps + 1), initial=init_step, total=training_steps + 1):
-            # for step in tqdm.trange(init_step, training_steps + 1, dynamic_ncols=True):
+            """
             for _ in range(grad_accum_steps):
                 # batch = jax.tree_util.tree_map(lambda x: jax.make_array_from_process_local_data(sharding,np.asarray(x))  , next(train_dataloader_iter))
                 batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), next(train_dataloader_iter))
@@ -219,9 +219,7 @@ def main(configs):
                 #     pass
 
                 state, metrics = training_step_pjit(state, batch, use_pgd)
-            #     # state, metrics = training_step(state, batch, use_pgd)
                 average_meter.update(**metrics)
-                # print(metrics)
 
 
             if step % epoch_per_step == 0:
@@ -237,7 +235,7 @@ def main(configs):
                 metrics["processed_samples"] = step * configs['dataset']['train_batch_size']
                 metrics["mix_ratio"] = mix_ratio_state.ratio
                 wandb.log(metrics, step)
-
+            """
             if eval_interval > 0 and (
                     step % eval_interval == 0 or step == training_steps
             ):
