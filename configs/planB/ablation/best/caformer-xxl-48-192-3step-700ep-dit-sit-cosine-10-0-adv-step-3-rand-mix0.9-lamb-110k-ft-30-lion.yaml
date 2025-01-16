@@ -86,7 +86,14 @@ train_state:
 restore_state:
   grad_accum_steps: 1
   optimizer:
-      target: 'lion'
+      target: 'lamb'
+      optimizer_kwargs:
+        learning_rate: 1.0e-3
+        init_value: 1.0e-6
+        end_learning_rate: 1.0e-5
+        weight_decay: 0.05
+        b1: 0.9
+        b2: 0.99
 #      clip_grad: None
 #      optimizer_kwargs:
 
