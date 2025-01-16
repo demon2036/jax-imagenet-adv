@@ -90,6 +90,7 @@ def evaluate(state: TrainState, dataloader: DataLoader,validation_adv_step_jited
     for batch in tqdm.tqdm(dataloader, leave=False, dynamic_ncols=True):
         batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), batch)
         batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
+        print(batch[0].shape)
         metrics = validation_adv_step_jited(state, batch)
         average_meter.update(**metrics)
 
@@ -199,7 +200,7 @@ def main(configs):
             wandb.init(name=configs['name'], project=configs['project'], config=configs)
 
         for step in tqdm.tqdm(range(init_step, training_steps + 1), initial=init_step, total=training_steps + 1):
-            """"""
+            """
             for _ in range(grad_accum_steps):
                 # batch = jax.tree_util.tree_map(lambda x: jax.make_array_from_process_local_data(sharding,np.asarray(x))  , next(train_dataloader_iter))
                 batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), next(train_dataloader_iter))
@@ -233,7 +234,7 @@ def main(configs):
                 metrics["processed_samples"] = step * configs['dataset']['train_batch_size']
                 metrics["mix_ratio"] = mix_ratio_state.ratio
                 wandb.log(metrics, step)
-
+            """
             if eval_interval > 0 and (
                     step % eval_interval == 0 or step == training_steps
             ):
