@@ -27,11 +27,12 @@ class CustomPipe(gopen_module.Pipe):
         if not self.stream.closed:
             self.stream.close()
             print(self.timeout)
+            self.timeout=7200000.0
             self.status = self.proc.wait(self.timeout)
             self.wait_for_child()
 
-# gopen_module.Pipe=CustomPipe
-gopen_module.Pipe=None
+gopen_module.Pipe=CustomPipe
+# gopen_module.Pipe=None
 
 
 import argparse
@@ -376,9 +377,6 @@ def create_dataloaders(
         partial(repeat_samples, repeats=augment_repeats),
         wds.map_tuple(train_transform, torch.tensor),
     )
-
-    for d in dataset:
-        print(d)
 
     train_origin_dataloader = DataLoader(
         dataset,
