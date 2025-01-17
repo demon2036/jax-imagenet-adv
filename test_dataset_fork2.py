@@ -20,7 +20,7 @@ gopen_module = importlib.import_module("webdataset.gopen")
 class CustomPipe(gopen_module.Pipe):
     def __init__(self, *args, **kwargs):
         super().__init__(*args,**kwargs)
-        self.timeout=720000.0
+        self.timeout=7200000.0
 gopen_module.Pipe=CustomPipe
 
 

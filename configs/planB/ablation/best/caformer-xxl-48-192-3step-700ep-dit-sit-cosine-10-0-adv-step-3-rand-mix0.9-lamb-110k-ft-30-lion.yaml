@@ -19,7 +19,7 @@ dataset:
   valid_batch_size: 1024
   train_loader_workers: 8
   generated_train_loader_workers: 4
-  valid_loader_workers: 10
+  valid_loader_workers: 20
   train_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-train-{0000..1023}.tar"
   valid_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-validation-{00..63}.tar"
   random_crop: rrc
