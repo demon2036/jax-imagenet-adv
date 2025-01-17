@@ -8,9 +8,8 @@ class CustomPipe(gopen_module.Pipe):
     def __init__(self, *args, **kwargs):
         super().__init__(*args,**kwargs)
         self.timeout=72000.0
-gopen_module.Pipe=CustomPipe
+gopen_module.Pipe=None
 
-gopen_module = importlib.import_module("webdataset.gopen")
 
 
 import webdataset.gopen as gopen
@@ -23,6 +22,7 @@ import webdataset
 
 # 测试调用 gopen
 try:
-    webdataset.gopen('1')  # 应该报错，因为 Pipe 已被替换为 None
+    webdataset.gopen('pipe:')  # 应该报错，因为 Pipe 已被替换为 None
 except Exception as e:
     print(f"Error as expected: {e}")
+# webdataset.gopen('1')
