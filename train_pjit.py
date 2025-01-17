@@ -169,18 +169,18 @@ def main(configs):
         train_step = TRAIN_EVAL_FN_COLLECTION[train_fn]
 
 
-        # state, init_step,train_state_sharding = init_state(configs['train_state'],
-        #                                     warmup_steps=warmup_steps,
-        #                                     training_steps=training_steps, mesh=mesh,
-        #                                     restore_state_config=configs['restore_state'] if 'restore_state' in configs else None,
-        #                                     remote_model_path=filename,resume=resume)
-        #
-        #
-        # training_step_pjit = jax.jit(train_step, static_argnums=(2,),
-        #                              donate_argnums=(0,),
-        #                              out_shardings=(train_state_sharding, None),
-        #                              # in_shardings=(train_state_sharding, sharding,),
-        #                              )
+        state, init_step,train_state_sharding = init_state(configs['train_state'],
+                                            warmup_steps=warmup_steps,
+                                            training_steps=training_steps, mesh=mesh,
+                                            restore_state_config=configs['restore_state'] if 'restore_state' in configs else None,
+                                            remote_model_path=filename,resume=resume)
+
+
+        training_step_pjit = jax.jit(train_step, static_argnums=(2,),
+                                     donate_argnums=(0,),
+                                     out_shardings=(train_state_sharding, None),
+                                     # in_shardings=(train_state_sharding, sharding,),
+                                     )
 
         init_step=1
 
@@ -205,11 +205,7 @@ def main(configs):
             for _ in range(grad_accum_steps):
                 # batch = jax.tree_util.tree_map(lambda x: jax.make_array_from_process_local_data(sharding,np.asarray(x))  , next(train_dataloader_iter))
                 batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), next(train_dataloader_iter))
-
-
-
                 batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
-                print(batch[0].shape)
 
                 # print(batch[0].shape,batch[0].sharding)
                 # batch = jtu.tree_map(go_jit, batch)
