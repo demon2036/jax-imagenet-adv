@@ -1,16 +1,28 @@
-import jax.numpy as jnp
-import jax.random
+import importlib
+
+import importlib
+
+# 动态导入 gopen 模块
+gopen_module = importlib.import_module("webdataset.gopen")
+class CustomPipe(gopen_module.Pipe):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args,**kwargs)
+        self.timeout=72000.0
+gopen_module.Pipe=CustomPipe
+
+gopen_module = importlib.import_module("webdataset.gopen")
 
 
+import webdataset.gopen as gopen
 
 
-a=jnp.ones((2,2))
-b=jnp.ones((2,2))+3
-arr1_expanded = a[None, :]  # Shape becomes (1, 3)
-arr2_expanded = b[None, :]  # Shape becomes (1, 3)
+# 替换 Pipe 为 None（或者其他自定义实现）pr
 
-# Concatenate along the new axis (axis 0)
-result = jnp.concatenate([arr1_expanded, arr2_expanded], axis=0)
+# 确保在替换后再导入 webdataset
+import webdataset
 
-
-print(jax.random.choice(jax.random.PRNGKey(1),result,p=jnp.array([0.9,0.5])))
+# 测试调用 gopen
+try:
+    webdataset.gopen('1')  # 应该报错，因为 Pipe 已被替换为 None
+except Exception as e:
+    print(f"Error as expected: {e}")

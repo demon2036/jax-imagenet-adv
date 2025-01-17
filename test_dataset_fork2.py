@@ -14,6 +14,16 @@
 
 from __future__ import annotations
 
+import importlib
+
+gopen_module = importlib.import_module("webdataset.gopen")
+class CustomPipe(gopen_module.Pipe):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args,**kwargs)
+        self.timeout=72000.0
+gopen_module.Pipe=CustomPipe
+
+
 import argparse
 import copy
 import itertools
@@ -277,32 +287,6 @@ def mix_dataloader_iter(train_dataloader, train_origin_dataloader,state:DynamicM
         x, y = state.get_data(origin_dataloader_iter=train_origin_dataloader_iter,
                               syn_dataloader_iter=train_dataloader_iter)
         yield x, y
-    """
-    
-    ratio=state.ratio
-    if ratio==1.0:
-        if jax.process_index() == 0:
-            print('Only use generate')
-        train_dataloader_iter = iter(train_dataloader)
-        while True:
-            yield next(train_dataloader_iter)
-    elif ratio==0.0:
-        if jax.process_index() == 0:
-            print('Only use origin')
-
-        train_origin_dataloader_iter = iter(train_origin_dataloader)
-        while True:
-            yield next(train_origin_dataloader_iter)
-    else:
-
-        if jax.process_index() == 0:
-            print('use generate and origin')
-        train_dataloader_iter = iter(train_dataloader)
-        train_origin_dataloader_iter = iter(train_origin_dataloader)
-        while True:
-            x,y=state.get_data(origin_dataloader_iter=train_origin_dataloader_iter,syn_dataloader_iter=train_dataloader_iter)
-            yield x,y
-    """
 
 
 
@@ -392,7 +376,6 @@ def create_dataloaders(
         persistent_workers=True,
     )
 
-
     dataset = wds.DataPipeline(
         wds.SimpleShardList(generated_dataset_shards, seed=shuffle_seed),
         itertools.cycle,
@@ -415,7 +398,7 @@ def create_dataloaders(
         prefetch_factor=10,
         persistent_workers=True,
     )
-
+    wds.gopen
     if valid_dataset_shards is not None:
         dataset = wds.DataPipeline(
             wds.SimpleShardList(valid_dataset_shards),
