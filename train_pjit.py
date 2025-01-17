@@ -17,7 +17,8 @@ from __future__ import annotations
 
 import argparse
 import os
-os.environ['GOPEN_VERBOSE']='1'
+
+os.environ['GOPEN_VERBOSE'] = '1'
 
 import jax
 # jax.distributed.initialize()
@@ -58,7 +59,6 @@ import jax.numpy as jnp
 from flax.linen import partitioning as nn_partitioning
 
 
-
 def _build_global_shape_and_sharding(
         local_shape: tuple[int, ...], global_mesh: Mesh
 ) -> tuple[tuple[int, ...], NamedSharding]:
@@ -86,7 +86,7 @@ def _form_global_array(path, array: np.ndarray, global_mesh: Mesh) -> jax.Array:
     return jax.make_array_from_single_device_arrays(global_shape, sharding, local_device_buffers)
 
 
-def evaluate(state: TrainState, dataloader: DataLoader,validation_adv_step_jited,mesh) -> dict[str, float]:
+def evaluate(state: TrainState, dataloader: DataLoader, validation_adv_step_jited, mesh) -> dict[str, float]:
     average_meter = AverageMeter()
     # print(len(dataloader))
     for batch in tqdm.tqdm(dataloader, leave=False, dynamic_ncols=True):
@@ -109,10 +109,8 @@ def main(configs):
     use_orbax_save = configs.pop('use_orbax_save', True)
     valid_fn = configs.pop('valid_fn', "validation_adv_step")
     train_fn = configs.pop('train_fn', "training_step")
-    grad_accum_steps=configs['train_state'].get('grad_accum_steps',1)
-    resume=configs.get('resume',False)
-
-
+    grad_accum_steps = configs['train_state'].get('grad_accum_steps', 1)
+    resume = configs.get('resume', False)
 
     # os.environ['JAX_PLATFORMS']='cpu'
     # os.environ["XLA_FLAGS"] = '--xla_force_host_platform_device_count=8'
@@ -125,7 +123,7 @@ def main(configs):
     fsdp = configs.pop('fsdp', 1)
     tp = configs.pop('tp', 1)
 
-    mesh_dim = f'{dp},{fsdp},{tp}' #  '-1,1,1'
+    mesh_dim = f'{dp},{fsdp},{tp}'  #  '-1,1,1'
 
     postfix = "ema"
     name = configs['name']
@@ -140,22 +138,20 @@ def main(configs):
     mesh = get_jax_mesh2(mesh_dim)
     # print(mesh)
     sharding = jax.sharding.NamedSharding(
-        mesh, jax.sharding.PartitionSpec("dp",'fsdp','mp'))
+        mesh, jax.sharding.PartitionSpec("dp", 'fsdp', 'mp'))
     # print(sharding)
-    data_spec=[["dp",'fsdp','mp']]
+    data_spec = [["dp", 'fsdp', 'mp']]
     # data_spec=["dp",'fsdp','mp']
-    data_spec=P(*data_spec)
+    data_spec = P(*data_spec)
     print(data_spec)
-    sharding=jtu.tree_map(lambda p:NamedSharding(mesh,p),data_spec)
+    sharding = jtu.tree_map(lambda p: NamedSharding(mesh, p), data_spec)
     # print(sharding.addressable_devices,mesh.axis_names)
-
-
 
     train_dataloader_iter, valid_dataloader, mix_ratio_state = create_dataloaders(**configs['dataset'],
                                                                                   grad_accum=grad_accum_steps)
 
     logical_axis_rules = [
-        ['batch', ['dp','fsdp']],
+        ['batch', ['dp', 'fsdp']],
         ['activation_embed', 'mp'],
         ['mlp', 'mp'],
         ['vocab', 'fsdp'],
@@ -163,19 +159,16 @@ def main(configs):
         ['heads', 'mp'],
     ]
 
-
-
     with mesh, nn_partitioning.axis_rules(logical_axis_rules):
         valid_step = TRAIN_EVAL_FN_COLLECTION[valid_fn]
         train_step = TRAIN_EVAL_FN_COLLECTION[train_fn]
 
-
-        state, init_step,train_state_sharding = init_state(configs['train_state'],
-                                            warmup_steps=warmup_steps,
-                                            training_steps=training_steps, mesh=mesh,
-                                            restore_state_config=configs['restore_state'] if 'restore_state' in configs else None,
-                                            remote_model_path=filename,resume=resume)
-
+        state, init_step, train_state_sharding = init_state(configs['train_state'],
+                                                            warmup_steps=warmup_steps,
+                                                            training_steps=training_steps, mesh=mesh,
+                                                            restore_state_config=configs[
+                                                                'restore_state'] if 'restore_state' in configs else None,
+                                                            remote_model_path=filename, resume=resume)
 
         training_step_pjit = jax.jit(train_step, static_argnums=(2,),
                                      donate_argnums=(0,),
@@ -184,15 +177,14 @@ def main(configs):
                                      # in_shardings=(train_state_sharding, sharding,),
                                      )
 
-        init_step=1
+        init_step = 1
 
-
-        validation_adv_step_jited=jax.jit(valid_step,
-                                          in_shardings=(
-                                          train_state_sharding, NamedSharding(mesh, P(('dp', 'fsdp', 'mp')))),
-                                          # donate_argnums=(0,),
-                                          out_shardings=None
-        )
+        validation_adv_step_jited = jax.jit(valid_step,
+                                            in_shardings=(
+                                                train_state_sharding, NamedSharding(mesh, P(('dp', 'fsdp', 'mp')))),
+                                            # donate_argnums=(0,),
+                                            out_shardings=None
+                                            )
         checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
 
         average_meter, max_val_acc1 = AverageMeter(use_latest=["learning_rate"]), 0.0
@@ -244,16 +236,16 @@ def main(configs):
                     step % eval_interval == 0 or step == training_steps
             ):
 
-            # if step % eval_interval == 0 or step == training_steps:
+                # if step % eval_interval == 0 or step == training_steps:
                 if valid_dataloader is None:
                     continue
                 # del batch
-                metrics = evaluate(state, valid_dataloader,validation_adv_step_jited,mesh)
+                metrics = evaluate(state, valid_dataloader, validation_adv_step_jited, mesh)
 
                 if "val/advacc1" in metrics:
-                    now_acc1=metrics["val/advacc1"]
+                    now_acc1 = metrics["val/advacc1"]
                 else:
-                    now_acc1=metrics["val/acc1"]
+                    now_acc1 = metrics["val/acc1"]
 
                 if now_acc1 > max_val_acc1:
                     if use_orbax_save:
@@ -267,7 +259,6 @@ def main(configs):
 
                     max_val_acc1 = now_acc1
 
-
                     # save_checkpoint_in_background(args, params_bytes, postfix="best")
 
                 metrics["val/acc1/best"] = max_val_acc1
@@ -277,7 +268,6 @@ def main(configs):
 
             if use_orbax_save:
                 checkpointer.wait_until_finished()
-
 
     """
 
@@ -409,7 +399,6 @@ if __name__ == "__main__":
     # yaml = read_yaml('configs/planB/ablation/standard/caformer-b-36-silu-standard-300ep-mix0.9-modified_lion.yaml')
     yaml = preprocess_config(yaml)
     jax.distributed.initialize()
-
 
     # print(yaml)
     # while True:
