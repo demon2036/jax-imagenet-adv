@@ -235,9 +235,11 @@ def main(configs):
                 metrics["processed_samples"] = step * configs['dataset']['train_batch_size']
                 metrics["mix_ratio"] = mix_ratio_state.ratio
                 wandb.log(metrics, step)
-            if eval_interval > 0 and (
-                    step % eval_interval == 0 or step == training_steps
-            ):
+            # if eval_interval > 0 and (
+            #         step % eval_interval == 0 or step == training_steps
+            # ):
+
+            if step % eval_interval == 0 or step == training_steps:
                 if valid_dataloader is None:
                     continue
                 metrics = evaluate(state, valid_dataloader,validation_adv_step_jited,mesh)
