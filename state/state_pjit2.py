@@ -321,7 +321,7 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
                                          mesh, logical_axis_rules)
 
 
-    jax.sharding.NamedSharding().with_memory_kind()
+    # jax.sharding.NamedSharding().with_memory_kind()
 
     # if is_training and config.optimizer_memory_host_offload:
     #     opt_state = jax.tree_util.tree_map(lambda x: x.with_memory_kind(kind="pinned_host"),
