@@ -178,6 +178,17 @@ def main(configs):
                                      )
         from flax.training.train_state import TrainState
 
+        opt_state = jax.tree_util.tree_map(
+            lambda x: x.with_memory_kind(kind="pinned_host"), train_state_sharding.opt_state)
+
+        params = jax.tree_util.tree_map(
+            lambda x: x.with_memory_kind(kind="pinned_host"), train_state_sharding.params)
+        train_state_off_load_sharding = train_state_sharding.replace(params=params,
+                                                                     opt_state=opt_state)
+
+        def change_state_device(state):
+            return state
+
 
 
         init_step = 1
@@ -243,16 +254,7 @@ def main(configs):
                 if valid_dataloader is None:
                     continue
                 del batch
-                opt_state = jax.tree_util.tree_map(
-                    lambda x: x.with_memory_kind(kind="pinned_host"), train_state_sharding.opt_state)
 
-                params = jax.tree_util.tree_map(
-                    lambda x: x.with_memory_kind(kind="pinned_host"), train_state_sharding.params)
-                train_state_off_load_sharding = deepcopy(train_state_sharding).replace(params=params,
-                                                                                       opt_state=opt_state)
-
-                def change_state_device(state):
-                    return state
 
                 state = jax.jit(change_state_device, out_shardings=train_state_off_load_sharding)(state)
                 metrics = evaluate(state, valid_dataloader, validation_adv_step_jited, mesh,train_state_sharding)

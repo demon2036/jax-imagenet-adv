@@ -15,7 +15,7 @@ gopen_module.Pipe=None
 # from subprocess import Popen
 # x=Popen('echo 1').wait()
 # print(x)
-jax.numpy.ones((1,),).sharding.with_memory_kind('pinned_host')
+print(50000%4096)
 while True:
     pass
 
