@@ -437,7 +437,7 @@ def create_dataloaders(
             num_workers=valid_loader_workers,
             collate_fn=partial(collate_and_pad, batch_size=batch_size),
             drop_last=False,
-            prefetch_factor=2,
+            prefetch_factor=40,
             persistent_workers=False,
         )
 
