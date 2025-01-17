@@ -257,8 +257,22 @@ def main(configs):
 
 
                 state = jax.jit(change_state_device, out_shardings=train_state_off_load_sharding)(state)
-                metrics = evaluate(state, valid_dataloader, validation_adv_step_jited, mesh,train_state_sharding)
+                # metrics = evaluate(state, valid_dataloader, validation_adv_step_jited, mesh,train_state_sharding)
+
                 state = jax.jit(change_state_device, out_shardings=train_state_sharding)(state)
+
+
+                jax.tree_util.tree_map(
+                    lambda x: print(x), train_state_sharding.params)
+
+                ckpt = {'model': state}
+                save_args = orbax_utils.save_args_from_target(ckpt)
+                checkpointer.save(filename, ckpt, save_args=save_args, force=True)
+
+                while True:
+                    pass
+
+
 
                 if "val/advacc1" in metrics:
                     now_acc1 = metrics["val/advacc1"]
@@ -414,9 +428,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     yaml = read_yaml(args.yaml_path)
     # yaml = read_yaml('configs/planB/ablation/best/caformer-xxl-48-192-3step-700ep-real-adv-step-3-rand-mix0.9-lamb.yaml')
-    # yaml = read_yaml('configs/planB/ablation/standard/caformer-b-36-silu-standard-300ep-mix0.9-modified_lion.yaml')
+    yaml = read_yaml('configs/planB/ablation/best/test.yaml')
     yaml = preprocess_config(yaml)
-    jax.distributed.initialize()
+    # jax.distributed.initialize()
 
     # print(yaml)
     # while True:

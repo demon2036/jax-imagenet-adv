@@ -79,13 +79,6 @@ def pgd_attack(image, label, model, epsilon=4 / 255, step_size=4/3 / 255, maxite
 
 
 
-
-
-
-
-
-
-
 def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3 / 255, maxiter=3, key=None,dynamic=False):
     """PGD attack on the L-infinity ball with radius epsilon.
 
