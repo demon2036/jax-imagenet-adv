@@ -268,6 +268,7 @@ def main(configs):
                     save_args = orbax_utils.save_args_from_target(ckpt)
                     checkpointer.save(filename, ckpt, save_args=save_args, force=True)
                     max_val_acc1 = now_acc1
+                    del ckpt
 
                 metrics["val/acc1/best"] = max_val_acc1
                 metrics["processed_samples"] = step * configs['dataset']['train_batch_size']
