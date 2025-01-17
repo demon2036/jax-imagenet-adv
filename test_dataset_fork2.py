@@ -30,7 +30,8 @@ class CustomPipe(gopen_module.Pipe):
             self.status = self.proc.wait(self.timeout)
             self.wait_for_child()
 
-gopen_module.Pipe=CustomPipe
+# gopen_module.Pipe=CustomPipe
+gopen_module.Pipe=None
 
 
 import argparse
