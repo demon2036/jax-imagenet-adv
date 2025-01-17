@@ -255,7 +255,7 @@ def main(configs):
 
 
                 state = jax.jit(change_state_device, out_shardings=train_state_off_load_sharding)(state)
-                metrics = evaluate(state, valid_dataloader, validation_adv_step_jited, mesh,train_state_sharding)
+                metrics = evaluate(state, valid_dataloader, validation_adv_step_jited, mesh)
                 state = jax.jit(change_state_device, out_shardings=train_state_sharding)(state)
 
                 if "val/advacc1" in metrics:
