@@ -95,7 +95,7 @@ def evaluate(state: TrainState, dataloader: DataLoader,validation_adv_step_jited
         batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
         # print(batch[0].shape)
 
-        print(counter)
+        print(counter,batch[0].shape)
         counter+=1
 
         # metrics = validation_adv_step_jited(state, batch)
