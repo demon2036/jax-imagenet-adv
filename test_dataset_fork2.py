@@ -21,6 +21,15 @@ class CustomPipe(gopen_module.Pipe):
     def __init__(self, *args, **kwargs):
         super().__init__(*args,**kwargs)
         self.timeout=7200000.0
+
+    def close(self):
+        """Wrap stream.close, wait for the subprocess, and handle errors."""
+        if not self.stream.closed:
+            self.stream.close()
+            print(self.timeout)
+            self.status = self.proc.wait(self.timeout)
+            self.wait_for_child()
+
 gopen_module.Pipe=CustomPipe
 
 
