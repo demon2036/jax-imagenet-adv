@@ -2,6 +2,8 @@ import importlib
 
 import importlib
 
+import jax.numpy
+
 # 动态导入 gopen 模块
 gopen_module = importlib.import_module("webdataset.gopen")
 class CustomPipe(gopen_module.Pipe):
@@ -13,7 +15,7 @@ gopen_module.Pipe=None
 # from subprocess import Popen
 # x=Popen('echo 1').wait()
 # print(x)
-print(50000%512  /32 )
+jax.numpy.ones((1,),).sharding.with_memory_kind('pinned_host')
 while True:
     pass
 
