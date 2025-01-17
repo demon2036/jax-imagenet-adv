@@ -422,15 +422,25 @@ def create_dataloaders(
             wds.to_tuple("jpg", "cls"),
             wds.map_tuple(valid_transform, torch.tensor),
         )
+        # valid_dataloader = DataLoader(
+        #     dataset,
+        #     batch_size=(batch_size := valid_batch_size // jax.process_count()),
+        #     num_workers=valid_loader_workers,
+        #     collate_fn=partial(collate_and_pad, batch_size=batch_size),
+        #     drop_last=False,
+        #     prefetch_factor=10,
+        #     persistent_workers=True,
+        # )
         valid_dataloader = DataLoader(
             dataset,
             batch_size=(batch_size := valid_batch_size // jax.process_count()),
             num_workers=valid_loader_workers,
             collate_fn=partial(collate_and_pad, batch_size=batch_size),
             drop_last=False,
-            prefetch_factor=10,
-            persistent_workers=True,
+            prefetch_factor=2,
+            persistent_workers=False,
         )
+
     return mix_dataloader_iter(train_dataloader, train_origin_dataloader,state), valid_dataloader,state
     # return train_dataloader, valid_dataloader
 
