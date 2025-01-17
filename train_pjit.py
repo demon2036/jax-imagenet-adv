@@ -206,16 +206,16 @@ def main(configs):
         epoch = init_step // epoch_per_step
         mix_ratio_state.update_mix_ratio(epoch, configs['training_epoch'])
 
-        # if jax.process_index() == 0:
-        #     wandb.init(name=configs['name'], project=configs['project'], config=configs)
+        if jax.process_index() == 0:
+            wandb.init(name=configs['name'], project=configs['project'], config=configs)
 
         for step in tqdm.tqdm(range(init_step, training_steps + 1), initial=init_step, total=training_steps + 1):
             """
             """
-            # for _ in range(grad_accum_steps):
-            #     # batch = jax.tree_util.tree_map(lambda x: jax.make_array_from_process_local_data(sharding,np.asarray(x))  , next(train_dataloader_iter))
-            #     batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), next(train_dataloader_iter))
-            #     batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
+            for _ in range(grad_accum_steps):
+                # batch = jax.tree_util.tree_map(lambda x: jax.make_array_from_process_local_data(sharding,np.asarray(x))  , next(train_dataloader_iter))
+                batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), next(train_dataloader_iter))
+                batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
 
                 # print(batch[0].shape,batch[0].sharding)
                 # batch = jtu.tree_map(go_jit, batch)
@@ -229,23 +229,23 @@ def main(configs):
                 # while True:
                 #     pass
 
-            #     state, metrics = training_step_pjit(state, batch, use_pgd)
-            #     average_meter.update(**metrics)
-            #
-            #
-            # if step % epoch_per_step == 0:
-            #     epoch = step // epoch_per_step
-            #     mix_ratio_state.update_mix_ratio(epoch, configs['training_epoch'])
-            #
-            # if (
-            #         jax.process_index() == 0
-            #         and log_interval > 0
-            #         and step % log_interval == 0
-            # ):
-            #     metrics = average_meter.summary(prefix="train/")
-            #     metrics["processed_samples"] = step * configs['dataset']['train_batch_size']
-            #     metrics["mix_ratio"] = mix_ratio_state.ratio
-            #     wandb.log(metrics, step)
+                state, metrics = training_step_pjit(state, batch, use_pgd)
+                average_meter.update(**metrics)
+
+
+            if step % epoch_per_step == 0:
+                epoch = step // epoch_per_step
+                mix_ratio_state.update_mix_ratio(epoch, configs['training_epoch'])
+
+            if (
+                    jax.process_index() == 0
+                    and log_interval > 0
+                    and step % log_interval == 0
+            ):
+                metrics = average_meter.summary(prefix="train/")
+                metrics["processed_samples"] = step * configs['dataset']['train_batch_size']
+                metrics["mix_ratio"] = mix_ratio_state.ratio
+                wandb.log(metrics, step)
             if eval_interval > 0 and (
                     step % eval_interval == 0 or step == training_steps
             ):
@@ -272,8 +272,8 @@ def main(configs):
 
                 metrics["val/acc1/best"] = max_val_acc1
                 metrics["processed_samples"] = step * configs['dataset']['train_batch_size']
-                # if jax.process_index() == 0:
-                #     wandb.log(metrics, step)
+                if jax.process_index() == 0:
+                    wandb.log(metrics, step)
 
             if use_orbax_save:
                 checkpointer.wait_until_finished()
