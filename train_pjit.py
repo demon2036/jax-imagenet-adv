@@ -251,7 +251,7 @@ def main(configs):
             ):
                 if valid_dataloader is None:
                     continue
-                del batch
+                # del batch
 
 
                 state = jax.jit(change_state_device, out_shardings=train_state_off_load_sharding)(state)
