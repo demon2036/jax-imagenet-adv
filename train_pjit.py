@@ -249,8 +249,6 @@ def main(configs):
             if eval_interval > 0 and (
                     step % eval_interval == 0 or step == training_steps
             ):
-
-                # if step % eval_interval == 0 or step == training_steps:
                 if valid_dataloader is None:
                     continue
                 del batch
@@ -266,18 +264,10 @@ def main(configs):
                     now_acc1 = metrics["val/acc1"]
 
                 if now_acc1 > max_val_acc1:
-                    if use_orbax_save:
-                        ckpt = {'model': state}
-                        save_args = orbax_utils.save_args_from_target(ckpt)
-                        checkpointer.save(filename, ckpt, save_args=save_args, force=True)
-                    else:
-                        if jax.process_index() == 0:
-                            params_bytes = msgpack_serialize(unreplicate(state.ema_params))
-                            save_checkpoint_in_background(filename, params_bytes, postfix="last")
-
+                    ckpt = {'model': state}
+                    save_args = orbax_utils.save_args_from_target(ckpt)
+                    checkpointer.save(filename, ckpt, save_args=save_args, force=True)
                     max_val_acc1 = now_acc1
-
-                    # save_checkpoint_in_background(args, params_bytes, postfix="best")
 
                 metrics["val/acc1/best"] = max_val_acc1
                 metrics["processed_samples"] = step * configs['dataset']['train_batch_size']
@@ -414,9 +404,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     yaml = read_yaml(args.yaml_path)
     # yaml = read_yaml('configs/planB/ablation/best/caformer-xxl-48-192-3step-700ep-real-adv-step-3-rand-mix0.9-lamb.yaml')
-    yaml = read_yaml('configs/planB/ablation/best/test.yaml')
+    # yaml = read_yaml('configs/planB/ablation/best/test.yaml')
     yaml = preprocess_config(yaml)
-    # jax.distributed.initialize()
+    jax.distributed.initialize()
 
     # print(yaml)
     # while True:
