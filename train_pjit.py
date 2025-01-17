@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import os
+from copy import deepcopy
 
 os.environ['GOPEN_VERBOSE'] = '1'
 
@@ -88,31 +89,6 @@ def _form_global_array(path, array: np.ndarray, global_mesh: Mesh) -> jax.Array:
 
 def evaluate(state: TrainState, dataloader: DataLoader, validation_adv_step_jited, mesh,train_state_sharding) -> dict[str, float]:
     average_meter = AverageMeter()
-
-    # opt_state = jax.tree_util.tree_map(lambda x: x.with_memory_kind(kind="pinned_host"),
-    #                                    train_state_sharding.opt_state)
-
-
-
-    def change_state_device(state):
-        return state
-
-    state=jax.jit(change_state_device,out_shardings=train_state_sharding)(state)
-
-
-    # opt_state=jax.device_put(
-    #     state.opt_state,
-    #     jax.tree_util.tree_map(lambda x: x.with_memory_kind(kind="pinned_host"), train_state_sharding.opt_state),
-    # )
-    # params=jax.device_put(
-    #     state.params,
-    #     jax.tree_util.tree_map(lambda x: x.with_memory_kind(kind="pinned_host"), train_state_sharding.params),
-    # )
-    # state=state.replace(params=params,opt_state=opt_state)
-
-        # params = jax.tree_util.tree_map(lambda x: x.with_memory_kind(kind="pinned_host"), train_state_sharding.params)
-        # state_mesh_shardings = state_mesh_shardings.replace(opt_state=opt_state, params=params)
-
     for batch in tqdm.tqdm(dataloader, leave=False, dynamic_ncols=True):
         batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), batch)
         batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
@@ -200,6 +176,9 @@ def main(configs):
                                      out_shardings=(train_state_sharding, None),
                                      # in_shardings=(train_state_sharding, sharding,),
                                      )
+        from flax.training.train_state import TrainState
+
+
 
         init_step = 1
 
@@ -263,8 +242,21 @@ def main(configs):
                 # if step % eval_interval == 0 or step == training_steps:
                 if valid_dataloader is None:
                     continue
-                # del batch
+                del batch
+                opt_state = jax.tree_util.tree_map(
+                    lambda x: x.with_memory_kind(kind="pinned_host"), train_state_sharding.opt_state)
+
+                params = jax.tree_util.tree_map(
+                    lambda x: x.with_memory_kind(kind="pinned_host"), train_state_sharding.params)
+                train_state_off_load_sharding = deepcopy(train_state_sharding).replace(params=params,
+                                                                                       opt_state=opt_state)
+
+                def change_state_device(state):
+                    return state
+
+                state = jax.jit(change_state_device, out_shardings=train_state_off_load_sharding)(state)
                 metrics = evaluate(state, valid_dataloader, validation_adv_step_jited, mesh,train_state_sharding)
+                state = jax.jit(change_state_device, out_shardings=train_state_sharding)(state)
 
                 if "val/advacc1" in metrics:
                     now_acc1 = metrics["val/advacc1"]

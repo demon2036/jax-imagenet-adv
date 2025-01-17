@@ -248,15 +248,9 @@ def create_train_state(train_state_config, image_size: int = 224,
     # jax.sharding.NamedSharding(mesh,train_state_partition)
     train_state_sharding = jax.tree_util.tree_map(lambda x: jax.sharding.NamedSharding(mesh, x), train_state_partition)
     # print(type(train_state_sharding))
-    opt_state=jax.tree_util.tree_map(
-        lambda x: x.with_memory_kind(kind="pinned_host"), train_state_sharding.opt_state)
 
-    params=jax.tree_util.tree_map(
-        lambda x: x.with_memory_kind(kind="pinned_host"), train_state_sharding.params)
-    train_state_sharding=train_state_sharding.replace(params=params,opt_state=opt_state)
     # while True:
     #     pass
-
 
     return state_shapes,train_state_sharding,init_fn,init_by_params_fn,init_rngs,example_inputs
 
