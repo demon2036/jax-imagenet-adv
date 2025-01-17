@@ -88,10 +88,16 @@ def _form_global_array(path, array: np.ndarray, global_mesh: Mesh) -> jax.Array:
 
 def evaluate(state: TrainState, dataloader: DataLoader,validation_adv_step_jited,mesh) -> dict[str, float]:
     average_meter = AverageMeter()
+    print(len(dataloader))
+    counter=0
     for batch in tqdm.tqdm(dataloader, leave=False, dynamic_ncols=True):
         batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), batch)
         batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
         # print(batch[0].shape)
+
+        print(counter)
+        counter+=1
+
         metrics = validation_adv_step_jited(state, batch)
         average_meter.update(**metrics)
 
