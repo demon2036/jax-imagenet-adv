@@ -92,11 +92,7 @@ def evaluate(state: TrainState, dataloader: DataLoader, validation_adv_step_jite
     # opt_state = jax.tree_util.tree_map(lambda x: x.with_memory_kind(kind="pinned_host"),
     #                                    train_state_sharding.opt_state)
 
-    train_state_sharding.opt_state=jax.tree_util.tree_map(
-        lambda x: x.with_memory_kind(kind="pinned_host"), train_state_sharding.opt_state)
 
-    train_state_sharding.params=jax.tree_util.tree_map(
-        lambda x: x.with_memory_kind(kind="pinned_host"), train_state_sharding.params)
 
     def change_state_device(state):
         return state
