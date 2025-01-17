@@ -257,22 +257,8 @@ def main(configs):
 
 
                 state = jax.jit(change_state_device, out_shardings=train_state_off_load_sharding)(state)
-                # metrics = evaluate(state, valid_dataloader, validation_adv_step_jited, mesh,train_state_sharding)
-
+                metrics = evaluate(state, valid_dataloader, validation_adv_step_jited, mesh,train_state_sharding)
                 state = jax.jit(change_state_device, out_shardings=train_state_sharding)(state)
-
-
-                jax.tree_util.tree_map(
-                    lambda x: print(x), train_state_sharding.params)
-
-                ckpt = {'model': state}
-                save_args = orbax_utils.save_args_from_target(ckpt)
-                checkpointer.save(filename, ckpt, save_args=save_args, force=True)
-
-                while True:
-                    pass
-
-
 
                 if "val/advacc1" in metrics:
                     now_acc1 = metrics["val/advacc1"]
@@ -295,8 +281,8 @@ def main(configs):
 
                 metrics["val/acc1/best"] = max_val_acc1
                 metrics["processed_samples"] = step * configs['dataset']['train_batch_size']
-                if jax.process_index() == 0:
-                    wandb.log(metrics, step)
+                # if jax.process_index() == 0:
+                #     wandb.log(metrics, step)
 
             if use_orbax_save:
                 checkpointer.wait_until_finished()
