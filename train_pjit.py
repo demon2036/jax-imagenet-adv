@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import os
+os.environ['GOPEN_VERBOSE']='1'
 
 import jax
 # jax.distributed.initialize()
