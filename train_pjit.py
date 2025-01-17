@@ -86,9 +86,25 @@ def _form_global_array(path, array: np.ndarray, global_mesh: Mesh) -> jax.Array:
     return jax.make_array_from_single_device_arrays(global_shape, sharding, local_device_buffers)
 
 
-def evaluate(state: TrainState, dataloader: DataLoader, validation_adv_step_jited, mesh) -> dict[str, float]:
+def evaluate(state: TrainState, dataloader: DataLoader, validation_adv_step_jited, mesh,train_state_sharding) -> dict[str, float]:
     average_meter = AverageMeter()
-    # print(len(dataloader))
+
+    # opt_state = jax.tree_util.tree_map(lambda x: x.with_memory_kind(kind="pinned_host"),
+    #                                    train_state_sharding.opt_state)
+
+    opt_state=jax.device_put(
+        state.opt_state,
+        jax.tree_util.tree_map(lambda x: x.with_memory_kind(kind="pinned_host"), train_state_sharding.opt_state),
+    )
+    params=jax.device_put(
+        state.params,
+        jax.tree_util.tree_map(lambda x: x.with_memory_kind(kind="pinned_host"), train_state_sharding.params),
+    )
+    state=state.replace(params=params,opt_state=opt_state)
+
+        # params = jax.tree_util.tree_map(lambda x: x.with_memory_kind(kind="pinned_host"), train_state_sharding.params)
+        # state_mesh_shardings = state_mesh_shardings.replace(opt_state=opt_state, params=params)
+
     for batch in tqdm.tqdm(dataloader, leave=False, dynamic_ncols=True):
         batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), batch)
         batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
@@ -180,8 +196,8 @@ def main(configs):
         init_step = 1
 
         validation_adv_step_jited = jax.jit(valid_step,
-                                            in_shardings=(
-                                                train_state_sharding, NamedSharding(mesh, P(('dp', 'fsdp', 'mp')))),
+                                            # in_shardings=(
+                                            #     train_state_sharding, NamedSharding(mesh, P(('dp', 'fsdp', 'mp')))),
                                             # donate_argnums=(0,),
                                             out_shardings=None
                                             )
@@ -240,7 +256,7 @@ def main(configs):
                 if valid_dataloader is None:
                     continue
                 # del batch
-                metrics = evaluate(state, valid_dataloader, validation_adv_step_jited, mesh)
+                metrics = evaluate(state, valid_dataloader, validation_adv_step_jited, mesh,train_state_sharding)
 
                 if "val/advacc1" in metrics:
                     now_acc1 = metrics["val/advacc1"]

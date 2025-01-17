@@ -10,10 +10,10 @@ class CustomPipe(gopen_module.Pipe):
         self.timeout=72000.0
 gopen_module.Pipe=None
 
-from subprocess import Popen
-x=Popen('echo 1').wait()
-print(x)
-
+# from subprocess import Popen
+# x=Popen('echo 1').wait()
+# print(x)
+print(50000%512  /32 )
 while True:
     pass
 
