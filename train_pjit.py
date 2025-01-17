@@ -87,7 +87,7 @@ def _form_global_array(path, array: np.ndarray, global_mesh: Mesh) -> jax.Array:
     return jax.make_array_from_single_device_arrays(global_shape, sharding, local_device_buffers)
 
 
-def evaluate(state: TrainState, dataloader: DataLoader, validation_adv_step_jited, mesh,train_state_sharding) -> dict[str, float]:
+def evaluate(state: TrainState, dataloader: DataLoader, validation_adv_step_jited, mesh) -> dict[str, float]:
     average_meter = AverageMeter()
     for batch in tqdm.tqdm(dataloader, leave=False, dynamic_ncols=True):
         batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), batch)
@@ -194,8 +194,8 @@ def main(configs):
         init_step = 1
 
         validation_adv_step_jited = jax.jit(valid_step,
-                                            # in_shardings=(
-                                            #     train_state_sharding, NamedSharding(mesh, P(('dp', 'fsdp', 'mp')))),
+                                            in_shardings=(
+                                                train_state_off_load_sharding, NamedSharding(mesh, P(('dp', 'fsdp', 'mp')))),
                                             # donate_argnums=(0,),
                                             out_shardings=None
                                             )
@@ -212,10 +212,10 @@ def main(configs):
         for step in tqdm.tqdm(range(init_step, training_steps + 1), initial=init_step, total=training_steps + 1):
             """
             """
-            for _ in range(grad_accum_steps):
-                # batch = jax.tree_util.tree_map(lambda x: jax.make_array_from_process_local_data(sharding,np.asarray(x))  , next(train_dataloader_iter))
-                batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), next(train_dataloader_iter))
-                batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
+            # for _ in range(grad_accum_steps):
+            #     # batch = jax.tree_util.tree_map(lambda x: jax.make_array_from_process_local_data(sharding,np.asarray(x))  , next(train_dataloader_iter))
+            #     batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), next(train_dataloader_iter))
+            #     batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
 
                 # print(batch[0].shape,batch[0].sharding)
                 # batch = jtu.tree_map(go_jit, batch)
