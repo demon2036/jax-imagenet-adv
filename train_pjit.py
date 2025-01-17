@@ -206,7 +206,7 @@ def main(configs):
                 # batch = jax.tree_util.tree_map(lambda x: jax.make_array_from_process_local_data(sharding,np.asarray(x))  , next(train_dataloader_iter))
                 batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), next(train_dataloader_iter))
                 batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
-                print(batch[0].shape,batch[0].sharding)
+                # print(batch[0].shape,batch[0].sharding)
                 # batch = jtu.tree_map(go_jit, batch)
                 # images, labels = batch
                 # print(f'{images.shape=}   {images.addressable_data(0).shape=}')
@@ -242,6 +242,7 @@ def main(configs):
             if step % eval_interval == 0 or step == training_steps:
                 if valid_dataloader is None:
                     continue
+                del batch
                 metrics = evaluate(state, valid_dataloader,validation_adv_step_jited,mesh)
 
                 if "val/advacc1" in metrics:

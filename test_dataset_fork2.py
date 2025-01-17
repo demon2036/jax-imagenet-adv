@@ -329,7 +329,8 @@ def create_dataloaders(
         dataset_mix_ratio=0.8,
         max_syn_ratio=0.9,
         min_syn_ratio=0.3,
-        scheduler='stable'
+        scheduler='stable',
+        generated_train_loader_workers=10,
 
 ):
 
@@ -359,8 +360,7 @@ def create_dataloaders(
 
     state=DynamicMixRatioState(total_batch_size,scheduler,max_syn_ratio,min_syn_ratio)
 
-
-    generated_train_loader_workers = 10
+    # generated_train_loader_workers = 10
 
     files = []
     for url in generated_dataset_shards:
@@ -388,7 +388,7 @@ def create_dataloaders(
         num_workers=train_loader_workers,
         collate_fn=partial(collate_and_shuffle, repeats=augment_repeats),
         drop_last=True,
-        prefetch_factor=20,
+        prefetch_factor=10,
         persistent_workers=True,
     )
 
@@ -412,7 +412,7 @@ def create_dataloaders(
         num_workers=generated_train_loader_workers,
         collate_fn=partial(collate_and_shuffle, repeats=augment_repeats),
         drop_last=True,
-        prefetch_factor=20,
+        prefetch_factor=10,
         persistent_workers=True,
     )
 
