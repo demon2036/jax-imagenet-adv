@@ -376,6 +376,10 @@ def create_dataloaders(
         partial(repeat_samples, repeats=augment_repeats),
         wds.map_tuple(train_transform, torch.tensor),
     )
+
+    for d in dataset:
+        print(d)
+
     train_origin_dataloader = DataLoader(
         dataset,
         batch_size=total_batch_size,
