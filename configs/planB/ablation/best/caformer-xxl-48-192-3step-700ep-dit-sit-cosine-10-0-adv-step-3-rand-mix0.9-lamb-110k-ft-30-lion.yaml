@@ -16,7 +16,7 @@ tp: 1
 
 dataset:
   train_batch_size: 4096
-  valid_batch_size: 2048
+  valid_batch_size: 1024
   train_loader_workers: 8
   generated_train_loader_workers: 4
   valid_loader_workers: 10
