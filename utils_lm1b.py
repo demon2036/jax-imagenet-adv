@@ -16,6 +16,8 @@ gopen_module.Pipe=None
 # x=Popen('echo 1').wait()
 # print(x)
 print(50000%4096)
+import webdataset
+webdataset.gopen()
 while True:
     pass
 
