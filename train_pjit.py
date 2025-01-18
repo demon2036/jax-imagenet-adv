@@ -190,6 +190,11 @@ def main(configs):
             return state
 
 
+        off_load_memory_state=jax.jit(change_state_device, out_shardings=train_state_off_load_sharding)
+        reload_device_state = jax.jit(change_state_device, out_shardings=train_state_sharding)
+
+
+
 
         init_step = 1
 
@@ -251,12 +256,10 @@ def main(configs):
             ):
                 if valid_dataloader is None:
                     continue
-                # del batch
-
-
-                state = jax.jit(change_state_device, out_shardings=train_state_off_load_sharding)(state)
+                del batch
+                state = off_load_memory_state(state)
                 metrics = evaluate(state, valid_dataloader, validation_adv_step_jited, mesh)
-                state = jax.jit(change_state_device, out_shardings=train_state_sharding)(state)
+                state = reload_device_state(state)
 
                 if "val/advacc1" in metrics:
                     now_acc1 = metrics["val/advacc1"]
