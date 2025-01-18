@@ -60,15 +60,12 @@ train_state:
       drop_path_rate: 0.0
 
   optimizer:
-    target: 'lion'
+    target: 'adamw'
     optimizer_kwargs:
-#      clip_grad: None
-      learning_rate: 3.0e-5
-      init_value: 1.0e-7
-      end_learning_rate: 1.0e-6
-      weight_decay: 0.05
+      learning_rate: 0.0004
+      weight_decay: 1.0e-8
       b1: 0.9
-      b2: 0.99
+      b2: 0.999
   grad_accum_steps: 1
   init_seed: 1
   mixup_seed: 1

@@ -35,8 +35,8 @@ def pgd_attack(image, label, model, epsilon=4 / 255, step_size=4/3 / 255, maxite
     # image = image.astype(jnp.float32)
     # label = label.astype(jnp.int32)
 
-    image_perturbation = jnp.zeros_like(image)
-    # image_perturbation = jax.random.uniform(key, image.shape, minval=-epsilon, maxval=epsilon)
+    # image_perturbation = jnp.zeros_like(image)
+    image_perturbation = jax.random.uniform(key, image.shape, minval=-epsilon, maxval=epsilon)
 
     # print(label)
 
