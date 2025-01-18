@@ -48,8 +48,8 @@ train_state:
     cutmix: 1.0
     criterion: ce
     label_smoothing: 0.1
-    train_adv_step: 3
-    train_adv_step_size: 8/3 / 255
+    train_adv_step: 10
+    train_adv_step_size: 1 / 255
 
 
   model:
@@ -61,11 +61,12 @@ train_state:
       drop_path_rate: 0.0
 
   optimizer:
-    target: 'lamb'
+    target: 'lion'
     optimizer_kwargs:
-      learning_rate: 1.0e-3
-      init_value: 1.0e-6
-      end_learning_rate: 1.0e-5
+#      clip_grad: None
+      learning_rate: 3.0e-5
+      init_value: 1.0e-7
+      end_learning_rate: 1.0e-6
       weight_decay: 0.05
       b1: 0.9
       b2: 0.99
