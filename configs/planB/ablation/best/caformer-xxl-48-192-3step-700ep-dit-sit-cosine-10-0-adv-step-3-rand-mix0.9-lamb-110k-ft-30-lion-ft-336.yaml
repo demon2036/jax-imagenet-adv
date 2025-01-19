@@ -66,7 +66,7 @@ train_state:
     schedule: constant
     optimizer_kwargs:
       #      clip_grad: None
-      learning_rate: 5.0e-6
+      learning_rate: 1.0e-5
       init_value: 1.0e-7
       end_learning_rate: 1.0e-6
       weight_decay: 1.0e-8

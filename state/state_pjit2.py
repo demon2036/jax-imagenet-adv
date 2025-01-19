@@ -260,38 +260,8 @@ def create_train_state(train_state_config, image_size: int = 224,
     train_state_off_load_sharding = train_state_sharding.replace(params=params,
                                                                  opt_state=opt_state)
 
-
-
-
     return state_shapes,train_state_sharding,init_fn,init_by_params_fn,init_rngs,example_inputs
 
-    """
-    logical_state_spec = flax.linen.get_partition_spec(train_state_shapes)
-
-    logical_state_sharding = flax.linen.logical_to_mesh_sharding(logical_state_spec, mesh, logical_axis_rules)
-    # print(logical_state_sharding)
-
-    # print(train_state_sharding)
-    # state=jax.jit(init_fn, #in_shardings=(train_state_partition.params, ),
-    #     out_shardings=train_state_sharding,
-    #     # donate_argnums=(0, )
-    #               )(params)
-
-    init_fn_jited = jax.jit(init_fn,  #in_shardings=(train_state_partition.params, ),
-                            out_shardings=train_state_sharding
-                            # donate_argnums=(0, )
-                            )
-
-    state = init_fn_jited(params)
-
-    # print(state.opt_state)
-
-    if jax.process_index() == 0:
-        print(train_state_config)
-        # print(state)
-
-    return state, train_state_partition, train_state_sharding
-    """
 
 
 
@@ -364,6 +334,158 @@ def init_state(train_state_config, image_size: int = 224, warmup_steps=1, traini
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def create_train_state2(train_state_config, image_size: int = 224,
+                       warmup_steps=1, training_steps=10, mesh=None, logical_axis_rules=None
+                       ):  # -> TrainState:
+
+    model_config = train_state_config['model']
+    optimizer_config = train_state_config['optimizer']
+    train_module_config = train_state_config['train_module']
+    grad_accum_steps=train_state_config.pop('grad_accum_steps', 1)
+
+
+    model = get_obj_from_str(model_config['target'])(**model_config['model_kwargs'])
+    print(f'{train_module_config=}')
+
+    train_module = get_obj_from_str(train_module_config.pop('target'))  #(**model_config['model_kwargs'])
+
+    module = train_module(
+        model=model,
+        mixup=Mixup(train_module_config.pop('mixup', ), train_module_config.pop('cutmix')),
+        label_smoothing=train_module_config.pop('label_smoothing') if train_module_config['criterion'] != "bce" else 0,
+        criterion=CRITERION_COLLECTION[train_module_config.pop('criterion')], **train_module_config
+    )
+    if jax.process_index() == 0:
+        print(module)
+
+    # Initialize the model weights with dummy inputs. Using the init RNGS and inputs, we
+    # will tabulate the summary of model and its parameters. Furthermore, empty gradient
+    # accumulation arrays will be prepared if the gradient accumulation is enabled.
+    example_inputs = {
+        "images": jnp.zeros((1, 3, image_size, image_size), dtype=jnp.uint8),
+        # "labels": jnp.zeros((1,), dtype=jnp.int32),
+        "labels": jnp.ones((1,), dtype=jnp.int32)  #jnp.array([1,2], dtype=jnp.int32),
+    }
+
+    init_rngs = {"params": jax.random.PRNGKey(train_state_config['init_seed'])}
+
+
+    # if args.grad_accum > 1:
+    #     grad_accum = jax.tree_map(jnp.zeros_like, params)
+    lr = optimizer_config['optimizer_kwargs'].pop('learning_rate')
+    end_lr = optimizer_config['optimizer_kwargs'].pop('end_learning_rate', 1e-5)
+    init_value = optimizer_config['optimizer_kwargs'].pop('init_value', 1e-6)
+    schedule = optimizer_config.get('schedule', 'cosine')
+    clip_grad = optimizer_config.get('clip_grad', 1.0)
+
+    # Create learning rate scheduler and optimizer with gradient clipping. The learning
+    # rate will be recorded at `hyperparams` by `optax.inject_hyperparameters`.
+
+    @partial(optax.inject_hyperparams, hyperparam_dtype=jnp.float32)
+    def create_optimizer_fn(
+            learning_rate: optax.Schedule,
+    ) -> optax.GradientTransformation:
+
+        tx = OPTIMIZER_COLLECTION[optimizer_config['target']](
+            learning_rate=learning_rate,
+            **optimizer_config['optimizer_kwargs'],
+            mask=partial(jax.tree_util.tree_map_with_path, lambda kp, *_: kp[-1].key == "kernel"),
+        )
+        print(f'{clip_grad=}')
+        if clip_grad is not None:
+            tx = optax.chain(optax.clip_by_global_norm(clip_grad), tx)
+        return tx
+
+
+    if schedule == 'constant':
+        learning_rate = optax.warmup_cosine_decay_schedule(
+            init_value=lr,
+            peak_value=lr,
+            warmup_steps=warmup_steps,
+            decay_steps=training_steps,
+            end_value=lr,
+        )
+
+    elif schedule=="wsd":
+        learning_rate = warmup_stable_cosine_decay_schedule(
+            init_value=init_value,
+            peak_value=lr,
+            warmup_steps=warmup_steps,
+            decay_steps=training_steps,
+            end_value=end_lr,
+        )
+
+
+    else:
+        learning_rate = optax.warmup_cosine_decay_schedule(
+            init_value=init_value,
+            peak_value=lr,
+            warmup_steps=warmup_steps,
+            decay_steps=training_steps,
+            end_value=end_lr,
+        )
+
+    tx = create_optimizer_fn(learning_rate, )
+
+    def init_fn(init_rngs,example_inputs ) -> TrainState:
+        params = module.init(init_rngs, **example_inputs, det=False)["params"]
+        if grad_accum_steps > 1:
+            print(f'{grad_accum_steps=}')
+            grad_accum = jax.tree_map(jnp.zeros_like, params)
+
+        state = TrainState.create(
+            apply_fn=module.apply,
+            params=params,
+            tx=tx,
+            mixup_rng=jax.random.PRNGKey(train_state_config['mixup_seed']),
+            dropout_rng=jax.random.PRNGKey(train_state_config['dropout_seed']),
+            adv_rng=jax.random.PRNGKey(2036),
+            ema_decay=train_state_config['ema_decay'],
+            ema_params=copy.deepcopy(params) if train_state_config['ema_decay'] > 0 else None,
+            micro_step=0,
+            micro_in_mini=grad_accum_steps,
+            grad_accum=grad_accum if grad_accum_steps > 1 else None,
+        )
+        return state
+
+
+    state_shapes = jax.eval_shape(init_fn, init_rngs,example_inputs, )
+    train_state_partition = match_partition_rules(get_partition_rules_caformer(), state_shapes)
+    # jax.sharding.NamedSharding(mesh,train_state_partition)
+    train_state_sharding = jax.tree_util.tree_map(lambda x: jax.sharding.NamedSharding(mesh, x), train_state_partition)
+
+
+
+
+    return state_shapes,train_state_sharding,init_fn,init_rngs,example_inputs
+
+
+
 def init_state_restore(train_state_config, image_size: int = 224, warmup_steps=1, training_steps=10,
          mesh=None, logical_axis_rules=None,restore_state_config=None,resume=False,remote_model_path=None):
 
@@ -382,14 +504,17 @@ def init_state_restore(train_state_config, image_size: int = 224, warmup_steps=1
 
 
     (restore_state_shapes,
-     restore_state_sharding,*_)=create_train_state(restore_state_config, image_size, warmup_steps, training_steps,
+     restore_state_sharding,*_)=create_train_state2(restore_state_config, image_size, warmup_steps, training_steps,
                                          mesh, logical_axis_rules)
 
 
     (state_shapes,
      train_state_sharding,init_fn,
-     init_by_params_fn,init_rngs,example_inputs)=create_train_state(train_state_config, image_size, warmup_steps, training_steps,
+     init_rngs,example_inputs)=create_train_state2(train_state_config, image_size, warmup_steps, training_steps,
                                          mesh, logical_axis_rules)
+
+    # train_state_sharding = jax.tree_util.tree_map(
+    #     lambda x: x.with_memory_kind(kind="pinned_host"), train_state_sharding)
 
 
     if resume:
