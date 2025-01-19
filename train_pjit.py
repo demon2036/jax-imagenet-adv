@@ -176,7 +176,6 @@ def main(configs):
                                      out_shardings=(train_state_sharding, None),
                                      # in_shardings=(train_state_sharding, sharding,),
                                      )
-        from flax.training.train_state import TrainState
 
         opt_state = jax.tree_util.tree_map(
             lambda x: x.with_memory_kind(kind="pinned_host"), train_state_sharding.opt_state)
