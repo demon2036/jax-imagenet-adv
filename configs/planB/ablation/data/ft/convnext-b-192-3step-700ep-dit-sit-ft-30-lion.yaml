@@ -61,21 +61,21 @@ train_state:
       drop_path_rate: 0.0
 
   optimizer:
-#    target: 'lion'
-#    optimizer_kwargs:
-##      clip_grad: None
-#      learning_rate: 3.0e-5
-#      init_value: 1.0e-7
-#      end_learning_rate: 1.0e-6
-#      weight_decay: 0.05
-#      b1: 0.9
-#      b2: 0.99
-    target: 'adamw'
+    target: 'lion'
     optimizer_kwargs:
-      learning_rate: 0.0004
-      weight_decay: 1.0e-8
+#      clip_grad: None
+      learning_rate: 3.0e-5
+      init_value: 1.0e-7
+      end_learning_rate: 1.0e-6
+      weight_decay: 0.05
       b1: 0.9
-      b2: 0.999
+      b2: 0.99
+#    target: 'adamw'
+#    optimizer_kwargs:
+#      learning_rate: 0.0004
+#      weight_decay: 1.0e-8
+#      b1: 0.9
+#      b2: 0.999
 
 
   grad_accum_steps: 1
