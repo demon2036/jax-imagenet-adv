@@ -74,3 +74,15 @@ train_state:
   dropout_seed: 1
   ema_decay: 0.9998
   pretrained_ckpt: '$GCS_MODEL_DIR/planb/ablation/standard/caformer-xl-48-standard-300ep-mix0.9-ema'
+
+
+restore_state:
+  optimizer:
+      target: 'lamb'
+      optimizer_kwargs:
+        learning_rate: 1.0e-3
+        init_value: 1.0e-6
+        end_learning_rate: 1.0e-5
+        weight_decay: 0.05
+        b1: 0.9
+        b2: 0.99
