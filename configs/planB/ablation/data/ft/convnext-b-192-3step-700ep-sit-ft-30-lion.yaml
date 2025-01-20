@@ -74,7 +74,7 @@ train_state:
   init_seed: 1
   mixup_seed: 1
   dropout_seed: 1
-  ema_decay: 0.9998
+  ema_decay: 0.9999
   pretrained_ckpt: '$GCS_MODEL_DIR/planb/ablation/data/pt/convnext-b-192-3step-700ep-sit-ema'
 
 
