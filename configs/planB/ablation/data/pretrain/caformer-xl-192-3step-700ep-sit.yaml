@@ -43,13 +43,13 @@ dataset:
 
 train_state:
   train_module:
-    target: 'train_modules.TrainAdvModule'
+    target: 'train_modules.TrainAdvModule2'
     mixup: 0.8
     cutmix: 1.0
     criterion: ce
     label_smoothing: 0.1
     train_adv_step: 3
-    train_adv_step_size: 8/3 / 255
+    train_adv_step_size: 6/3 / 255
 
 
   model:
