@@ -195,7 +195,6 @@ def main(configs):
 
 
 
-        init_step = 1
 
         validation_adv_step_jited = jax.jit(valid_step,
                                             in_shardings=(
