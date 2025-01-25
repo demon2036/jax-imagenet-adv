@@ -1,5 +1,5 @@
 
-output_dir: $GCS_MODEL_DIR/planb/ablation/best
+output_dir: $GCS_MODEL_DIR/planb/ablation/ft
 name: caformer-xl-192-3step-700ep-sit-adv-step-3-rand-mix0.9-lamb-ft-30-lion
 project: jax-adv-image-net-best
 steps: 1281167
