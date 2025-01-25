@@ -81,7 +81,7 @@ train_state:
   mixup_seed: 1
   dropout_seed: 1
   ema_decay: 0.9998
-  pretrained_ckpt: '$GCS_MODEL_DIR/planb/ablation/data/pt/caformer-xl-192-3step-700ep-sit-adv-step-3-rand-mix0.9-lamb-ft-30-lion-ema'
+  pretrained_ckpt: '$GCS_MODEL_DIR/planb/ablation/data/ft/caformer-xl-192-3step-700ep-sit-adv-step-3-rand-mix0.9-lamb-ft-30-lion-ema'
 
 
 
