@@ -19,7 +19,7 @@ import argparse
 import os
 from copy import deepcopy
 
-os.environ['GOPEN_VERBOSE'] = '1'
+# os.environ['GOPEN_VERBOSE'] = '1'
 
 import jax
 # jax.distributed.initialize()
