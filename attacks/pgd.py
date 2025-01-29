@@ -111,7 +111,7 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
 
     # image_perturbation = jnp.zeros_like(image)
 
-    key1,key2,key3=jax.random.split(key)
+    key1,key2,key3=jax.random.split(key,3)
 
     image_perturbation = jax.random.uniform(key1, image.shape, minval=-epsilon, maxval=epsilon)
 
