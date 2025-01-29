@@ -3,7 +3,7 @@ output_dir: $GCS_MODEL_DIR/planb/ablation/data/pt
 name: caformer-xl-192-3step-500ep-sit-5step
 project: jax-adv-image-net-data
 steps: 1281167
-training_epoch: 700
+training_epoch: 500
 warmup_epoch: 20
 log_interval: 100
 eval_epoch: 10
@@ -12,7 +12,7 @@ grad_accum_steps: 1
 dp: -1
 fsdp: 1
 tp: 1
-resume: True
+#resume: True
 
 dataset:
   train_batch_size: 4096
@@ -49,7 +49,7 @@ train_state:
     criterion: ce
     label_smoothing: 0.1
     train_adv_step: 5
-    train_adv_step_size: 10/6 / 255
+    train_adv_step_size: 8/5 / 255
 
 
   model:
