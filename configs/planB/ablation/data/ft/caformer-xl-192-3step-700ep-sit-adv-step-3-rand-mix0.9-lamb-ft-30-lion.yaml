@@ -80,7 +80,8 @@ train_state:
   mixup_seed: 1
   dropout_seed: 1
   ema_decay: 0.9999
-  pretrained_ckpt: '$GCS_MODEL_DIR/planb/ablation/data/pt/caformer-xl-192-3step-700ep-sit-ema'
+#  pretrained_ckpt: '$GCS_MODEL_DIR/planb/ablation/data/pt/caformer-xl-192-3step-700ep-sit-ema'
+  pretrained_ckpt: '$GCS_MODEL_DIR/planb/ablation/data/pt/caformer-xl-192-3step-500ep-sit-5step'
 
 
 
