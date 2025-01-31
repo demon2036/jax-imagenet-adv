@@ -57,7 +57,7 @@ train_state:
     model_kwargs:
       depths: [3, 4, 30, 3]
       dims: [ 384, 768, 1536, 3072]
-      v_norm: False
+
 
   optimizer:
     target: 'lamb'
