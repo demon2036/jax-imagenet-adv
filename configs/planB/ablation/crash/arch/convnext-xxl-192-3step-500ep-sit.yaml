@@ -12,7 +12,7 @@ grad_accum_steps: 1
 dp: -1
 fsdp: 1
 tp: 1
-#resume: True
+resume: True
 
 dataset:
   train_batch_size: 4096
@@ -30,7 +30,7 @@ dataset:
   random_generated_erasing: 0.0
   augment_repeats: 3
   test_crop_ratio: 0.875
-  shuffle_seed: 10
+  shuffle_seed: 1
   image_size: 192
   generated_dataset_shards:
 #    ['$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..12799}.tar']
