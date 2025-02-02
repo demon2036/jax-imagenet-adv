@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/planb/ablation/crash
-name: caformer-xl-192-3step-500ep-sit
+name: convformer-xl-192-3step-500ep-sit
 project: jax-adv-image-net-crash
 steps: 1281167
 training_epoch: 500
@@ -53,11 +53,10 @@ train_state:
 
 
   model:
-    target: 'models.CAFormer'
+    target: 'models.ConvFormer'
     model_kwargs:
       depths: [8,8,24,8]
       dims: [ 256, 512, 768,1536]
-      v_norm: False
 
   optimizer:
     target: 'lamb'
@@ -73,7 +72,7 @@ train_state:
   mixup_seed: 1
   dropout_seed: 1
   ema_decay: 0.9998
-  pretrained_ckpt: '$GCS_MODEL_DIR/planb/ablation/standard/caformer-xl-48-standard-300ep-mix0.9-ema'
+  pretrained_ckpt: '$GCS_MODEL_DIR/planb/ablation/standard/convformer-xl-48-standard-192-400ep-mix0.9-ema'
 
 
 restore_state:
