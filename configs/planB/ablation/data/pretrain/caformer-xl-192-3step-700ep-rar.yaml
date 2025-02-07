@@ -28,13 +28,15 @@ dataset:
   auto_generated_augment: "rand-m9-mstd0.5-inc1"
   color_generated_jitter: 0.0
   random_generated_erasing: 0.0
-  augment_repeats: 3
+  augment_repeats: 1
   test_crop_ratio: 0.875
   shuffle_seed: 20
   image_size: 192
   generated_dataset_shards:
 #    ['$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..12799}.tar']
-    ['$GCS_MODEL_DIR/imagenet-generated-rar-500m/shards-{00000..19300}.tar']
+    ['$GCS_MODEL_DIR/imagenet-generated-rar-500m/shards-{00000..19300}.tar',
+     '$GCS_MODEL_DIR/imagenet-generated-rar-500m-seed-2036/shards-{00000..08400}.tar',
+    ]
   dataset_mix_ratio: 0.9
   max_syn_ratio: 0.9
   min_syn_ratio: 0.9
@@ -43,13 +45,13 @@ dataset:
 
 train_state:
   train_module:
-    target: 'train_modules.TrainAdvModule2'
-    mixup: 0.8
-    cutmix: 1.0
+    target: 'train_modules.TrainAdvModule'
+    mixup: 0.0
+    cutmix: 0.0
     criterion: ce
     label_smoothing: 0.1
     train_adv_step: 3
-    train_adv_step_size: 6/3 / 255
+    train_adv_step_size: 8/3 / 255
 
 
   model:
