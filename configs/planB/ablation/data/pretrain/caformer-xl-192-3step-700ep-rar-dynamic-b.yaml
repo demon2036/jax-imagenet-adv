@@ -35,7 +35,7 @@ dataset:
   generated_dataset_shards:
 #    ['$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..12799}.tar']
     ['$GCS_MODEL_DIR/imagenet-generated-rar-500m/shards-{00000..19300}.tar',
-     '$GCS_MODEL_DIR/imagenet-generated-rar-500m-seed-2036/shards-{00000..13400}.tar',
+     '$GCS_MODEL_DIR/imagenet-generated-rar-500m-seed-2036/shards-{00000..12400}.tar',
     ]
   dataset_mix_ratio: 0.9
   max_syn_ratio: 0.9
