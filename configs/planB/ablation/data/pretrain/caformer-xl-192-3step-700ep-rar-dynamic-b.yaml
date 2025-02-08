@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/planb/ablation/data/pt
-name: caformer-xl-192-3step-700ep-rar
+name: caformer-xl-192-3step-700ep-rar-dynamic-b
 project: jax-adv-image-net-data
 steps: 1281167
 training_epoch: 700
