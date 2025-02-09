@@ -197,12 +197,16 @@ class Attention(nn.Module):
             v=nn.LayerNorm(dtype=dtype,reduction_axes=-2,feature_axes=-2,use_bias=False,use_scale=False)(v)
 
 
-        if N==256:
-            x=jax.experimental.pallas.ops.tpu.flash_attention.flash_attention(q,k,v)
-        else:
-            attn = jnp.einsum("...nd,...md->...nm", q, k) * scale
-            attn = nn.softmax(attn, axis=-1)
-            x = jnp.einsum("...nm,...md->...nd", attn, v)
+        # if N==256:
+        #     x=jax.experimental.pallas.ops.tpu.flash_attention.flash_attention(q,k,v)
+        # else:
+        #     attn = jnp.einsum("...nd,...md->...nm", q, k) * scale
+        #     attn = nn.softmax(attn, axis=-1)
+        #     x = jnp.einsum("...nm,...md->...nd", attn, v)
+
+        attn = jnp.einsum("...nd,...md->...nm", q, k) * scale
+        attn = nn.softmax(attn, axis=-1)
+        x = jnp.einsum("...nm,...md->...nd", attn, v)
 
         x = x.transpose((0, 2, 1, 3)).reshape(B, N, C)
         x = nn.Dense(C, use_bias=self.proj_bias, name="proj",dtype = dtype)(x)
