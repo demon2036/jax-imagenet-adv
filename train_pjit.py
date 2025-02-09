@@ -172,7 +172,6 @@ def main(configs):
 
         training_step_pjit = jax.jit(train_step, static_argnums=(2,),
                                      donate_argnums=(0,),
-
                                      out_shardings=(train_state_sharding, None),
                                      # in_shardings=(train_state_sharding, sharding,),
                                      )
