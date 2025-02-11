@@ -54,7 +54,7 @@ train_state:
     criterion: ce
     label_smoothing: 0.1
     train_adv_step: 5
-    train_adv_step_size: 8/3 / 255
+    train_adv_step_size: 8/5 / 255
 
 
   model:
