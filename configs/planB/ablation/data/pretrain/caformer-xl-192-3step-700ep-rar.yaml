@@ -37,6 +37,8 @@ dataset:
     ['$GCS_MODEL_DIR/imagenet-generated-rar-500m/shards-{00000..19300}.tar',
      '$GCS_MODEL_DIR/imagenet-generated-rar-500m-seed-2036/shards-{00000..13400}.tar',
      '$GCS_MODEL_DIR/imagenet-generated-rar-500m-seed-2036-0724/shards-{00000..16000}.tar',
+      '$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..12799}.tar',
+     '$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar'
     ]
   dataset_mix_ratio: 0.9
   max_syn_ratio: 0.9
@@ -47,8 +49,8 @@ dataset:
 train_state:
   train_module:
     target: 'train_modules.TrainAdvModule2'
-    mixup: 0.0
-    cutmix: 0.0
+    mixup: 0.8
+    cutmix: 1.0
     criterion: ce
     label_smoothing: 0.1
     train_adv_step: 3
