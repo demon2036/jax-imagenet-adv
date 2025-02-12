@@ -116,14 +116,14 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
     image_perturbation = jax.random.uniform(key1, image.shape, minval=-epsilon, maxval=epsilon)
 
 
-    # if dynamic:
+    if dynamic:
     #     # image_perturbation_zero=jnp.zeros_like(image)
     #     # image_perturbation = jnp.concatenate([image_perturbation[None,...], image_perturbation_zero[None,...]], axis=0)
     #     # image_perturbation=jax.random.choice(key2, image_perturbation, p=jnp.array([0.5, 0.5]))
     #
     #
     #     # step_size=jax.random.uniform(key2,(1,),minval=0.5,maxval=1).reshape((-1,1,1,1))*step_size
-    #     adv_step_size=jax.random.uniform(key2,(1,),minval=0.5,maxval=1).reshape((-1,1,1,1))*step_size
+        adv_step_size=jax.random.uniform(key2,(1,),minval=0.5,maxval=1).reshape((-1,1,1,1))*step_size
 
     # print(label)
 
@@ -144,10 +144,11 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
     for _ in range(maxiter):
 
         if dynamic:
+            pass
             # key1, key2 = jax.random.split(key2)
             # adv_step_size = jax.random.uniform(key2,(1,),minval=0.5,maxval=1.5).reshape((-1,1,1,1))*step_size
             # adv_step_size = jax.random.uniform(key2, (1,), minval=0.7, maxval=1.2).reshape((-1, 1, 1, 1)) * step_size
-            adv_step_size = jax.random.uniform(key3, (image.shape[0],), minval=0.5, maxval=1.5).reshape((-1, 1, 1, 1)) * step_size
+            # adv_step_size = jax.random.uniform(key3, (image.shape[0],), minval=0.5, maxval=1.5).reshape((-1, 1, 1, 1)) * step_size
         else:
             adv_step_size = step_size
         # if dynamic:
