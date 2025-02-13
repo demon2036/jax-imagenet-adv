@@ -23,14 +23,14 @@ dataset:
   valid_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-validation-{00..63}.tar"
   random_crop: src
   color_jitter: 0.0
-  auto_augment: "rand-m9-mstd0.5-inc1"
+  auto_augment: "none"
   random_erasing: 0.0
-  auto_generated_augment: "rand-m9-mstd0.5-inc1"
+  auto_generated_augment: "none"
   color_generated_jitter: 0.0
   random_generated_erasing: 0.0
   augment_repeats: 1
   test_crop_ratio: 0.875
-  shuffle_seed: 20
+  shuffle_seed: 1
   image_size: 192
   generated_dataset_shards:
 #    ['$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..12799}.tar']
@@ -50,8 +50,8 @@ dataset:
 train_state:
   train_module:
     target: 'train_modules.TrainAdvModule2'
-    mixup: 0.8
-    cutmix: 1.0
+    mixup: 0.0
+    cutmix: 0.0
     criterion: ce
     label_smoothing: 0.1
     train_adv_step: 3
