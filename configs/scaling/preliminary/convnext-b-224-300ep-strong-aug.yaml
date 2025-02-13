@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/scaling/preliminary
-name: convnext-s-224-300ep-no-aug
+name: convnext-b-224-300ep-no-aug
 project: jax-adv-image-net-scaling-preliminary
 steps: 1281167
 training_epoch: 300
@@ -8,6 +8,8 @@ warmup_epoch: 20
 log_interval: 100
 eval_epoch: 10
 grad_accum_steps: 1
+
+#resume: True
 
 dataset:
   train_batch_size: 4096
@@ -28,18 +30,18 @@ dataset:
   shuffle_seed: 1
   image_size: 224
   generated_dataset_shards:
-    ['$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..05983}.tar']
+    ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar']
   dataset_mix_ratio: 0.9
-  max_syn_ratio: 0.9
-  min_syn_ratio: 0.9
+  max_syn_ratio: 0.0
+  min_syn_ratio: 0.0
   scheduler: 'cosine'
 
 
 train_state:
   train_module:
     target: 'train_modules.TrainAdvModule'
-    mixup: 0.0
-    cutmix: 0.0
+    mixup: 0.8
+    cutmix: 1.0
     criterion: ce
     label_smoothing: 0.1
     train_adv_step: 3
@@ -51,7 +53,7 @@ train_state:
     model_kwargs:
       labels: 1000
       depths: [3,3,27,3]
-      dims: [96, 192, 384, 768]
+      dims: [128, 256, 512, 1024]
 
 
   optimizer:
@@ -67,7 +69,9 @@ train_state:
   mixup_seed: 1
   dropout_seed: 1
   ema_decay: 0.9998
-  pretrained_ckpt: 'convnext_small.fb_in1k'
+  pretrained_ckpt: 'convnext_base.fb_in1k'
+
+
 
 
 

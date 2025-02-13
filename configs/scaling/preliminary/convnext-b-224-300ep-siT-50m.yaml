@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/scaling/preliminary
-name: convnext-s-224-300ep-no-aug
+name: convnext-b-224-300ep-no-aug
 project: jax-adv-image-net-scaling-preliminary
 steps: 1281167
 training_epoch: 300
@@ -32,8 +32,8 @@ dataset:
   generated_dataset_shards:
     ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar']
   dataset_mix_ratio: 0.9
-  max_syn_ratio: 0.0
-  min_syn_ratio: 0.0
+  max_syn_ratio: 0.9
+  min_syn_ratio: 0.9
   scheduler: 'cosine'
 
 
@@ -71,6 +71,4 @@ train_state:
   dropout_seed: 1
   ema_decay: 0.9998
   pretrained_ckpt: 'convnext_base.fb_in1k'
-
-
 
