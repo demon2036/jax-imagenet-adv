@@ -53,8 +53,8 @@ train_state:
     target: 'models.ConvFormer'
     model_kwargs:
       labels: 1000
-      depths: [3,3,27,3]
-      dims: [128, 256, 512, 1024]
+      depths: [3, 12, 18, 3]
+      dims: [128, 256, 512, 768]
 
 
   optimizer:
