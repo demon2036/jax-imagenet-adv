@@ -12,7 +12,7 @@ grad_accum_steps: 1
 dp: -1
 fsdp: 1
 tp: 1
-#resume: True
+resume: True
 
 dataset:
   train_batch_size: 4096
@@ -34,12 +34,13 @@ dataset:
   image_size: 192
   generated_dataset_shards:
 #    ['$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..12799}.tar']
-    ['$GCS_MODEL_DIR/imagenet-generated-rar-500m/shards-{00000..19300}.tar',
-     '$GCS_MODEL_DIR/imagenet-generated-rar-500m-seed-2036/shards-{00000..13400}.tar',
-     '$GCS_MODEL_DIR/imagenet-generated-rar-500m-seed-2036-0724/shards-{00000..16000}.tar',
-      '$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..12799}.tar',
-     '$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar'
-    ]
+#    ['$GCS_MODEL_DIR/imagenet-generated-rar-500m/shards-{00000..19300}.tar',
+#     '$GCS_MODEL_DIR/imagenet-generated-rar-500m-seed-2036/shards-{00000..13400}.tar',
+#     '$GCS_MODEL_DIR/imagenet-generated-rar-500m-seed-2036-0724/shards-{00000..16000}.tar',
+#      '$GCS_MODEL_DIR/imagenet-generated-100steps-cfg1.0-eta0.0/shards-{00000..12799}.tar',
+#     '$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar'
+#    ]
+      ['$GCS_MODEL_DIR/imagenet-generated-rar-500m-var-cfg-seed-2036-0724/shards-{00000..08000}.tar']
   dataset_mix_ratio: 0.9
   max_syn_ratio: 0.9
   min_syn_ratio: 0.9
