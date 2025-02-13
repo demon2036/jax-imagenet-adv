@@ -50,7 +50,7 @@ train_state:
 
 
   model:
-    target: 'models.ConvFormer'
+    target: 'models.CAFormer'
     model_kwargs:
       labels: 1000
       qk_norm: False
