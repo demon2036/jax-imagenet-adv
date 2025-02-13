@@ -53,6 +53,7 @@ train_state:
     target: 'models.ConvFormer'
     model_kwargs:
       labels: 1000
+      qk_norm: False
       depths: [3, 12, 18, 3]
       dims: [128, 256, 512, 768]
 
