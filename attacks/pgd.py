@@ -127,7 +127,7 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
         # epsilon = jax.random.uniform(key4, (1,), minval = 1.0, maxval = 1.5).reshape((-1,1,1,1)) *epsilon
         epsilon_extend = jax.random.uniform(key4, (image.shape[0],), minval=1.5, maxval=2.0) * epsilon
 
-        r = jax.randomrandom.uniform(key, shape=(image.shape[0],))
+        r = jax.random.uniform(key5, shape=(image.shape[0],))
         sorted_indices = jnp.argsort(r)
         mask = jnp.zeros_like(sorted_indices, dtype=bool)
         mask = mask.at[sorted_indices[-10:]].set(True)
