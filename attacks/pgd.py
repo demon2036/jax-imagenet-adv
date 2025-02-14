@@ -154,7 +154,9 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
     #     sign_grad = jnp.sign(adversarial_loss(image_perturbation))
 
     grad_adversarial = jax.grad(adversarial_loss)
-    for _ in range(maxiter):
+    metrics={}
+    prev_image_perturbation=image_perturbation
+    for i in range(maxiter):
 
         if dynamic:
             pass
@@ -178,13 +180,19 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
         # projection step onto the L-infinity ball centered at image
         image_perturbation = jnp.clip(image_perturbation, - epsilon, epsilon)
 
+
+        delta=(prev_image_perturbation==image_perturbation).mean()
+        prev_image_perturbation=image_perturbation
+        metrics[f'delta_{i}']=delta
+
+
     # sign_grad = jnp.sign(grad_adversarial(image_perturbation))
     # image_perturbation += step_size * sign_grad
     # image_perturbation = jnp.clip(image_perturbation, - epsilon, epsilon)
 
     # clip the image to ensure pixels are between 0 and 1
     image_perturbation = jnp.clip(image + image_perturbation, 0, 1)
-    return jax.lax.stop_gradient(image_perturbation)
+    return jax.lax.stop_gradient(image_perturbation),metrics
 
 
 

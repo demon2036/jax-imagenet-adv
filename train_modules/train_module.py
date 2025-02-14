@@ -268,13 +268,13 @@ class TrainAdvModule2(nn.Module):
             images, labels = self.mixup(images, labels)
         print(use_pgd,use_trade,)
 
-
+        metrics={}
 
         if ref:
             pass
         else:
             if use_pgd:
-                images = pgd_dynamic_scale_attack(images, labels, self.model, key=self.make_rng('adv'),epsilon=self.eps,
+                images,metrics = pgd_dynamic_scale_attack(images, labels, self.model, key=self.make_rng('adv'),epsilon=self.eps,
                                     step_size=self.train_adv_step_size,  #if train else self.test_adv_step_size ,
                                     maxiter=self.train_adv_step,  #if train else self.test_adv_step
                                                   dynamic=not det
@@ -291,6 +291,6 @@ class TrainAdvModule2(nn.Module):
         preds = jax.lax.top_k(logits, k=5)[1]
         accs = jnp.take_along_axis(labels, preds, axis=-1)
         if return_logits:
-            return {"loss": loss, "acc1": accs[:, 0], "acc5": accs.any(-1),'logits':logits}
+            return {"loss": loss, "acc1": accs[:, 0], "acc5": accs.any(-1),'logits':logits} |metrics
         else:
-            return {"loss": loss, "acc1": accs[:, 0], "acc5": accs.any(-1)}
+            return {"loss": loss, "acc1": accs[:, 0], "acc5": accs.any(-1)}|metrics
