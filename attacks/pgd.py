@@ -125,13 +125,13 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
     #     # step_size=jax.random.uniform(key2,(1,),minval=0.5,maxval=1).reshape((-1,1,1,1))*step_size
         adv_step_size=jax.random.uniform(key2,(1,),minval=0.75,maxval=1).reshape((-1,1,1,1))*step_size
         # epsilon = jax.random.uniform(key4, (1,), minval = 1.0, maxval = 1.5).reshape((-1,1,1,1)) *epsilon
-        epsilon_extend = jax.random.uniform(key4, (image.shape[0],), minval=1.5, maxval=2.0) * epsilon
+        # epsilon_extend = jax.random.uniform(key4, (image.shape[0],), minval=1.5, maxval=2.0) * epsilon
 
-        r = jax.random.uniform(key5, shape=(image.shape[0],))
-        sorted_indices = jnp.argsort(r)
-        mask = jnp.zeros_like(sorted_indices, dtype=bool)
-        mask = mask.at[sorted_indices[:int(image.shape[0]*0.1)]].set(True)
-        epsilon = jnp.where(mask, epsilon_extend, epsilon).reshape((-1,1,1,1))
+        # r = jax.random.uniform(key5, shape=(image.shape[0],))
+        # sorted_indices = jnp.argsort(r)
+        # mask = jnp.zeros_like(sorted_indices, dtype=bool)
+        # mask = mask.at[sorted_indices[:int(image.shape[0]*0.1)]].set(True)
+        # epsilon = jnp.where(mask, epsilon_extend, epsilon).reshape((-1,1,1,1))
 
 
     #.reshape((-1, 1, 1, 1)
@@ -162,8 +162,10 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
             # adv_step_size = jax.random.uniform(key2,(1,),minval=0.5,maxval=1.5).reshape((-1,1,1,1))*step_size
             # adv_step_size = jax.random.uniform(key2, (1,), minval=0.7, maxval=1.2).reshape((-1, 1, 1, 1)) * step_size
             # adv_step_size = jax.random.uniform(key3, (image.shape[0],), minval=0.5, maxval=1.5).reshape((-1, 1, 1, 1)) * step_size
+            epsilon_adv = jax.random.uniform(key4, (image.shape[0],), minval=0.8, maxval=1.2).reshape(-1,1,1,1) * epsilon
         else:
             adv_step_size = step_size
+            epsilon_adv=epsilon
         # if dynamic:
         #     key1, key2 = jax.random.split(key2)
         #     adv_step_size = jax.random.uniform(key1, (1,), minval=0.5, maxval=1) * step_size
@@ -174,7 +176,7 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
         # heuristic step-size 2 eps / maxiter
         image_perturbation += adv_step_size * sign_grad
         # projection step onto the L-infinity ball centered at image
-        image_perturbation = jnp.clip(image_perturbation, - epsilon, epsilon)
+        image_perturbation = jnp.clip(image_perturbation, - epsilon_adv, epsilon_adv)
 
     # sign_grad = jnp.sign(grad_adversarial(image_perturbation))
     # image_perturbation += step_size * sign_grad
