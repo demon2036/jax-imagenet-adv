@@ -86,7 +86,7 @@ def _nucleus_sampling(p: float=0.9, t: float = 1.0, *, logits):
   # logits = jnp.where(logits < cutoff_logit,
   #                    jnp.full_like(logits, neg_inf), logits)
   return (logits < cutoff_logit).mean(),jnp.where(logits < cutoff_logit,
-                     jnp.full_like(logits, 1/2), 1.0)
+                     jnp.full_like(logits, 1/5), 1.0)
 
 
 
