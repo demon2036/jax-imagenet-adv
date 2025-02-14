@@ -75,7 +75,7 @@ def pgd_attack(image, label, model, epsilon=4 / 255, step_size=4/3 / 255, maxite
 
 
 
-def _nucleus_sampling(p: float=0.9, t: float = 1.0, *, logits):
+def _nucleus_sampling(p: float=0.5, t: float = 1.0, *, logits):
   logits = logits / t
 
   logits=jnp.abs(logits)
