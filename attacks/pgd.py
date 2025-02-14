@@ -75,10 +75,26 @@ def pgd_attack(image, label, model, epsilon=4 / 255, step_size=4/3 / 255, maxite
 
 
 
-def _nucleus_sampling(p: float=0.5, t: float = 1.0, *, logits):
+# def _nucleus_sampling(p: float=0.5, t: float = 1.0, *, logits):
+#   logits = logits / t
+#
+#   logits=jnp.abs(logits)
+#
+#   neg_inf = np.array(-1.0e7)  # Effective negative infinity.
+#   logits_sorted = jnp.sort(logits, axis=-1, descending=True)
+#   sorted_cum_probs = jnp.cumsum(
+#       jax.nn.softmax(logits_sorted, axis=-1), axis=-1)
+#   cutoff_index = jnp.sum(sorted_cum_probs < p, axis=-1, keepdims=True)
+#   cutoff_logit = jnp.take_along_axis(logits_sorted, cutoff_index, axis=-1)
+#   # logits = jnp.where(logits < cutoff_logit,
+#   #                    jnp.full_like(logits, neg_inf), logits)
+#   return (logits < cutoff_logit).mean(),jnp.where(logits < cutoff_logit,
+#                      jnp.full_like(logits, 1/4), 1.0)
+
+def _nucleus_sampling(p: float=0.9, t: float = 1.0, *, logits):
   logits = logits / t
 
-  logits=jnp.abs(logits)
+  logits=jnp.abs(logits)**2
 
   neg_inf = np.array(-1.0e7)  # Effective negative infinity.
   logits_sorted = jnp.sort(logits, axis=-1, descending=True)
@@ -90,7 +106,6 @@ def _nucleus_sampling(p: float=0.5, t: float = 1.0, *, logits):
   #                    jnp.full_like(logits, neg_inf), logits)
   return (logits < cutoff_logit).mean(),jnp.where(logits < cutoff_logit,
                      jnp.full_like(logits, 1/4), 1.0)
-
 
 
 
