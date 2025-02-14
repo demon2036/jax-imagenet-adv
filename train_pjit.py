@@ -201,7 +201,8 @@ def main(configs):
                                             # donate_argnums=(0,),
                                             out_shardings=None
                                             )
-        checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
+        # checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
+        checkpointer =ocp.PyTreeCheckpointer()
 
         average_meter, max_val_acc1 = AverageMeter(use_latest=["learning_rate"]), 0.0
 
