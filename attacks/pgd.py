@@ -131,7 +131,7 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
         sorted_indices = jnp.argsort(r)
         mask = jnp.zeros_like(sorted_indices, dtype=bool)
         mask = mask.at[sorted_indices[-10:]].set(True)
-        epsilon = jnp.where(mask, epsilon_extend, epsilon)
+        epsilon = jnp.where(mask, epsilon_extend, epsilon).reshape((-1,1,1,1))
 
 
     #.reshape((-1, 1, 1, 1)
