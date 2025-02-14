@@ -85,7 +85,8 @@ def _nucleus_sampling(p: float=0.9, t: float = 1.0, *, logits):
   cutoff_logit = jnp.take_along_axis(logits_sorted, cutoff_index, axis=-1)
   # logits = jnp.where(logits < cutoff_logit,
   #                    jnp.full_like(logits, neg_inf), logits)
-  return (logits < cutoff_logit).mean()
+  return (logits < cutoff_logit).mean(),jnp.where(logits < cutoff_logit,
+                     jnp.full_like(logits, 1/4), 1.0)
 
 
 
@@ -115,6 +116,7 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
     :param epsilon:
     :param step_size:
   """
+    b,h,w,c=image.shape
 
     # image = einops.rearrange(image, 'b c h w->b h w c')
     # image = image.astype(jnp.float32)
@@ -187,12 +189,12 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
         # compute gradient of the loss wrt to the image
         grad=grad_adversarial(image_perturbation)
 
-        metrics[f'top_p_{i}']=_nucleus_sampling(logits=einops.rearrange(grad,'b h w c -> b (h w c)'))
+        metrics[f'top_p_{i}'],factor=_nucleus_sampling(logits=einops.rearrange(grad,'b h w c -> b (h w c)'))
 
         sign_grad = jnp.sign(grad)
 
-
-        sign_grad*=2/3
+        sign_grad*=einops.rearrange(factor,'b (h w c)-> b h w c',h=h,w=w,c=c)
+        # sign_grad*=2/3
         # heuristic step-size 2 eps / maxiter
         image_perturbation += adv_step_size * sign_grad
         # projection step onto the L-infinity ball centered at image
