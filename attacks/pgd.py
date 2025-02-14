@@ -132,6 +132,7 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
         # mask = jnp.zeros_like(sorted_indices, dtype=bool)
         # mask = mask.at[sorted_indices[:int(image.shape[0]*0.1)]].set(True)
         # epsilon = jnp.where(mask, epsilon_extend, epsilon).reshape((-1,1,1,1))
+        epsilon_adv=epsilon
 
 
     #.reshape((-1, 1, 1, 1)
@@ -162,16 +163,20 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
             # adv_step_size = jax.random.uniform(key2,(1,),minval=0.5,maxval=1.5).reshape((-1,1,1,1))*step_size
             # adv_step_size = jax.random.uniform(key2, (1,), minval=0.7, maxval=1.2).reshape((-1, 1, 1, 1)) * step_size
             # adv_step_size = jax.random.uniform(key3, (image.shape[0],), minval=0.5, maxval=1.5).reshape((-1, 1, 1, 1)) * step_size
-            epsilon_adv = jax.random.uniform(key4, (image.shape[0],), minval=0.8, maxval=1.2).reshape(-1,1,1,1) * epsilon
+            # epsilon_adv = jax.random.uniform(key4, (image.shape[0],), minval=0.8, maxval=1.2).reshape(-1,1,1,1) * epsilon
         else:
             adv_step_size = step_size
-            epsilon_adv=epsilon
+            # epsilon_adv=epsilon
         # if dynamic:
         #     key1, key2 = jax.random.split(key2)
         #     adv_step_size = jax.random.uniform(key1, (1,), minval=0.5, maxval=1) * step_size
 
         # compute gradient of the loss wrt to the image
         sign_grad = jnp.sign(grad_adversarial(image_perturbation))
+
+        if step_size==0:
+            sign_grad*=0.5
+
 
         # heuristic step-size 2 eps / maxiter
         image_perturbation += adv_step_size * sign_grad
