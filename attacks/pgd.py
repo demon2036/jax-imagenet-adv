@@ -174,7 +174,7 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
         # compute gradient of the loss wrt to the image
         sign_grad = jnp.sign(grad_adversarial(image_perturbation))
 
-        if step_size==0:
+        if _==0:
             sign_grad*=0.5
 
 
