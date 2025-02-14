@@ -83,8 +83,8 @@ def _nucleus_sampling(p: float=0.9, t: float = 1.0, *, logits):
       jax.nn.softmax(logits_sorted, axis=-1), axis=-1)
   cutoff_index = jnp.sum(sorted_cum_probs < p, axis=-1, keepdims=True)
   cutoff_logit = jnp.take_along_axis(logits_sorted, cutoff_index, axis=-1)
-  logits = jnp.where(logits < cutoff_logit,
-                     jnp.full_like(logits, neg_inf), logits)
+  # logits = jnp.where(logits < cutoff_logit,
+  #                    jnp.full_like(logits, neg_inf), logits)
   return (logits < cutoff_logit).mean()
 
 
