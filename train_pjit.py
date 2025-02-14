@@ -276,8 +276,7 @@ def main(configs):
                 if jax.process_index() == 0:
                     wandb.log(metrics, step)
 
-            if use_orbax_save:
-                checkpointer.wait_until_finished()
+    # checkpointer.wait_until_finished()
 
     """
 
