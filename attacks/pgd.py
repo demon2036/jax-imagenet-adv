@@ -175,11 +175,17 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
 
         # compute gradient of the loss wrt to the image
         sign_grad = jnp.sign(grad_adversarial(image_perturbation))
+
+        if i==step_size-1:
+            sign_grad*=0.5
+
         # sign_grad*=2/3
         # heuristic step-size 2 eps / maxiter
         image_perturbation += adv_step_size * sign_grad
         # projection step onto the L-infinity ball centered at image
         image_perturbation = jnp.clip(image_perturbation, - epsilon, epsilon)
+
+
 
         for j,prev_image_perturbation in enumerate(prev_image_perturbations):
             delta=(prev_image_perturbation==image_perturbation).mean()
@@ -194,6 +200,18 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
     # clip the image to ensure pixels are between 0 and 1
     image_perturbation = jnp.clip(image + image_perturbation, 0, 1)
     return jax.lax.stop_gradient(image_perturbation),metrics
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
