@@ -95,6 +95,136 @@ def _nucleus_sampling(p: float=0.6, t: float = 1.0, *, logits):
 
 
 
+# def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3 / 255, maxiter=3, key=None,dynamic=False):
+#     """PGD attack on the L-infinity ball with radius epsilon.
+#
+#   Args:
+#     image: array-like, input data for the CNN
+#     label: integer, class label corresponding to image
+#     params: tree, parameters of the model to attack
+#     epsilon: float, radius of the L-infinity ball.
+#     maxiter: int, number of iterations of this algorithm.
+#
+#   Returns:
+#     perturbed_image: Adversarial image on the boundary of the L-infinity ball
+#       of radius epsilon and centered at image.
+#
+#   Notes:
+#     PGD attack is described in (Madry et al. 2017),
+#     https://arxiv.org/pdf/1706.06083.pdf
+#     :param state:
+#     :param image:
+#     :param label:
+#     :param params:
+#     :param maxiter:
+#     :param epsilon:
+#     :param step_size:
+#   """
+#     b,h,w,c=image.shape
+#
+#     # image = einops.rearrange(image, 'b c h w->b h w c')
+#     # image = image.astype(jnp.float32)
+#     # label = label.astype(jnp.int32)
+#
+#     # image_perturbation = jnp.zeros_like(image)
+#
+#     key1,key2,key3,key4,key5=jax.random.split(key,5)
+#
+#     image_perturbation = jax.random.uniform(key1, image.shape, minval=-epsilon, maxval=epsilon)
+#
+#
+#     if dynamic:
+#     #     # image_perturbation_zero=jnp.zeros_like(image)
+#     #     # image_perturbation = jnp.concatenate([image_perturbation[None,...], image_perturbation_zero[None,...]], axis=0)
+#     #     # image_perturbation=jax.random.choice(key2, image_perturbation, p=jnp.array([0.5, 0.5]))
+#     #
+#     #
+#     #     # step_size=jax.random.uniform(key2,(1,),minval=0.5,maxval=1).reshape((-1,1,1,1))*step_size
+#         adv_step_size=jax.random.uniform(key2,(1,),minval=0.75,maxval=1).reshape((-1,1,1,1))*step_size
+#         # epsilon = jax.random.uniform(key4, (1,), minval = 1.0, maxval = 1.5).reshape((-1,1,1,1)) *epsilon
+#         # epsilon_extend = jax.random.uniform(key4, (image.shape[0],), minval=1.5, maxval=2.0) * epsilon
+#
+#         # r = jax.random.uniform(key5, shape=(image.shape[0],))
+#         # sorted_indices = jnp.argsort(r)
+#         # mask = jnp.zeros_like(sorted_indices, dtype=bool)
+#         # mask = mask.at[sorted_indices[:int(image.shape[0]*0.1)]].set(True)
+#         # epsilon = jnp.where(mask, epsilon_extend, epsilon).reshape((-1,1,1,1))
+#
+#
+#     #.reshape((-1, 1, 1, 1)
+#
+#     # epsilon=jax.random.uniform(key4,(image.shape[0],),minval=0.95,maxval=1.05).reshape((-1, 1, 1, 1))*epsilon
+#         # epsilon=epsilon*2
+#     # print(label)
+#
+#
+#
+#     def adversarial_loss(perturbation):
+#         logits = model(jnp.clip(image + perturbation, 0, 1))
+#         # print(logits.shape,label.shape)
+#         loss_value = jnp.mean(optax.softmax_cross_entropy(logits, label))
+#         # loss_value = logits
+#         return loss_value
+#
+#     # for _ in range(maxiter):
+#     #     # compute gradient of the loss wrt to the image
+#     #     sign_grad = jnp.sign(adversarial_loss(image_perturbation))
+#
+#     grad_adversarial = jax.grad(adversarial_loss)
+#     metrics={}
+#     prev_image_perturbation=image_perturbation
+#     prev_image_perturbations=[image_perturbation]
+#     for i in range(maxiter):
+#
+#         if dynamic:
+#             pass
+#             # key1, key2 = jax.random.split(key2)
+#             # adv_step_size = jax.random.uniform(key2,(1,),minval=0.5,maxval=1.5).reshape((-1,1,1,1))*step_size
+#             # adv_step_size = jax.random.uniform(key2, (1,), minval=0.7, maxval=1.2).reshape((-1, 1, 1, 1)) * step_size
+#             # adv_step_size = jax.random.uniform(key3, (image.shape[0],), minval=0.5, maxval=1.5).reshape((-1, 1, 1, 1)) * step_size
+#             # epsilon_adv = jax.random.uniform(key4, (image.shape[0],), minval=0.8, maxval=1.2).reshape(-1,1,1,1) * epsilon
+#         else:
+#             adv_step_size = step_size
+#             # epsilon_adv=epsilon
+#         # if dynamic:
+#         #     key1, key2 = jax.random.split(key2)
+#         #     adv_step_size = jax.random.uniform(key1, (1,), minval=0.5, maxval=1) * step_size
+#
+#         # compute gradient of the loss wrt to the image
+#         grad=grad_adversarial(image_perturbation)
+#
+#         metrics[f'top_p_{i}'],factor=_nucleus_sampling(logits=einops.rearrange(grad,'b h w c -> b (h w c)'))
+#
+#         sign_grad = jnp.sign(grad)
+#
+#         sign_grad*=einops.rearrange(factor,'b (h w c)-> b h w c',h=h,w=w,c=c)
+#         # sign_grad*=2/3
+#         # heuristic step-size 2 eps / maxiter
+#         image_perturbation += adv_step_size * sign_grad
+#         # projection step onto the L-infinity ball centered at image
+#         image_perturbation = jnp.clip(image_perturbation, - epsilon, epsilon)
+#
+#
+#
+#         for j,prev_image_perturbation in enumerate(prev_image_perturbations):
+#             delta=(prev_image_perturbation==image_perturbation).mean()
+#             metrics[f'delta_{i}_{j}']=delta
+#         prev_image_perturbations.append(image_perturbation)
+#
+#
+#     # sign_grad = jnp.sign(grad_adversarial(image_perturbation))
+#     # image_perturbation += step_size * sign_grad
+#     # image_perturbation = jnp.clip(image_perturbation, - epsilon, epsilon)
+#
+#     # clip the image to ensure pixels are between 0 and 1
+#     image_perturbation = jnp.clip(image + image_perturbation, 0, 1)
+#     return jax.lax.stop_gradient(image_perturbation),metrics
+
+
+
+
+
+
 def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3 / 255, maxiter=3, key=None,dynamic=False):
     """PGD attack on the L-infinity ball with radius epsilon.
 
@@ -121,41 +251,12 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
     :param step_size:
   """
     b,h,w,c=image.shape
-
-    # image = einops.rearrange(image, 'b c h w->b h w c')
-    # image = image.astype(jnp.float32)
-    # label = label.astype(jnp.int32)
-
-    # image_perturbation = jnp.zeros_like(image)
-
     key1,key2,key3,key4,key5=jax.random.split(key,5)
-
     image_perturbation = jax.random.uniform(key1, image.shape, minval=-epsilon, maxval=epsilon)
 
-
     if dynamic:
-    #     # image_perturbation_zero=jnp.zeros_like(image)
-    #     # image_perturbation = jnp.concatenate([image_perturbation[None,...], image_perturbation_zero[None,...]], axis=0)
-    #     # image_perturbation=jax.random.choice(key2, image_perturbation, p=jnp.array([0.5, 0.5]))
-    #
-    #
-    #     # step_size=jax.random.uniform(key2,(1,),minval=0.5,maxval=1).reshape((-1,1,1,1))*step_size
-        adv_step_size=jax.random.uniform(key2,(1,),minval=0.75,maxval=1).reshape((-1,1,1,1))*step_size
-        # epsilon = jax.random.uniform(key4, (1,), minval = 1.0, maxval = 1.5).reshape((-1,1,1,1)) *epsilon
-        # epsilon_extend = jax.random.uniform(key4, (image.shape[0],), minval=1.5, maxval=2.0) * epsilon
-
-        # r = jax.random.uniform(key5, shape=(image.shape[0],))
-        # sorted_indices = jnp.argsort(r)
-        # mask = jnp.zeros_like(sorted_indices, dtype=bool)
-        # mask = mask.at[sorted_indices[:int(image.shape[0]*0.1)]].set(True)
-        # epsilon = jnp.where(mask, epsilon_extend, epsilon).reshape((-1,1,1,1))
-
-
-    #.reshape((-1, 1, 1, 1)
-
-    # epsilon=jax.random.uniform(key4,(image.shape[0],),minval=0.95,maxval=1.05).reshape((-1, 1, 1, 1))*epsilon
-        # epsilon=epsilon*2
-    # print(label)
+        # adv_step_size=jax.random.uniform(key2,(1,),minval=0.75,maxval=1).reshape((-1,1,1,1))*step_size
+        adv_step_size=step_size
 
 
 
@@ -166,39 +267,23 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
         # loss_value = logits
         return loss_value
 
-    # for _ in range(maxiter):
-    #     # compute gradient of the loss wrt to the image
-    #     sign_grad = jnp.sign(adversarial_loss(image_perturbation))
-
     grad_adversarial = jax.grad(adversarial_loss)
     metrics={}
-    prev_image_perturbation=image_perturbation
     prev_image_perturbations=[image_perturbation]
     for i in range(maxiter):
 
         if dynamic:
             pass
-            # key1, key2 = jax.random.split(key2)
-            # adv_step_size = jax.random.uniform(key2,(1,),minval=0.5,maxval=1.5).reshape((-1,1,1,1))*step_size
-            # adv_step_size = jax.random.uniform(key2, (1,), minval=0.7, maxval=1.2).reshape((-1, 1, 1, 1)) * step_size
-            # adv_step_size = jax.random.uniform(key3, (image.shape[0],), minval=0.5, maxval=1.5).reshape((-1, 1, 1, 1)) * step_size
-            # epsilon_adv = jax.random.uniform(key4, (image.shape[0],), minval=0.8, maxval=1.2).reshape(-1,1,1,1) * epsilon
         else:
             adv_step_size = step_size
-            # epsilon_adv=epsilon
-        # if dynamic:
-        #     key1, key2 = jax.random.split(key2)
-        #     adv_step_size = jax.random.uniform(key1, (1,), minval=0.5, maxval=1) * step_size
-
-        # compute gradient of the loss wrt to the image
         grad=grad_adversarial(image_perturbation)
 
         metrics[f'top_p_{i}'],factor=_nucleus_sampling(logits=einops.rearrange(grad,'b h w c -> b (h w c)'))
 
-        sign_grad = jnp.sign(grad)
+        if dynamic:
+            sign_grad = jnp.sign(grad)
 
         sign_grad*=einops.rearrange(factor,'b (h w c)-> b h w c',h=h,w=w,c=c)
-        # sign_grad*=2/3
         # heuristic step-size 2 eps / maxiter
         image_perturbation += adv_step_size * sign_grad
         # projection step onto the L-infinity ball centered at image
@@ -212,14 +297,9 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
         prev_image_perturbations.append(image_perturbation)
 
 
-    # sign_grad = jnp.sign(grad_adversarial(image_perturbation))
-    # image_perturbation += step_size * sign_grad
-    # image_perturbation = jnp.clip(image_perturbation, - epsilon, epsilon)
-
     # clip the image to ensure pixels are between 0 and 1
     image_perturbation = jnp.clip(image + image_perturbation, 0, 1)
     return jax.lax.stop_gradient(image_perturbation),metrics
-
 
 
 
