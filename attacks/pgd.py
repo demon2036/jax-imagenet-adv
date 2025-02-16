@@ -278,7 +278,10 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
         flatten_grad=einops.rearrange(grad,'b h w c -> b (h w c)')
 
         metrics[f'top_p_{i}'],factor=_nucleus_sampling(logits=einops.rearrange(grad,'b h w c -> b (h w c)'))
-        metrics[f'norm_{i}']=jnp.linalg.norm(flatten_grad,ord=1,axis=1).mean()
+        # metrics[f'norm_{i}']=jnp.linalg.norm(flatten_grad,ord=1,axis=1).mean()
+
+        metrics[f'norm_{i}'] = jnp.std(flatten_grad,axis=1).mean()
+
         sign_grad = jnp.sign(grad)
 
         if dynamic:
