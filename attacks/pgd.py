@@ -75,21 +75,21 @@ def pgd_attack(image, label, model, epsilon=4 / 255, step_size=4/3 / 255, maxite
 
 
 
-def _nucleus_sampling(p: float=0.6, t: float = 1.0,beta=1/4, *, logits):
-  logits = logits / t
-
-  logits=jnp.abs(logits)
-
-  neg_inf = np.array(-1.0e7)  # Effective negative infinity.
-  logits_sorted = jnp.sort(logits, axis=-1, descending=True)
-  sorted_cum_probs = jnp.cumsum(
-      jax.nn.softmax(logits_sorted, axis=-1), axis=-1)
-  cutoff_index = jnp.sum(sorted_cum_probs < p, axis=-1, keepdims=True)
-  cutoff_logit = jnp.take_along_axis(logits_sorted, cutoff_index, axis=-1)
-  # logits = jnp.where(logits < cutoff_logit,
-  #                    jnp.full_like(logits, neg_inf), logits)
-  return (logits < cutoff_logit).mean(),jnp.where(logits < cutoff_logit,
-                     jnp.full_like(logits, beta), 1.0)
+# def _nucleus_sampling(p: float=0.6, t: float = 1.0,beta=1/4, *, logits):
+#   logits = logits / t
+#
+#   logits=jnp.abs(logits)
+#
+#   neg_inf = np.array(-1.0e7)  # Effective negative infinity.
+#   logits_sorted = jnp.sort(logits, axis=-1, descending=True)
+#   sorted_cum_probs = jnp.cumsum(
+#       jax.nn.softmax(logits_sorted, axis=-1), axis=-1)
+#   cutoff_index = jnp.sum(sorted_cum_probs < p, axis=-1, keepdims=True)
+#   cutoff_logit = jnp.take_along_axis(logits_sorted, cutoff_index, axis=-1)
+#   # logits = jnp.where(logits < cutoff_logit,
+#   #                    jnp.full_like(logits, neg_inf), logits)
+#   return (logits < cutoff_logit).mean(),jnp.where(logits < cutoff_logit,
+#                      jnp.full_like(logits, beta), 1.0)
 
 
 
@@ -221,6 +221,39 @@ def _nucleus_sampling(p: float=0.6, t: float = 1.0,beta=1/4, *, logits):
 #     return jax.lax.stop_gradient(image_perturbation),metrics
 
 
+def _nucleus_sampling(ps=[0.3,0.7], betas=[1/2,1/4], *, logits):
+
+  logits=jnp.abs(logits)
+
+  logits_sorted = jnp.sort(logits, axis=-1, descending=True)
+  sorted_cum_probs = jnp.cumsum(
+      jax.nn.softmax(logits_sorted, axis=-1), axis=-1)
+
+  # 对于每个 p，计算 cutoff logit
+  cutoff_logits = []
+  for p in ps:
+      # cutoff_index: 每个样本中，累计概率小于 p 的元素个数
+      cutoff_index = jnp.sum(sorted_cum_probs < p, axis=-1, keepdims=True)
+      # 从排序后的 logits 中取出对应位置的 cutoff logit
+      cutoff_logit = jnp.take_along_axis(logits_sorted, cutoff_index, axis=-1)
+      cutoff_logits.append(cutoff_logit)
+
+  # 初始化调整因子，默认全部为 1.0（即不下调）
+  factor = jnp.ones_like(logits)
+
+  # 为了使得“尾部”更激进，我们从最严格的 bin（ps 最后一个，对应最低 cutoff）开始赋值，
+  # 如果某个位置的 logits 小于当前 bin 的 cutoff，则赋予对应 beta，下层的覆盖前面的
+  for cutoff_logit, beta_val in zip(cutoff_logits[::-1], betas[::-1]):
+      factor = jnp.where(logits < cutoff_logit, beta_val, factor)
+
+  return factor
+  # logits = jnp.where(logits < cutoff_logit,
+  #                    jnp.full_like(logits, neg_inf), logits)
+  # return (logits < cutoff_logit).mean(),jnp.where(logits < cutoff_logit,
+  #                    jnp.full_like(logits, beta), 1.0)
+
+
+
 
 
 
@@ -277,16 +310,15 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
         grad=grad_adversarial(image_perturbation)
         flatten_grad=einops.rearrange(grad,'b h w c -> b (h w c)')
 
-        metrics[f'top_p_{i}'],factor=_nucleus_sampling(logits=einops.rearrange(grad,'b h w c -> b (h w c)'))
+        # metrics[f'top_p_{i}'],factor=_nucleus_sampling(logits=einops.rearrange(grad,'b h w c -> b (h w c)'))
+        factor = _nucleus_sampling(logits=einops.rearrange(grad, 'b h w c -> b (h w c)'))
         # metrics[f'norm_{i}']=jnp.linalg.norm(flatten_grad,ord=1,axis=1).mean()
 
-        metrics[f'norm_{i}'] = jnp.std(flatten_grad,axis=1).mean()
 
         sign_grad = jnp.sign(grad)
 
         if dynamic:
-            pass
-            # sign_grad*=einops.rearrange(factor,'b (h w c)-> b h w c',h=h,w=w,c=c)
+            sign_grad*=einops.rearrange(factor,'b (h w c)-> b h w c',h=h,w=w,c=c)
         # heuristic step-size 2 eps / maxiter
         image_perturbation += adv_step_size * sign_grad
         # projection step onto the L-infinity ball centered at image
