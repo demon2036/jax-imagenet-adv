@@ -75,7 +75,7 @@ def pgd_attack(image, label, model, epsilon=4 / 255, step_size=4/3 / 255, maxite
 
 
 
-def _nucleus_sampling(p: float=0.6, t: float = 1.0, *, logits):
+def _nucleus_sampling(p: float=0.6, t: float = 1.0,beta=1/4, *, logits):
   logits = logits / t
 
   logits=jnp.abs(logits)
@@ -89,7 +89,7 @@ def _nucleus_sampling(p: float=0.6, t: float = 1.0, *, logits):
   # logits = jnp.where(logits < cutoff_logit,
   #                    jnp.full_like(logits, neg_inf), logits)
   return (logits < cutoff_logit).mean(),jnp.where(logits < cutoff_logit,
-                     jnp.full_like(logits, 1/4), 1.0)
+                     jnp.full_like(logits, beta), 1.0)
 
 
 
@@ -278,7 +278,7 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
         flatten_grad=einops.rearrange(grad,'b h w c -> b (h w c)')
 
         metrics[f'top_p_{i}'],factor=_nucleus_sampling(logits=einops.rearrange(grad,'b h w c -> b (h w c)'))
-        metrics[f'norm_{i}']=jnp.linalg.norm(flatten_grad,ord=2,axis=1).mean()
+        metrics[f'norm_{i}']=jnp.linalg.norm(flatten_grad,ord=1,axis=1).mean()
         sign_grad = jnp.sign(grad)
 
         if dynamic:
