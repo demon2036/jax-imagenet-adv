@@ -282,7 +282,8 @@ def pgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
         sign_grad = jnp.sign(grad)
 
         if dynamic:
-            sign_grad*=einops.rearrange(factor,'b (h w c)-> b h w c',h=h,w=w,c=c)
+            pass
+            # sign_grad*=einops.rearrange(factor,'b (h w c)-> b h w c',h=h,w=w,c=c)
         # heuristic step-size 2 eps / maxiter
         image_perturbation += adv_step_size * sign_grad
         # projection step onto the L-infinity ball centered at image
