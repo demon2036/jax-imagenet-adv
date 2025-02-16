@@ -221,7 +221,7 @@ def pgd_attack(image, label, model, epsilon=4 / 255, step_size=4/3 / 255, maxite
 #     return jax.lax.stop_gradient(image_perturbation),metrics
 
 
-def _nucleus_sampling(ps=[0.3,0.7], betas=[1/2,1/4], *, logits):
+def _nucleus_sampling(ps=[0.3,0.5,0.7], betas=[3/4,1/2,1/4], *, logits):
 
   logits=jnp.abs(logits)
 
