@@ -11,7 +11,7 @@ valid_fn: validation_step
 dp: -1
 fsdp: 1
 tp: 1
-#resume: True
+resume: True
 
 dataset:
   train_batch_size: 4096
@@ -29,7 +29,7 @@ dataset:
   random_generated_erasing: 0.0
   augment_repeats: 3
   test_crop_ratio: 0.875
-  shuffle_seed: 1
+  shuffle_seed: 10
   image_size: 192
   generated_dataset_shards:
     ['$GCS_MODEL_DIR/imagenet-generated-rar-500m/shards-{00000..18000}.tar']
