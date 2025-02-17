@@ -1,6 +1,6 @@
 
-output_dir: $GCS_MODEL_DIR/planb/ablation/standard
-name: caformer-xl-48-standard-192-400ep-mix0.9-lamb
+output_dir: $GCS_MODEL_DIR/scaling/best/standard
+name: caformer-l-36-standard-192-400ep-mix0.9-lamb
 project: deit3-jax-ablation-standard
 steps: 1281167
 training_epoch: 400
@@ -32,7 +32,7 @@ dataset:
   shuffle_seed: 1
   image_size: 192
   generated_dataset_shards:
-    ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar']
+    ['$GCS_MODEL_DIR/imagenet-generated-rar-500m/shards-{00000..18000}.tar']
   dataset_mix_ratio: 0.9
 
 train_state:
@@ -48,9 +48,8 @@ train_state:
   model:
     target: 'models.CAFormer'
     model_kwargs:
-      depths: [8,8,24,8]
-      dims: [ 256, 512, 768,1536]
-      head_dim: 32
+      depths: [3, 12, 18, 3]
+      dims: [ 192,  384,  768,1152]
       qk_norm: False
       drop_path_rate: 0.5
       drop_rate: 0.5
@@ -67,7 +66,7 @@ train_state:
 #      eps: 1.0e-8
 #      lr_decay: 1.0
 #      clip_grad: 0.0
-  ema_decay: 0.9994
+  ema_decay: 0.9998
   pretrained_ckpt: None
   init_seed: 1
   mixup_seed: 1
@@ -76,16 +75,3 @@ train_state:
 
 
 
-
-
-
-#    --init-seed 1 \
-#    --grad-accum 1 \
-#    --warmup-steps $((1281167 * 5 / $TRAIN_BATCH_SIZE)) \
-#    --training-steps $((1281167 * 300 / $TRAIN_BATCH_SIZE)) \
-#    --log-interval 100 \
-#    --eval-interval $((1281167 * 10 / $TRAIN_BATCH_SIZE)) \
-#    --project deit3-jax \
-#    --name $(basename $0 .sh) \
-#    --ipaddr $(curl -s ifconfig.me) \
-#    --hostname $(hostname)
