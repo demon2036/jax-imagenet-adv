@@ -3,7 +3,7 @@ output_dir: $GCS_MODEL_DIR/planb/ablation/best
 name: caformer-l-192-3step-700ep-sit-8-3
 project: jax-adv-image-net-best
 steps: 1281167
-training_epoch: 600
+training_epoch: 700
 warmup_epoch: 20
 log_interval: 100
 eval_epoch: 10
