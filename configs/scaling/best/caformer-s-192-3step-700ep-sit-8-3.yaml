@@ -50,6 +50,7 @@ train_state:
     model_kwargs:
       depths: [3, 12, 18, 3]
       dims: [64, 128, 320, 512]
+      head_dim: 32
       qk_norm: False
 #      drop_path_rate: 0.6
 #      drop_rate: 0.5
