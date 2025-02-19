@@ -273,10 +273,6 @@ def _nucleus_sampling(ps=[0.8,0.9,0.95], betas=[3/4,1/2,1/4], *, logits):
       cutoff_index = jnp.sum(sorted_cum_probs < p, axis=-1, keepdims=True)
       # 从排序后的 logits 中取出对应位置的 cutoff logit
       cutoff_logit = jnp.take_along_axis(logits_sorted, cutoff_index, axis=-1)
-
-
-      print(cutoff_logit,)
-
       cutoff_logits.append(cutoff_logit)
 
   # 初始化调整因子，默认全部为 1.0（即不下调）
