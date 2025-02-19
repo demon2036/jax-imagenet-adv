@@ -254,7 +254,7 @@ import optax
 
 
 
-def _nucleus_sampling(ps=[0.4,0.6,0.8], betas=[3/4,1/2,1/4], *, logits):
+def _nucleus_sampling(ps=[0.5,0.7,0.9], betas=[3/4,1/2,1/4], *, logits):
 
   logits=jnp.abs(logits)
 
