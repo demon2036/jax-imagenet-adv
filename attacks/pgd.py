@@ -221,13 +221,50 @@ import optax
 #     return jax.lax.stop_gradient(image_perturbation),metrics
 
 
+# def _nucleus_sampling(ps=[0.3,0.5,0.7], betas=[1/2,1/4,1/6], *, logits):
+#
+#   logits=jnp.abs(logits)
+#
+#   logits_sorted = jnp.sort(logits, axis=-1, descending=True)
+#   sorted_cum_probs = jnp.cumsum(
+#       jax.nn.softmax(logits_sorted, axis=-1), axis=-1)
+#
+#   # 对于每个 p，计算 cutoff logit
+#   cutoff_logits = []
+#   for p in ps:
+#       # cutoff_index: 每个样本中，累计概率小于 p 的元素个数
+#       cutoff_index = jnp.sum(sorted_cum_probs < p, axis=-1, keepdims=True)
+#       # 从排序后的 logits 中取出对应位置的 cutoff logit
+#       cutoff_logit = jnp.take_along_axis(logits_sorted, cutoff_index, axis=-1)
+#       cutoff_logits.append(cutoff_logit)
+#
+#   # 初始化调整因子，默认全部为 1.0（即不下调）
+#   factor = jnp.ones_like(logits)
+#
+#   # 为了使得“尾部”更激进，我们从最严格的 bin（ps 最后一个，对应最低 cutoff）开始赋值，
+#   # 如果某个位置的 logits 小于当前 bin 的 cutoff，则赋予对应 beta，下层的覆盖前面的
+#   for cutoff_logit, beta_val in zip(cutoff_logits[::-1], betas[::-1]):
+#       factor = jnp.where(logits < cutoff_logit, beta_val, factor)
+#
+#   return factor
+  # logits = jnp.where(logits < cutoff_logit,
+  #                    jnp.full_like(logits, neg_inf), logits)
+  # return (logits < cutoff_logit).mean(),jnp.where(logits < cutoff_logit,
+  #                    jnp.full_like(logits, beta), 1.0)
+
+
+
 def _nucleus_sampling(ps=[0.3,0.5,0.7], betas=[1/2,1/4,1/6], *, logits):
 
   logits=jnp.abs(logits)
 
   logits_sorted = jnp.sort(logits, axis=-1, descending=True)
-  sorted_cum_probs = jnp.cumsum(
-      jax.nn.softmax(logits_sorted, axis=-1), axis=-1)
+  # sorted_cum_probs = jnp.cumsum(
+  #     jax.nn.softmax(logits_sorted, axis=-1), axis=-1)
+  sorted_cum_probs = jnp.cumsum(logits_sorted, axis=-1)
+  sorted_cum_probs/=sorted_cum_probs[:,-1:]
+  # print(sorted_cum_probs)
+
 
   # 对于每个 p，计算 cutoff logit
   cutoff_logits = []
@@ -236,6 +273,10 @@ def _nucleus_sampling(ps=[0.3,0.5,0.7], betas=[1/2,1/4,1/6], *, logits):
       cutoff_index = jnp.sum(sorted_cum_probs < p, axis=-1, keepdims=True)
       # 从排序后的 logits 中取出对应位置的 cutoff logit
       cutoff_logit = jnp.take_along_axis(logits_sorted, cutoff_index, axis=-1)
+
+
+      print(cutoff_logit,)
+
       cutoff_logits.append(cutoff_logit)
 
   # 初始化调整因子，默认全部为 1.0（即不下调）
@@ -243,17 +284,10 @@ def _nucleus_sampling(ps=[0.3,0.5,0.7], betas=[1/2,1/4,1/6], *, logits):
 
   # 为了使得“尾部”更激进，我们从最严格的 bin（ps 最后一个，对应最低 cutoff）开始赋值，
   # 如果某个位置的 logits 小于当前 bin 的 cutoff，则赋予对应 beta，下层的覆盖前面的
-  for cutoff_logit, beta_val in zip(cutoff_logits[::-1], betas[::-1]):
+  for cutoff_logit, beta_val in zip(cutoff_logits, betas):
       factor = jnp.where(logits < cutoff_logit, beta_val, factor)
 
   return factor
-  # logits = jnp.where(logits < cutoff_logit,
-  #                    jnp.full_like(logits, neg_inf), logits)
-  # return (logits < cutoff_logit).mean(),jnp.where(logits < cutoff_logit,
-  #                    jnp.full_like(logits, beta), 1.0)
-
-
-
 
 
 
