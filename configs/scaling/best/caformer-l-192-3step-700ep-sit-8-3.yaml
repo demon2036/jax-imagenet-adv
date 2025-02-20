@@ -6,10 +6,10 @@ steps: 1281167
 training_epoch: 700
 warmup_epoch: 20
 log_interval: 100
-eval_epoch: 50
+eval_epoch: 20
 grad_accum_steps: 1
 
-#resume: True
+resume: True
 
 dataset:
   train_batch_size: 4096
@@ -27,7 +27,7 @@ dataset:
   random_generated_erasing: 0.0
   augment_repeats: 3
   test_crop_ratio: 0.875
-  shuffle_seed: 10
+  shuffle_seed: 2036
   image_size: 192
   generated_dataset_shards:
     ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar']
