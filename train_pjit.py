@@ -199,8 +199,8 @@ def main(configs):
 
 
         validation_adv_step_jited = jax.jit(valid_step,
-                                            in_shardings=(
-                                                train_state_off_load_sharding, NamedSharding(mesh, P(('dp', 'fsdp', 'mp')))),
+                                            # in_shardings=(
+                                            #     train_state_off_load_sharding, NamedSharding(mesh, P(('dp', 'fsdp', 'mp')))),
                                             # donate_argnums=(0,),
                                             out_shardings=None
                                             )
