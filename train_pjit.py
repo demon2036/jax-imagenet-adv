@@ -42,6 +42,7 @@ from jax import NamedSharding
 from jax._src.mesh import Mesh
 from jax._src.partition_spec import PartitionSpec
 from jax._src.pjit import pjit
+from jax.experimental import multihost_utils
 from tensorboard.plugins.image.summary import image
 from torch.nn.parallel import replicate
 from torch.utils.data import DataLoader
@@ -257,9 +258,13 @@ def main(configs):
                 if valid_dataloader is None:
                     continue
                 del batch
-                state = off_load_memory_state(state)
+
+                multihost_utils.sync_global_devices('sync devices for eval')
+                print('sync devices for eval')
+
+                # state = off_load_memory_state(state)
                 metrics = evaluate(state, valid_dataloader, validation_adv_step_jited, mesh)
-                state = reload_device_state(state)
+                # state = reload_device_state(state)
 
                 if "val/advacc1" in metrics:
                     now_acc1 = metrics["val/advacc1"]
