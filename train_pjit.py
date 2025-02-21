@@ -271,6 +271,7 @@ def main(configs):
                 else:
                     now_acc1 = metrics["val/acc1"]
                 print(now_acc1,max_val_acc1)
+                print()
                 if now_acc1 > max_val_acc1:
                     ckpt = {'model': state}
                     save_args = orbax_utils.save_args_from_target(ckpt)
