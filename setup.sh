@@ -30,6 +30,10 @@ pip install einops  tensorflow matplotlib diffusers
 pip install gcsfs tpu-info
 
 
+pip install tensorstore==0.1.71
+
+
+
 # 3. Install Pillow-SIMD.
 conda install -c conda-forge -y libjpeg-turbo
 pip uninstall -y pillow
