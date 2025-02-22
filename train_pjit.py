@@ -217,21 +217,15 @@ def main(configs):
 
         for step in tqdm.tqdm(range(init_step, training_steps + 1), initial=init_step, total=training_steps + 1):
 
-
-            for data in valid_dataloader:
-                print(data)
-
             """
             """
             for _ in range(grad_accum_steps):
                 # batch = jax.tree_util.tree_map(lambda x: jax.make_array_from_process_local_data(sharding,np.asarray(x))  , next(train_dataloader_iter))
                 batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), next(train_dataloader_iter))
 
-                print(batch[0].shape,batch[0].sharding)
 
                 batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
 
-                print(batch[0].shape,batch[0].sharding)
                 # batch = jtu.tree_map(go_jit, batch)
                 # images, labels = batch
                 # print(f'{images.shape=}   {images.addressable_data(0).shape=}')
