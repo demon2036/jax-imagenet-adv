@@ -35,6 +35,6 @@ pip install gcsfs tpu-info
 
 
 # 3. Install Pillow-SIMD.
-#conda install -c conda-forge -y libjpeg-turbo
-#pip uninstall -y pillow
-#CC="cc -mavx2" pip install -U --force-reinstall pillow-simd
+conda install -c conda-forge -y libjpeg-turbo
+pip uninstall -y pillow
+CC="cc -mavx2" pip install -U --force-reinstall pillow-simd
