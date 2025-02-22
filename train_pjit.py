@@ -219,8 +219,8 @@ def main(configs):
         epoch = init_step // epoch_per_step
         mix_ratio_state.update_mix_ratio(epoch, configs['training_epoch'])
 
-        # if jax.process_index() == 0:
-        #     wandb.init(name=configs['name'], project=configs['project'], config=configs)
+        if jax.process_index() == 0:
+            wandb.init(name=configs['name'], project=configs['project'], config=configs)
 
         for step in tqdm.tqdm(range(init_step, training_steps + 1), initial=init_step, total=training_steps + 1):
 
