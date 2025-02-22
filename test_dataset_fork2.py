@@ -436,7 +436,7 @@ def create_dataloaders(
             collate_fn=partial(collate_and_pad, batch_size=batch_size),
             drop_last=False,
             prefetch_factor=40,
-            persistent_workers=False,
+            persistent_workers=True,
         )
 
     return mix_dataloader_iter(train_dataloader, train_origin_dataloader,state), valid_dataloader,state

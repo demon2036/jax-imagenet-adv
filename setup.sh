@@ -30,7 +30,7 @@ pip install einops  tensorflow matplotlib diffusers
 pip install gcsfs tpu-info
 
 
-pip install tensorstore==0.1.71
+#pip install tensorstore==0.1.71
 
 
 
