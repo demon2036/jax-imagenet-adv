@@ -221,7 +221,7 @@ def create_transforms(random_crop,
     elif random_crop == "src":
         train_transforms = [
             T.Resize(image_size, interpolation=3),
-            # T.RandomCrop(image_size, padding=4, padding_mode="reflect"),
+            T.RandomCrop(image_size, padding=4, padding_mode="reflect"),
         ]
     elif random_crop == "none":
         train_transforms = [

@@ -216,6 +216,11 @@ def main(configs):
         #     wandb.init(name=configs['name'], project=configs['project'], config=configs)
 
         for step in tqdm.tqdm(range(init_step, training_steps + 1), initial=init_step, total=training_steps + 1):
+
+
+            for data in valid_dataloader:
+                print(data)
+
             """
             """
             for _ in range(grad_accum_steps):
