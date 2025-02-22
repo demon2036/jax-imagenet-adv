@@ -152,6 +152,7 @@ def main(configs):
     train_dataloader_iter, valid_dataloader, mix_ratio_state = create_dataloaders(**configs['dataset'],
                                                                                   grad_accum=grad_accum_steps)
 
+    next(train_dataloader_iter)
 
     logical_axis_rules = [
         ['batch', ['dp', 'fsdp']],
@@ -205,7 +206,6 @@ def main(configs):
                                             out_shardings=None
                                             )
 
-        next(train_dataloader_iter)
 
         checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
         # checkpointer =ocp.PyTreeCheckpointer()
