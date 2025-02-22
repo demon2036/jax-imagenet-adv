@@ -212,8 +212,8 @@ def main(configs):
         epoch = init_step // epoch_per_step
         mix_ratio_state.update_mix_ratio(epoch, configs['training_epoch'])
 
-        if jax.process_index() == 0:
-            wandb.init(name=configs['name'], project=configs['project'], config=configs)
+        # if jax.process_index() == 0:
+        #     wandb.init(name=configs['name'], project=configs['project'], config=configs)
 
         for step in tqdm.tqdm(range(init_step, training_steps + 1), initial=init_step, total=training_steps + 1):
             """
@@ -223,7 +223,7 @@ def main(configs):
                 batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), next(train_dataloader_iter))
                 batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
 
-                # print(batch[0].shape,batch[0].sharding)
+                print(batch[0].shape,batch[0].sharding)
                 # batch = jtu.tree_map(go_jit, batch)
                 # images, labels = batch
                 # print(f'{images.shape=}   {images.addressable_data(0).shape=}')
