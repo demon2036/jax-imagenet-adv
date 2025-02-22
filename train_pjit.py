@@ -137,6 +137,17 @@ def main(configs):
     # mesh_dim = '1,1,-1'
     # mesh_dim = '1,-1,1'
 
+
+    train_dataloader_iter, valid_dataloader, mix_ratio_state = create_dataloaders(**configs['dataset'],
+                                                                                  grad_accum=grad_accum_steps)
+
+    next(train_dataloader_iter)
+
+    for _ in valid_dataloader:
+        break
+
+
+
     mesh = get_jax_mesh2(mesh_dim)
     # print(mesh)
     sharding = jax.sharding.NamedSharding(
@@ -149,13 +160,6 @@ def main(configs):
     sharding = jtu.tree_map(lambda p: NamedSharding(mesh, p), data_spec)
     # print(sharding.addressable_devices,mesh.axis_names)
 
-    train_dataloader_iter, valid_dataloader, mix_ratio_state = create_dataloaders(**configs['dataset'],
-                                                                                  grad_accum=grad_accum_steps)
-
-    next(train_dataloader_iter)
-
-    for _ in valid_dataloader:
-        break
 
 
     logical_axis_rules = [
