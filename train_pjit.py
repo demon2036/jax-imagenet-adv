@@ -154,6 +154,10 @@ def main(configs):
 
     next(train_dataloader_iter)
 
+    for _ in valid_dataloader:
+        break
+
+
     logical_axis_rules = [
         ['batch', ['dp', 'fsdp']],
         ['activation_embed', 'mp'],
