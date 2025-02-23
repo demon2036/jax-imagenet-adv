@@ -14,8 +14,8 @@ resume: True
 dataset:
   train_batch_size: 4096
   valid_batch_size: 2048
-  train_loader_workers: 20
-  valid_loader_workers: 10
+  train_loader_workers: 10
+  valid_loader_workers: 4
   train_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-train-{0000..1023}.tar"
   valid_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-validation-{00..63}.tar"
   random_crop: src
@@ -27,7 +27,7 @@ dataset:
   random_generated_erasing: 0.0
   augment_repeats: 3
   test_crop_ratio: 0.875
-  shuffle_seed: 1024
+  shuffle_seed: 10240
   image_size: 192
   generated_dataset_shards:
     ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar']
