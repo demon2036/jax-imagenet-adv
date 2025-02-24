@@ -36,7 +36,7 @@ pip install tensorstore==0.1.68
 
 
 
-# 3. Install Pillow-SIMD.
-conda install -c conda-forge -y libjpeg-turbo
-pip uninstall -y pillow
-CC="cc -mavx2" pip install -U --force-reinstall pillow-simd
+## 3. Install Pillow-SIMD.
+#conda install -c conda-forge -y libjpeg-turbo
+#pip uninstall -y pillow
+#CC="cc -mavx2" pip install -U --force-reinstall pillow-simd
