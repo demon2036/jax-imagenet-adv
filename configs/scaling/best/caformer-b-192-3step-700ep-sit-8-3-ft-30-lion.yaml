@@ -1,5 +1,4 @@
 
-
 output_dir: $GCS_MODEL_DIR/scaling/best
 name: caformer-s-192-3step-700ep-sit-8-3-ft-30-lion
 project: jax-adv-image-net-scaling-preliminary
@@ -57,10 +56,10 @@ train_state:
   model:
     target: 'models.CAFormer'
     model_kwargs:
-      depths: [3, 12, 18, 3]
-      dims: [64, 128, 320, 512]
-      head_dim: 32
+      labels: 1000
       qk_norm: False
+      depths: [3, 12, 18, 3]
+      dims: [128, 256, 512, 768]
 #      drop_path_rate: 0.6
 #      drop_rate: 0.5
 
@@ -82,7 +81,7 @@ train_state:
   mixup_seed: 1
   dropout_seed: 1
   ema_decay: 0.9998
-  pretrained_ckpt: '$GCS_MODEL_DIR/planb/ablation/best/caformer-s-192-3step-700ep-sit-8-3-ema'
+  pretrained_ckpt: '$GCS_MODEL_DIR/planb/ablation/best/caformer-b-192-3step-700ep-sit-8-3-ema'
 
 
 
