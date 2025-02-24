@@ -30,7 +30,9 @@ pip install einops  tensorflow matplotlib diffusers
 pip install gcsfs tpu-info
 
 
-#pip install tensorstore==0.1.71
+pip install orbax-checkpoint== 0.11.0
+
+pip install tensorstore==0.1.68
 
 
 
