@@ -141,7 +141,7 @@ def main(configs):
     train_dataloader_iter, valid_dataloader, mix_ratio_state = create_dataloaders(**configs['dataset'],
                                                                                   grad_accum=grad_accum_steps)
 
-    next(train_dataloader_iter)
+
 
     for _ in valid_dataloader:
         break
