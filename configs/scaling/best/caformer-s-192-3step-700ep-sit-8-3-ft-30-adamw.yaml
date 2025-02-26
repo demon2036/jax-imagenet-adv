@@ -1,7 +1,7 @@
 
 
 output_dir: $GCS_MODEL_DIR/scaling/best
-name: caformer-s-192-3step-700ep-sit-8-3-ft-30-lion
+name: caformer-s-192-3step-700ep-sit-8-3-ft-30-adamw
 project: jax-adv-image-net-scaling-preliminary
 steps: 1281167
 training_epoch: 30
@@ -25,9 +25,9 @@ dataset:
   valid_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-validation-{00..63}.tar"
   random_crop: rrc
   color_jitter: 0.0
-  auto_augment: "rand-m9-mstd0.5-inc1"
+  auto_augment: "none"
   random_erasing: 0.0
-  auto_generated_augment: "rand-m9-mstd0.5-inc1"
+  auto_generated_augment: "none"
   color_generated_jitter: 0.0
   random_generated_erasing: 0.0
   augment_repeats: 3
@@ -65,15 +65,12 @@ train_state:
 #      drop_rate: 0.5
 
   optimizer:
-    target: 'lion'
+    target: 'adamw'
     optimizer_kwargs:
-#      clip_grad: None
-      learning_rate: 1.0e-4
-      init_value: 1.0e-7
-      end_learning_rate: 1.0e-6
-      weight_decay: 1.0e-6
+      learning_rate: 0.0004
+      weight_decay: 1.0e-8
       b1: 0.9
-      b2: 0.99
+      b2: 0.999
 #      eps: 1.0e-8
 #      lr_decay: 1.0
 #      clip_grad: 0.0
