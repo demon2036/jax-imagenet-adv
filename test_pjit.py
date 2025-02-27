@@ -106,13 +106,13 @@ def evaluate(state: TrainState, dataloader: DataLoader, validation_adv_step_jite
         labels,preds=metrics.pop('labels'),metrics.pop('preds')
 
 
-        print(f'{metrics=}')
-        print(f'{datas=}')
-        print()
-        print(f'{correct_data=}')
+        # print(f'{metrics=}')
+        # print(f'{datas=}')
+        # print()
+        # print(f'{correct_data=}')
 
 
-        for label , pred in zip(labels,preds):
+        for label , pred in zip(jax.experimental.multihost_utils.process_allgather(labels),jax.experimental.multihost_utils.process_allgather(preds)):
             if label==-1:
                 continue
             else:
@@ -250,7 +250,7 @@ def main(configs):
                                             # in_shardings=(
                                             #     train_state_off_load_sharding, NamedSharding(mesh, P(('dp', 'fsdp', 'mp')))),
                                             # donate_argnums=(0,),
-                                            out_shardings=NamedSharding(mesh, P(None))
+                                            # out_shardings=NamedSharding(mesh, P(None))
                                             )
 
 
