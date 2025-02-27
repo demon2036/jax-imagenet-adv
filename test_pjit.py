@@ -105,6 +105,13 @@ def evaluate(state: TrainState, dataloader: DataLoader, validation_adv_step_jite
 
         labels,preds=metrics.pop('labels'),metrics.pop('preds')
 
+
+        print(f'{metrics=}')
+        print(f'{datas=}')
+        print()
+        print(f'{correct_data=}')
+
+
         for label , pred in zip(labels,preds):
             if label==-1:
                 continue
