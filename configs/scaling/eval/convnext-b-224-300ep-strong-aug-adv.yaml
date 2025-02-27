@@ -1,16 +1,15 @@
 
 output_dir: $GCS_MODEL_DIR/scaling/preliminary
-name: caformer-b-224-300ep-siT-50m-ft-30ep
+name: convnext-b-224-300ep-strong-aug
 project: jax-adv-image-net-scaling-preliminary
 steps: 1281167
-training_epoch: 30
-warmup_epoch: 10
+training_epoch: 300
+warmup_epoch: 20
 log_interval: 100
-eval_epoch: 5
+eval_epoch: 10
 grad_accum_steps: 1
-
-#resume: True
 valid_fn: validation_adv_step_exp
+resume: True
 
 dataset:
   train_batch_size: 4096
@@ -21,9 +20,9 @@ dataset:
   valid_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-validation-{00..63}.tar"
   random_crop: rrc
   color_jitter: 0.0
-  auto_augment: "none"
+  auto_augment: "rand-m9-mstd0.5-inc1"
   random_erasing: 0.0
-  auto_generated_augment: "none"
+  auto_generated_augment: "rand-m9-mstd0.5-inc1"
   color_generated_jitter: 0.0
   random_generated_erasing: 0.0
   augment_repeats: 3
@@ -31,7 +30,8 @@ dataset:
   shuffle_seed: 1
   image_size: 224
   generated_dataset_shards:
-    ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar']
+#    ['$GCS_MODEL_DIR/imagenet-generated-sit-250steps-50m/shards-{00000..05983}.tar']
+     ['$GCS_MODEL_DIR/imagenet-generated-rar-500m/shards-{00000..02083}.tar']
   dataset_mix_ratio: 0.9
   max_syn_ratio: 0.0
   min_syn_ratio: 0.0
@@ -40,7 +40,7 @@ dataset:
 
 train_state:
   train_module:
-    target: 'train_modules.EXPTrainAdvModule'
+    target: 'train_modules.TrainAdvModule'
     mixup: 0.8
     cutmix: 1.0
     criterion: ce
@@ -50,45 +50,29 @@ train_state:
 
 
   model:
-    target: 'models.CAFormer'
+    target: 'models.ConvNeXt'
     model_kwargs:
       labels: 1000
-      qk_norm: False
-      depths: [3, 12, 18, 3]
-      dims: [128, 256, 512, 768]
+      depths: [3,3,27,3]
+      dims: [128, 256, 512, 1024]
+
 
   optimizer:
-    target: 'adamw'
+    target: 'lamb'
     optimizer_kwargs:
-      learning_rate: 0.0004
-      weight_decay: 1.0e-8
+      learning_rate: 4.0e-3
+      weight_decay: 0.05
       b1: 0.9
       b2: 0.999
-
-
-#  optimizer:
-#    target: 'lamb'
-#    optimizer_kwargs:
-#      learning_rate: 4.0e-3
-#      weight_decay: 0.05
-#      b1: 0.9
-#      b2: 0.999
 
 
   init_seed: 1
   mixup_seed: 1
   dropout_seed: 1
   ema_decay: 0.9998
-  pretrained_ckpt: '$GCS_MODEL_DIR/scaling/preliminary/caformer-b-224-300ep-siT-50m-ft-30ep-ema'
+#  pretrained_ckpt: 'convnext_base.fb_in1k'
+  pretrained_ckpt: '$GCS_MODEL_DIR/scaling/preliminary/convnext-b-224-300ep-strong-aug-ema'
 
 
 
-restore_state:
-  grad_accum_steps: 1
-  optimizer:
-    target: 'adamw'
-    optimizer_kwargs:
-      learning_rate: 0.0004
-      weight_decay: 1.0e-8
-      b1: 0.9
-      b2: 0.999
+
