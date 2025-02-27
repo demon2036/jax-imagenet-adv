@@ -58,10 +58,10 @@ train_state:
       dims: [128, 256, 512, 768]
 
   optimizer:
-    target: 'adamw'
+    target: 'lamb'
     optimizer_kwargs:
-      learning_rate: 0.0004
-      weight_decay: 1.0e-8
+      learning_rate: 4.0e-3
+      weight_decay: 0.05
       b1: 0.9
       b2: 0.999
 
