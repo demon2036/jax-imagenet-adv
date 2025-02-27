@@ -370,3 +370,28 @@ def validation_step_exp(state: TrainState, batch: ArrayTree) -> ArrayTree:
     metrics['preds']=preds
 
     return metrics
+
+
+
+def validation_adv_step_exp(state: TrainState, batch: ArrayTree) -> ArrayTree:
+    rngs, updates = state.split_rngs()
+    labels=batch[1]
+    batch[1]=jnp.where(batch[1] != -1, batch[1], 0)
+
+
+    metrics = state.apply_fn(
+        {"params": state.ema_params if state.ema_params is not None else state.params},
+        # images=batch[0],
+        # labels=jnp.where(batch[1] != -1, batch[1], 0),
+        *batch,
+        det=True, use_pgd=True, rngs=rngs,
+    )
+
+    preds=metrics.pop('preds')
+
+    metrics["num_samples"] = batch[1] != -1
+    metrics = jax.tree_map(lambda x: (x * (batch[1] != -1)).sum(), metrics)
+
+    metrics['labels']=labels
+    metrics['preds']=preds
+    return metrics

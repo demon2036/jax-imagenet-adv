@@ -212,11 +212,16 @@ class TrainAdvModule(nn.Module):
         # classification and also supports multi-label tasks.
         preds = jax.lax.top_k(logits, k=5)[1]
         accs = jnp.take_along_axis(labels, preds, axis=-1)
+        # if return_logits:
+        #     return {"loss": loss, "acc1": accs[:, 0], "acc5": accs.any(-1),'logits':logits} |metrics
+        # else:
+        #     return {"loss": loss, "acc1": accs[:, 0], "acc5": accs.any(-1)} |metrics
+
+
         if return_logits:
             return {"loss": loss, "acc1": accs[:, 0], "acc5": accs.any(-1),'logits':logits} |metrics
         else:
-            return {"loss": loss, "acc1": accs[:, 0], "acc5": accs.any(-1)} |metrics
-
+            return {"loss": loss, "acc1": accs[:, 0], "acc5": accs.any(-1),"preds":preds[:,0]} |metrics
 
 
 

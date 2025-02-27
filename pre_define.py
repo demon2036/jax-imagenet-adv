@@ -7,7 +7,7 @@ from optimizer.modified_adamw import stable_adamw, modified_lamb2
 from optimizer.modified_lion import modified_lion
 from optimizer.muon import muon
 from training_pjit import validation_step, validation_adv_step, training_step_test, training_step, training_step_kl, \
-    validation_step_exp
+    validation_step_exp, validation_adv_step_exp
 from utils import modified_lamb
 import numpy as np
 
@@ -47,6 +47,8 @@ TRAIN_EVAL_FN_COLLECTION = {
     'validation_step':validation_step,
     'validation_adv_step':validation_adv_step,
     "validation_step_exp":validation_step_exp,
+    'validation_adv_step_exp':validation_adv_step_exp,
+
     'training_step':training_step,
     'training_step_test':training_step_test,
     'training_step_kl':training_step_kl
