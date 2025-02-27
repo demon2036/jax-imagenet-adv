@@ -247,7 +247,7 @@ def main(configs):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--yaml-path", type=str,
-                        default='configs/scaling/eval/convnext-b-224-300ep-diT-50m.yaml')
+                        default='configs/scaling/eval/convnext-b-224-300ep-rar-50m.yaml')
 
     args = parser.parse_args()
     yaml = read_yaml(args.yaml_path)
