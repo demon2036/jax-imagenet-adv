@@ -68,7 +68,8 @@ train_state:
   mixup_seed: 1
   dropout_seed: 1
   ema_decay: 0.9998
-  pretrained_ckpt: '$GCS_MODEL_DIR/scaling/preliminary/convnext-b-224-300ep-rar-50m-standard-ema'
+#  pretrained_ckpt: '$GCS_MODEL_DIR/scaling/preliminary/convnext-b-224-300ep-rar-50m-standard-ema'
+  pretrained_ckpt: '$GCS_MODEL_DIR/scaling/preliminary/caformer-b-224-300ep-siT-50m-ft-30ep-ema'
 
 
 
