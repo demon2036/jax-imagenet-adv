@@ -96,7 +96,12 @@ def evaluate(state: TrainState, dataloader: DataLoader, validation_adv_step_jite
         batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
         metrics = validation_adv_step_jited(state, batch)
 
-        print(metrics)
+
+        if jax.process_index()==0:
+             print(metrics)
+
+        while True:
+            pass
 
         average_meter.update(**metrics)
 
