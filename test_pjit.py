@@ -250,7 +250,7 @@ def main(configs):
                                             # in_shardings=(
                                             #     train_state_off_load_sharding, NamedSharding(mesh, P(('dp', 'fsdp', 'mp')))),
                                             # donate_argnums=(0,),
-                                            out_shardings=None
+                                            out_shardings=P(None)
                                             )
 
 
