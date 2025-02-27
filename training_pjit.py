@@ -361,7 +361,7 @@ def validation_step_exp(state: TrainState, batch: ArrayTree) -> ArrayTree:
         labels=jnp.where(batch[1] != -1, batch[1], 0),
         det=True,
     )
-    preds=metrics['preds']
+    preds=metrics.pop('preds')
 
     metrics["num_samples"] = batch[1] != -1
     metrics = jax.tree_map(lambda x: (x * (batch[1] != -1)).sum(), metrics)
