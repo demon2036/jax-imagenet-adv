@@ -93,8 +93,8 @@ def evaluate(state: TrainState, dataloader: DataLoader, validation_adv_step_jite
     average_meter = AverageMeter()
 
 
-    datas=jnp.zeros((1000,))
-    correct_data = jnp.zeros((1000,))
+    datas=np.zeros((1000,))
+    correct_data = np.zeros((1000,))
 
     for batch in tqdm.tqdm(dataloader, leave=False, dynamic_ncols=True):
         batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), batch)
@@ -117,7 +117,7 @@ def evaluate(state: TrainState, dataloader: DataLoader, validation_adv_step_jite
                 continue
             else:
                 datas[label]+=1
-                correct_data[label]+=label==pred
+                correct_data[label]+= np.array(label==pred)
 
 
         # if jax.process_index()==0:
