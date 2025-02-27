@@ -95,6 +95,9 @@ def evaluate(state: TrainState, dataloader: DataLoader, validation_adv_step_jite
         batch = jax.tree_util.tree_map(lambda x: jnp.array(np.asarray(x)), batch)
         batch = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=mesh), batch)
         metrics = validation_adv_step_jited(state, batch)
+
+        print(metrics)
+
         average_meter.update(**metrics)
 
     metrics = average_meter.summary("val/")
@@ -143,8 +146,8 @@ def main(configs):
 
 
 
-    for _ in valid_dataloader:
-        break
+    # for _ in valid_dataloader:
+    #     break
 
 
 

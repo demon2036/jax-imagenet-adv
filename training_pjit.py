@@ -350,3 +350,17 @@ def validation_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
     metrics["num_samples"] = batch[1] != -1
     metrics = jax.tree_map(lambda x: (x * (batch[1] != -1)).sum(), metrics)
     return metrics
+
+
+
+
+def validation_step_exp(state: TrainState, batch: ArrayTree) -> ArrayTree:
+    metrics = state.apply_fn(
+        {"params": state.ema_params},
+        images=batch[0],
+        labels=jnp.where(batch[1] != -1, batch[1], 0),
+        det=True,
+    )
+    metrics["num_samples"] = batch[1] != -1
+    metrics = jax.tree_map(lambda x: (x * (batch[1] != -1)).sum(), metrics)
+    return metrics
