@@ -89,7 +89,7 @@ def _form_global_array(path, array: np.ndarray, global_mesh: Mesh) -> jax.Array:
     return jax.make_array_from_single_device_arrays(global_shape, sharding, local_device_buffers)
 
 
-def evaluate(state: TrainState, dataloader: DataLoader, validation_adv_step_jited, mesh) -> dict[str, float]:
+def evaluate(state: TrainState, dataloader: DataLoader, validation_adv_step_jited, mesh):
     average_meter = AverageMeter()
 
 
@@ -117,7 +117,7 @@ def evaluate(state: TrainState, dataloader: DataLoader, validation_adv_step_jite
                 continue
             else:
                 datas[label]+=1
-                correct_data[label]+= np.array(label==pred)
+                correct_data[label]+= label==pred
 
 
         # if jax.process_index()==0:
@@ -126,19 +126,19 @@ def evaluate(state: TrainState, dataloader: DataLoader, validation_adv_step_jite
         #     print()
         #     print(f'{correct_data=}')
 
-        print(f'{metrics=}')
-        print(f'{datas=}')
-        print()
-        print(f'{correct_data=}')
-
-        while True:
-            pass
+        # print(f'{metrics=}')
+        # print(f'{datas=}')
+        # print()
+        # print(f'{correct_data=}')
+        #
+        # while True:
+        #     pass
 
         average_meter.update(**metrics)
 
     metrics = average_meter.summary("val/")
     num_samples = metrics.pop("val/num_samples")
-    return jax.tree_util.tree_map(lambda x: x / num_samples, metrics)
+    return jax.tree_util.tree_map(lambda x: x / num_samples, metrics),datas,correct_data
 
 
 def main(configs):
@@ -265,7 +265,7 @@ def main(configs):
         # if jax.process_index() == 0:
         #     wandb.init(name=configs['name'], project=configs['project'], config=configs)
 
-        metrics = evaluate(state, valid_dataloader, validation_adv_step_jited, mesh)
+        metrics,datas,correct_data = evaluate(state, valid_dataloader, validation_adv_step_jited, mesh)
 
         if "val/advacc1" in metrics:
             now_acc1 = metrics["val/advacc1"]
@@ -273,6 +273,12 @@ def main(configs):
             now_acc1 = metrics["val/acc1"]
         print(now_acc1,max_val_acc1)
         print()
+
+        print(datas)
+        print(correct_data)
+
+        np.savez('test.npz',datas=datas,correct_data=correct_data)
+
 
 
             # metrics["val/acc1/best"] = max_val_acc1
