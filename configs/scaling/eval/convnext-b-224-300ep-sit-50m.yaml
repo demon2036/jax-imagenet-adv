@@ -10,7 +10,7 @@ eval_epoch: 5
 grad_accum_steps: 1
 
 #resume: True
-valid_fn: validation_step
+valid_fn: validation_step_exp
 
 dataset:
   train_batch_size: 4096
