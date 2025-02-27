@@ -10,7 +10,7 @@ eval_epoch: 5
 grad_accum_steps: 1
 
 #resume: True
-valid_fn: validation_step_exp
+valid_fn: validation_adv_step_exp
 
 dataset:
   train_batch_size: 4096
@@ -40,11 +40,13 @@ dataset:
 
 train_state:
   train_module:
-    target: 'train_modules.TrainModule'
+    target: 'train_modules.EXPTrainAdvModule'
     mixup: 0.8
     cutmix: 1.0
     criterion: ce
     label_smoothing: 0.1
+    train_adv_step: 10
+    train_adv_step_size: 10/1 / 255
 
 
   model:
