@@ -285,8 +285,5 @@ if __name__ == "__main__":
     yaml = read_yaml(args.yaml_path)
     yaml = preprocess_config(yaml)
 
-    try:
-        jax.distributed.initialize()
-        main(yaml)
-    except Exception as e:
-        print(e)
+    jax.distributed.initialize()
+    main(yaml)
