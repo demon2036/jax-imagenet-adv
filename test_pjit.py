@@ -102,6 +102,7 @@ def evaluate(state: TrainState, dataloader: DataLoader, validation_adv_step_jite
         metrics = validation_adv_step_jited(state, batch)
 
 
+
         labels,preds=metrics.pop('labels'),metrics.pop('preds')
 
         for label , pred in zip(labels,preds):
@@ -112,11 +113,16 @@ def evaluate(state: TrainState, dataloader: DataLoader, validation_adv_step_jite
                 correct_data[label]+=label==pred
 
 
-        if jax.process_index()==0:
-            print(metrics)
-            print(datas)
-            print()
-            print(correct_data)
+        # if jax.process_index()==0:
+        #     print(f'{metrics=}')
+        #     print(f'{datas=}')
+        #     print()
+        #     print(f'{correct_data=}')
+
+        print(f'{metrics=}')
+        print(f'{datas=}')
+        print()
+        print(f'{correct_data=}')
 
         while True:
             pass
