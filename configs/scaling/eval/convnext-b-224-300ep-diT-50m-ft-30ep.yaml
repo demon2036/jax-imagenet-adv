@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/scaling/preliminary
-name: convnext-b-224-300ep-diT-50m
+name: convnext-b-224-300ep-diT-50m-ft-30ep
 project: jax-adv-image-net-scaling-preliminary
 steps: 1281167
 training_epoch: 300
@@ -8,7 +8,7 @@ warmup_epoch: 20
 log_interval: 100
 eval_epoch: 10
 grad_accum_steps: 1
-resume: True
+#resume: True
 valid_fn: validation_adv_step_exp
 
 dataset:
@@ -69,7 +69,15 @@ train_state:
   mixup_seed: 1
   dropout_seed: 1
   ema_decay: 0.9998
-  pretrained_ckpt: 'convnext_base.fb_in1k'
+  pretrained_ckpt: '$GCS_MODEL_DIR/scaling/preliminary/convnext-b-224-300ep-diT-50m-ft-30ep-ema'
 
-
+restore_state:
+  grad_accum_steps: 1
+  optimizer:
+    target: 'adamw'
+    optimizer_kwargs:
+      learning_rate: 0.0004
+      weight_decay: 1.0e-8
+      b1: 0.9
+      b2: 0.999
 
