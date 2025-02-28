@@ -1,6 +1,6 @@
 
 output_dir: $GCS_MODEL_DIR/scaling/preliminary
-name: convnext-b-224-300ep-diT-50m-ft-30ep
+name: convnext-b-224-300ep-diT-50m
 project: jax-adv-image-net-scaling-preliminary
 steps: 1281167
 training_epoch: 300
