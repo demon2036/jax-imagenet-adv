@@ -19,7 +19,7 @@ input_tensor = torch.randn(1, 3, 224, 224)
 dims= [128, 256, 512, 768]
 
 for i,dim in enumerate(dims):
-    dims[i]=int(dims[i]*3)
+    dims[i]=int(dims[i]*2)
 print(dims)
 
 # net=MetaFormer(token_mixers=SepConv,depths=(3,12,18,3),dims=(128,256,512,768))
@@ -34,7 +34,7 @@ net=MetaFormer(
 # net=convnext_xxlarge()
 # net=vit_large_patch16_224()
 # net=vit_giant_patch14_224()
-net=vit_huge_patch14_clip_336()
+# net=vit_huge_patch14_clip_336()
 
 
 # net=VisionTransformer(img_size=336,**dict(patch_size=14, embed_dim=1408, mlp_ratio=48/11, depth=40, num_heads=16)
@@ -45,8 +45,8 @@ net.eval()
 # flops = torchprofile.profile_macs(net, input_tensor)
 # print("FLOPs:", flops)
 
-# input_res=(3, 224, 224)
-input_res=(3, 336, 336)
+input_res=(3, 224, 224)
+# input_res=(3, 336, 336)
 flops, params = get_model_complexity_info(net, input_res, as_strings=True, print_per_layer_stat=True,backend='aten',)
 print("FLOPs:", flops)
 print("Params:", params)
