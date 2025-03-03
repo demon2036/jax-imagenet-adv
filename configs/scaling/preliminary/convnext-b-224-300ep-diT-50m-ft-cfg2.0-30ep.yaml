@@ -30,8 +30,8 @@ dataset:
   generated_dataset_shards:
     ['$GCS_DATASET_DIR/imagenet-generated-100steps-cfg2.0-eta0.0/shards-{00000..00450}.tar']
   dataset_mix_ratio: 0.9
-  max_syn_ratio: 1.0
-  min_syn_ratio: 1.0
+  max_syn_ratio: 0.9
+  min_syn_ratio: 0.9
   scheduler: 'cosine'
 
 
