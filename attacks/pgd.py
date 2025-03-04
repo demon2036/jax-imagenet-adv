@@ -594,17 +594,16 @@ def rgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
     prev_image_perturbations=[image_perturbation]
     for i in range(maxiter):
 
-        if dynamic:
-            pass
-        else:
-            adv_step_size = step_size
+
         grad=grad_adversarial(image_perturbation)
 
-
-        sign_grad = jnp.sign(grad)
         if dynamic:
-            sign_grad=grad
-            adv_step_size=3000
+            sign_grad = grad
+            adv_step_size = 3000
+        else:
+            adv_step_size = step_size
+            sign_grad = jnp.sign(grad)
+
 
         # heuristic step-size 2 eps / maxiter
         image_perturbation += adv_step_size * sign_grad
@@ -616,6 +615,11 @@ def rgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
             delta=(prev_image_perturbation==image_perturbation).mean()
             metrics[f'delta_{i}_{j}']=delta
         prev_image_perturbations.append(image_perturbation)
+
+        if dynamic:
+            pass
+        else:
+            image_perturbation = jnp.clip(image_perturbation, - epsilon, epsilon)
 
     image_perturbation = jnp.clip(image_perturbation, - epsilon, epsilon)
 
