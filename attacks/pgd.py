@@ -546,3 +546,80 @@ def pgd_attack(image, label, model, epsilon=4 / 255, step_size=4/3 / 255, maxite
 #         delta = jax_re_norm(delta, max_norm=epsilon)
 #
 #     return jnp.clip(image + delta, 0, 1)
+
+
+
+def rgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3 / 255, maxiter=3, key=None,dynamic=False):
+    """PGD attack on the L-infinity ball with radius epsilon.
+
+  Args:
+    image: array-like, input data for the CNN
+    label: integer, class label corresponding to image
+    params: tree, parameters of the model to attack
+    epsilon: float, radius of the L-infinity ball.
+    maxiter: int, number of iterations of this algorithm.
+
+  Returns:
+    perturbed_image: Adversarial image on the boundary of the L-infinity ball
+      of radius epsilon and centered at image.
+
+  Notes:
+    PGD attack is described in (Madry et al. 2017),
+    https://arxiv.org/pdf/1706.06083.pdf
+    :param state:
+    :param image:
+    :param label:
+    :param params:
+    :param maxiter:
+    :param epsilon:
+    :param step_size:
+  """
+    b,h,w,c=image.shape
+    key1,key2,key3,key4,key5=jax.random.split(key,5)
+    image_perturbation = jax.random.uniform(key1, image.shape, minval=-epsilon, maxval=epsilon)
+
+    if dynamic:
+        # adv_step_size=jax.random.uniform(key2,(1,),minval=0.75,maxval=1).reshape((-1,1,1,1))*step_size
+        adv_step_size=step_size
+
+    def adversarial_loss(perturbation):
+        logits = model(jnp.clip(image + perturbation, 0, 1))
+        # print(logits.shape,label.shape)
+        loss_value = jnp.mean(optax.softmax_cross_entropy(logits, label))
+        # loss_value = logits
+        return loss_value
+
+    grad_adversarial = jax.grad(adversarial_loss)
+    metrics={}
+    prev_image_perturbations=[image_perturbation]
+    for i in range(maxiter):
+
+        if dynamic:
+            pass
+        else:
+            adv_step_size = step_size
+        grad=grad_adversarial(image_perturbation)
+
+
+        sign_grad = jnp.sign(grad)
+        if dynamic:
+            sign_grad=grad
+            adv_step_size=3000
+
+        # heuristic step-size 2 eps / maxiter
+        image_perturbation += adv_step_size * sign_grad
+        # projection step onto the L-infinity ball centered at image
+
+
+
+        for j,prev_image_perturbation in enumerate(prev_image_perturbations):
+            delta=(prev_image_perturbation==image_perturbation).mean()
+            metrics[f'delta_{i}_{j}']=delta
+        prev_image_perturbations.append(image_perturbation)
+
+    image_perturbation = jnp.clip(image_perturbation, - epsilon, epsilon)
+
+
+    # clip the image to ensure pixels are between 0 and 1
+    image_perturbation = jnp.clip(image + image_perturbation, 0, 1)
+    return jax.lax.stop_gradient(image_perturbation),metrics
