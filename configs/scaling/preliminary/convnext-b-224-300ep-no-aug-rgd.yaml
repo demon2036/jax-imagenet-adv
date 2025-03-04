@@ -18,11 +18,11 @@ dataset:
   valid_loader_workers: 10
   train_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-train-{0000..1023}.tar"
   valid_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-validation-{00..63}.tar"
-  random_crop: src
+  random_crop: rrc
   color_jitter: 0.0
-  auto_augment: "none"
+  auto_augment: "rand-m9-mstd0.5-inc1"
   random_erasing: 0.0
-  auto_generated_augment: "none"
+  auto_generated_augment: "rand-m9-mstd0.5-inc1"
   color_generated_jitter: 0.0
   random_generated_erasing: 0.0
   augment_repeats: 3
@@ -40,9 +40,9 @@ dataset:
 
 train_state:
   train_module:
-    target: 'train_modules.TrainAdvModule'
-    mixup: 0.0
-    cutmix: 0.0
+    target: 'train_modules.TrainAdvModule2'
+    mixup: 0.8
+    cutmix: 1.0
     criterion: ce
     label_smoothing: 0.1
     train_adv_step: 3
