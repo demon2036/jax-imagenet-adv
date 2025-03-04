@@ -254,8 +254,8 @@ import optax
 
 
 
-def _nucleus_sampling(ps=[0.85,0.9,0.99], betas=[3/4,1/2,1/8], *, logits):
-
+# def _nucleus_sampling(ps=[0.85,0.9,0.99], betas=[3/4,1/2,1/8], *, logits):
+def _nucleus_sampling(ps=[0.95,0.99], betas=[1/2,1/8], *, logits):
   logits=jnp.abs(logits)
 
   logits_sorted = jnp.sort(logits, axis=-1, descending=True)
