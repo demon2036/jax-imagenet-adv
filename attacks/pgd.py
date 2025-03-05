@@ -599,7 +599,7 @@ def rgd_dynamic_scale_attack(image, label, model, epsilon=4 / 255, step_size=4/3
 
         if dynamic:
             sign_grad = grad
-            adv_step_size = 1e6
+            adv_step_size = 1e5
         else:
             adv_step_size = step_size
             sign_grad = jnp.sign(grad)
