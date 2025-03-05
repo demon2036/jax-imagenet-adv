@@ -40,7 +40,7 @@ dataset:
 
 train_state:
   train_module:
-    target: 'train_modules.TrainAdvModule2'
+    target: 'train_modules.TrainAdvModule'
     mixup: 0.8
     cutmix: 1.0
     criterion: ce
