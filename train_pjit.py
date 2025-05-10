@@ -219,7 +219,7 @@ def main(configs):
 
         ckpt = {'model': state}
         save_args = orbax_utils.save_args_from_target(ckpt)
-        checkpointer.save('/test', ckpt, save_args=save_args, force=True)
+        checkpointer.save('/rootroot/test', ckpt, save_args=save_args, force=True)
         exit()
 
 
