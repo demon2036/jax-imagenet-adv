@@ -9,7 +9,7 @@ import optax
 from chex import Array, ArrayTree
 
 from attacks import pgd_attack, trade
-from attacks.pgd import pgd_dynamic_scale_attack, rgd_dynamic_scale_attack
+from attacks.pgd import pgd_dynamic_scale_attack, rgd_dynamic_scale_attack,apgd_ce_attack
 from attacks.trades import trade_lse
 from utils import Mixup
 
