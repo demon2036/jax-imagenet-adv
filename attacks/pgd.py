@@ -473,14 +473,13 @@ def apgd_ce_attack(image, label, model, epsilon=4 / 255, step_size=None, maxiter
     best_loss = jnp.ones(image.shape[0]) * (-float('inf'))
     loss_steps = jnp.zeros((maxiter, image.shape[0]))
 
-    def cross_entropy_loss(perturbation):
-        """CE loss function for generating adversarial examples."""
+    def adversarial_loss(perturbation):
         logits = model(jnp.clip(image + perturbation, 0, 1))
-        loss_value = -optax.softmax_cross_entropy(logits, label)  # Negative CE to maximize
+        loss_value = jnp.mean(optax.softmax_cross_entropy(logits, label))
         return loss_value
 
     # Get gradient function
-    grad_fn = jax.grad(cross_entropy_loss, has_aux=False)
+    grad_fn = jax.grad(adversarial_loss, has_aux=False)
 
     # Initialize step size for each example
     step_sizes = jnp.ones((image.shape[0], 1, 1, 1)) * step_size
