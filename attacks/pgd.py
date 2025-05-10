@@ -406,9 +406,7 @@ def pgd_attack(image, label, model, epsilon=4 / 255, step_size=4/3 / 255, maxite
 
     def adversarial_loss(perturbation):
         logits = model(jnp.clip(image + perturbation, 0, 1))
-        # print(logits.shape,label.shape)
         loss_value = jnp.mean(optax.softmax_cross_entropy(logits, label))
-        # loss_value = logits
         return loss_value
 
     grad_adversarial = jax.grad(adversarial_loss)
@@ -434,7 +432,139 @@ def pgd_attack(image, label, model, epsilon=4 / 255, step_size=4/3 / 255, maxite
     return jax.lax.stop_gradient(image_perturbation), metrics
 
 
+def apgd_ce_attack(image, label, model, epsilon=4 / 255, step_size=None, maxiter=20, key=None):
+    """PGD attack with adaptive step size (APGD-style) using CE loss.
 
+    Args:
+        image: array-like, input data for the model
+        label: integer, class label corresponding to image
+        model: function, the model to attack
+        epsilon: float, radius of the L-infinity ball
+        step_size: float, initial step size (defaults to 2*epsilon if None)
+        maxiter: int, number of iterations
+        key: PRNGKey for random initialization
+
+    Returns:
+        perturbed_image: Adversarial image
+        metrics: dictionary of metrics about the attack
+    """
+
+    # Set initial step size if not provided
+    if step_size is None:
+        step_size = 2.0 * epsilon
+
+    # Initialize metrics
+    metrics = {}
+
+    # Initialize random perturbation if key is provided
+    if key is not None:
+        image_perturbation = jax.random.uniform(key, image.shape, minval=-epsilon, maxval=epsilon)
+    else:
+        image_perturbation = jnp.zeros_like(image)
+
+    # APGD parameters
+    n_iter_check = max(int(0.1 * maxiter), 1)  # Check oscillations every 10% of iterations
+    n_iter_min = max(int(0.06 * maxiter), 1)  # Minimum number of iterations between checks
+    reduced_last_check = jnp.ones(image.shape[0])  # Track if step size was reduced in last check
+    thr_decr = 0.75  # Threshold for oscillation detection
+
+    # To track best results
+    best_perturbation = image_perturbation
+    best_loss = jnp.ones(image.shape[0]) * (-float('inf'))
+    loss_steps = jnp.zeros((maxiter, image.shape[0]))
+
+    def cross_entropy_loss(perturbation):
+        """CE loss function for generating adversarial examples."""
+        logits = model(jnp.clip(image + perturbation, 0, 1))
+        loss_value = -optax.softmax_cross_entropy(logits, label)  # Negative CE to maximize
+        return loss_value
+
+    # Get gradient function
+    grad_fn = jax.grad(cross_entropy_loss, has_aux=False)
+
+    # Initialize step size for each example
+    step_sizes = jnp.ones((image.shape[0], 1, 1, 1)) * step_size
+
+    # Previous perturbation for momentum
+    prev_perturbation = image_perturbation
+
+    # Main attack loop
+    for i in range(maxiter):
+        # Calculate loss and gradient
+        loss = cross_entropy_loss(image_perturbation)
+        grad = grad_fn(image_perturbation)
+
+        # Update loss tracking
+        loss_steps = loss_steps.at[i].set(loss)
+
+        # Check if current loss is better than best loss
+        is_better = loss > best_loss
+        best_loss = jnp.where(is_better, loss, best_loss)
+        best_perturbation = jnp.where(is_better.reshape(-1, 1, 1, 1),
+                                      image_perturbation,
+                                      best_perturbation)
+
+        # Gradient momentum (as in APGD)
+        if i > 0:
+            # Calculate grad2 (like in APGD)
+            grad2 = image_perturbation - prev_perturbation
+
+            # APGD uses momentum parameter a = 0.75 for iteration > 0
+            a = 0.75
+
+            # Update with sign of gradient and momentum
+            new_perturbation = image_perturbation + step_sizes * jnp.sign(grad)
+            # Project to epsilon ball
+            new_perturbation = jnp.clip(new_perturbation, -epsilon, epsilon)
+            # Apply momentum
+            image_perturbation = image_perturbation + (new_perturbation - image_perturbation) * a + grad2 * (1 - a)
+            image_perturbation = jnp.clip(image_perturbation, -epsilon, epsilon)
+        else:
+            # For first iteration, simple gradient step
+            image_perturbation = image_perturbation + step_sizes * jnp.sign(grad)
+            image_perturbation = jnp.clip(image_perturbation, -epsilon, epsilon)
+
+        # Save current perturbation for next iteration's momentum
+        prev_perturbation = image_perturbation
+
+        # Check for oscillations and adjust step size (APGD adaptive mechanism)
+        if (i + 1) % n_iter_check == 0 and i > 0:
+            # Check for oscillations in last n_iter_check iterations
+            losses_to_check = loss_steps[i - n_iter_check + 1:i + 1]
+
+            # Implementation of check_oscillation function
+            def check_oscillation(losses):
+                # Count how many times the loss increased
+                t = jnp.sum(losses[1:] > losses[:-1], axis=0)
+                # If less than 75% of iterations show increase, we have oscillation
+                return (t <= n_iter_check * thr_decr).astype(jnp.float32)
+
+            fl_oscillation = check_oscillation(losses_to_check)
+
+            # Also check if no improvement since last check
+            fl_reduce_no_impr = (1. - reduced_last_check) * (best_loss <= loss)
+            fl_oscillation = jnp.maximum(fl_oscillation, fl_reduce_no_impr)
+            reduced_last_check = fl_oscillation
+
+            # Reduce step size where oscillation detected
+            step_sizes = jnp.where(fl_oscillation.reshape(-1, 1, 1, 1),
+                                   step_sizes * 0.5,
+                                   step_sizes)
+
+            # Reset to best perturbation where oscillation detected
+            image_perturbation = jnp.where(fl_oscillation.reshape(-1, 1, 1, 1),
+                                           best_perturbation,
+                                           image_perturbation)
+
+            # Update n_iter_check to check less frequently
+            n_iter_check = max(n_iter_check - 1, n_iter_min)
+
+            # Record step size changes
+            metrics[f'step_size_i{i}'] = step_sizes.mean().item()
+
+    # Return final perturbed image
+    perturbed_image = jnp.clip(image + best_perturbation, 0, 1)
+    return jax.lax.stop_gradient(perturbed_image), metrics
 
 
 
