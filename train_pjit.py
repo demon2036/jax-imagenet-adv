@@ -216,6 +216,13 @@ def main(configs):
 
 
         checkpointer = ocp.AsyncCheckpointer(ocp.PyTreeCheckpointHandler())
+
+        ckpt = {'model': state}
+        save_args = orbax_utils.save_args_from_target(ckpt)
+        checkpointer.save('/test', ckpt, save_args=save_args, force=True)
+        exit()
+
+
         # checkpointer =ocp.PyTreeCheckpointer()
 
         average_meter, max_val_acc1 = AverageMeter(use_latest=["learning_rate"]), 0.0
@@ -360,7 +367,8 @@ def main(configs):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--yaml-path", type=str,
-                        default='configs/planB/ablation/best/caformer-b36-224-3step-600ep-real-adv-step-3-rand-mix0.9-pgd-3-lion.yaml')
+                        default='configs/scaling/crash/caformer-xl-192-3step-700ep-sit-8-3-crash.yaml'
+                        )
     # parser.add_argument("--train-dataset-shards")
     # parser.add_argument("--valid-dataset-shards")
     # parser.add_argument("--train-batch-size", type=int, default=2048)
