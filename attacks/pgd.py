@@ -478,8 +478,8 @@ def apgd_ce_attack(image, label, model, epsilon=4 / 255, step_size=None, maxiter
         loss_value = jnp.mean(optax.softmax_cross_entropy(logits, label))
         return loss_value
 
-    # Get gradient function
-    grad_fn = jax.grad(adversarial_loss, has_aux=False)
+    # 使用 value_and_grad 同时获取损失值和梯度，避免重复计算
+    loss_and_grad_fn = jax.value_and_grad(adversarial_loss)
 
     # Initialize step size for each example
     step_sizes = jnp.ones((image.shape[0], 1, 1, 1)) * step_size
@@ -489,9 +489,8 @@ def apgd_ce_attack(image, label, model, epsilon=4 / 255, step_size=None, maxiter
 
     # Main attack loop
     for i in range(maxiter):
-        # Calculate loss and gradient
-        loss = cross_entropy_loss(image_perturbation)
-        grad = grad_fn(image_perturbation)
+        # 同时计算损失和梯度，避免重复计算
+        loss, grad = loss_and_grad_fn(image_perturbation)
 
         # Update loss tracking
         loss_steps = loss_steps.at[i].set(loss)
