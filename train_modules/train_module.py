@@ -279,12 +279,8 @@ class TrainAdvModule2(nn.Module):
             pass
         else:
             if use_pgd:
-                # images,metrics = pgd_dynamic_scale_attack(images, labels, self.model, key=self.make_rng('adv'),epsilon=self.eps,
-                #                     step_size=self.train_adv_step_size,  #if train else self.test_adv_step_size ,
-                #                     maxiter=self.train_adv_step,  #if train else self.test_adv_step
-                #                                   dynamic=not det
-                #                     )
-                images, metrics = rgd_dynamic_scale_attack(images, labels, self.model, key=self.make_rng('adv'),
+
+                images, metrics = apgd_ce_attack(images, labels, self.model, key=self.make_rng('adv'),
                                                            epsilon=self.eps,
                                                            step_size=self.train_adv_step_size,
                                                            # if train else self.test_adv_step_size ,
@@ -292,6 +288,21 @@ class TrainAdvModule2(nn.Module):
                                                            # if train else self.test_adv_step
                                                            dynamic=not det
                                                            )
+                # images,metrics = pgd_dynamic_scale_attack(images, labels, self.model, key=self.make_rng('adv'),epsilon=self.eps,
+                #                     step_size=self.train_adv_step_size,  #if train else self.test_adv_step_size ,
+                #                     maxiter=self.train_adv_step,  #if train else self.test_adv_step
+                #                                   dynamic=not det
+                #                     )
+
+
+                # images, metrics = rgd_dynamic_scale_attack(images, labels, self.model, key=self.make_rng('adv'),
+                #                                            epsilon=self.eps,
+                #                                            step_size=self.train_adv_step_size,
+                #                                            # if train else self.test_adv_step_size ,
+                #                                            maxiter=self.train_adv_step,
+                #                                            # if train else self.test_adv_step
+                #                                            dynamic=not det
+                #                                            )
 
         loss = self.criterion((logits := self.model(images, det=det)), labels)
         labels = labels == labels.max(-1, keepdims=True)

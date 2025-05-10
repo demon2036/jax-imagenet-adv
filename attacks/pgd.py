@@ -432,7 +432,7 @@ def pgd_attack(image, label, model, epsilon=4 / 255, step_size=4/3 / 255, maxite
     return jax.lax.stop_gradient(image_perturbation), metrics
 
 
-def apgd_ce_attack(image, label, model, epsilon=4 / 255, step_size=None, maxiter=20, key=None):
+def apgd_ce_attack(image, label, model, epsilon=4 / 255, step_size=None, maxiter=3, key=None):
     """PGD attack with adaptive step size (APGD-style) using CE loss.
 
     Args:
