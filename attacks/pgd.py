@@ -557,8 +557,6 @@ def apgd_ce_attack(image, label, model, epsilon=4 / 255, step_size=None, maxiter
             # Update n_iter_check to check less frequently
             n_iter_check = max(n_iter_check - 1, n_iter_min)
 
-            # Record step size changes
-            metrics[f'step_size_i{i}'] = step_sizes.mean().item()
 
     # Return final perturbed image
     perturbed_image = jnp.clip(image + best_perturbation, 0, 1)
