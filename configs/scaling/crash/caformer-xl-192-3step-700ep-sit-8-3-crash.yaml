@@ -15,8 +15,8 @@ tp: 1
 #resume: True
 
 dataset:
-  train_batch_size: 4096
-  valid_batch_size: 4096
+  train_batch_size: 4
+  valid_batch_size: 4
   train_loader_workers: 20
   valid_loader_workers: 10
   train_dataset_shards: "$GCS_DATASET_DIR/imagenet-1k-wds/imagenet1k-train-{0000..1023}.tar"
