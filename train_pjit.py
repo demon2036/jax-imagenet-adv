@@ -219,7 +219,8 @@ def main(configs):
 
         ckpt = {'model': state}
         save_args = orbax_utils.save_args_from_target(ckpt)
-        checkpointer.save('/rootroot/test', ckpt, save_args=save_args, force=True)
+        checkpointer.save('/root/gcloud-mount-folder2/test_ca', ckpt, save_args=save_args, force=True)
+        checkpointer.wait_until_finished()
         exit()
 
 
