@@ -114,16 +114,16 @@ def training_step(state: TrainState, batch: ArrayTree, use_pgd) -> tuple[TrainSt
     def loss_fn(params: ArrayTree) -> ArrayTree:
         metrics = state.apply_fn({"params": params}, *batch, det=False, rngs=rngs, use_trade=not use_pgd,
                                  use_pgd=use_pgd, )
-        metrics = jax.tree_map(jnp.mean, metrics)
+        metrics = jax.tree_util.tree_map(jnp.mean, metrics)
         return metrics["loss"], metrics
 
     def update_fn(state: TrainState) -> TrainState:
         # Collect a global gradient from the accumulated gradients and apply actual
         # parameter update with resetting the accumulations to zero.
-        grads = jax.tree_map(lambda g: g / state.micro_in_mini, state.grad_accum)
+        grads = jax.tree_util.tree_map(lambda g: g / state.micro_in_mini, state.grad_accum)
         state = state.apply_gradients(
             grads=grads,
-            grad_accum=jax.tree_map(jnp.zeros_like, state.grad_accum),
+            grad_accum=jax.tree_util.tree_map(jnp.zeros_like, state.grad_accum),
             micro_step=state.micro_step % state.micro_in_mini,
         )
         new_ema_params = jax.tree_util.tree_map(
@@ -150,7 +150,7 @@ def training_step(state: TrainState, batch: ArrayTree, use_pgd) -> tuple[TrainSt
 
     else:
         state = state.replace(
-            grad_accum=jax.tree_map(lambda ga, g: ga + g, state.grad_accum, grads),
+            grad_accum=jax.tree_map.tree_map(lambda ga, g: ga + g, state.grad_accum, grads),
             micro_step=state.micro_step + 1,
         )
         state = jax.lax.cond(
@@ -187,16 +187,16 @@ def training_step_kl(state: TrainState, batch: ArrayTree, use_pgd) -> tuple[Trai
         metrics['kl_loss']=kl_loss
         metrics['ce_loss']=metrics['loss']
         metrics['loss']=metrics['ce_loss']+0.5*kl_loss
-        metrics = jax.tree_map(jnp.mean, metrics)
+        metrics = jax.tree_map.tree_map(jnp.mean, metrics)
         return metrics["loss"], metrics
 
     def update_fn(state: TrainState) -> TrainState:
         # Collect a global gradient from the accumulated gradients and apply actual
         # parameter update with resetting the accumulations to zero.
-        grads = jax.tree_map(lambda g: g / state.micro_in_mini, state.grad_accum)
+        grads = jax.tree_map.tree_map(lambda g: g / state.micro_in_mini, state.grad_accum)
         state = state.apply_gradients(
             grads=grads,
-            grad_accum=jax.tree_map(jnp.zeros_like, state.grad_accum),
+            grad_accum=jax.tree_map.tree_map(jnp.zeros_like, state.grad_accum),
             micro_step=state.micro_step % state.micro_in_mini,
         )
         new_ema_params = jax.tree_util.tree_map(
@@ -223,7 +223,7 @@ def training_step_kl(state: TrainState, batch: ArrayTree, use_pgd) -> tuple[Trai
 
     else:
         state = state.replace(
-            grad_accum=jax.tree_map(lambda ga, g: ga + g, state.grad_accum, grads),
+            grad_accum=jax.tree_map.tree_map(lambda ga, g: ga + g, state.grad_accum, grads),
             micro_step=state.micro_step + 1,
         )
         state = jax.lax.cond(
@@ -245,16 +245,16 @@ def training_step_test(state: TrainState, batch: ArrayTree, use_pgd) -> tuple[Tr
     def loss_fn(params: ArrayTree) -> ArrayTree:
         metrics = state.apply_fn({"params": params}, *batch, det=False, rngs=rngs, use_trade=not use_pgd,
                                  use_pgd=use_pgd, )
-        metrics = jax.tree_map(jnp.mean, metrics)
+        metrics = jax.tree_map.tree_map(jnp.mean, metrics)
         return metrics["loss"], metrics
 
     def update_fn(state: TrainState) -> TrainState:
         # Collect a global gradient from the accumulated gradients and apply actual
         # parameter update with resetting the accumulations to zero.
-        grads = jax.tree_map(lambda g: g / state.micro_in_mini, state.grad_accum)
+        grads = jax.tree_map.tree_map(lambda g: g / state.micro_in_mini, state.grad_accum)
         state = state.apply_gradients(
             grads=grads,
-            grad_accum=jax.tree_map(jnp.zeros_like, state.grad_accum),
+            grad_accum=jax.tree_map.tree_map(jnp.zeros_like, state.grad_accum),
             micro_step=state.micro_step % state.micro_in_mini,
         )
         new_ema_params = jax.tree_util.tree_map(
@@ -295,7 +295,7 @@ def training_step_test(state: TrainState, batch: ArrayTree, use_pgd) -> tuple[Tr
 
     else:
         state = state.replace(
-            grad_accum=jax.tree_map(lambda ga, g: ga + g, state.grad_accum, grads),
+            grad_accum=jax.tree_map.tree_map(lambda ga, g: ga + g, state.grad_accum, grads),
             micro_step=state.micro_step + 1,
         )
         state = jax.lax.cond(
@@ -348,7 +348,7 @@ def validation_step(state: TrainState, batch: ArrayTree) -> ArrayTree:
         det=True,
     )
     metrics["num_samples"] = batch[1] != -1
-    metrics = jax.tree_map(lambda x: (x * (batch[1] != -1)).sum(), metrics)
+    metrics = jax.tree_map.tree_map(lambda x: (x * (batch[1] != -1)).sum(), metrics)
     return metrics
 
 
@@ -364,7 +364,7 @@ def validation_step_exp(state: TrainState, batch: ArrayTree) -> ArrayTree:
     preds=metrics.pop('preds')
 
     metrics["num_samples"] = batch[1] != -1
-    metrics = jax.tree_map(lambda x: (x * (batch[1] != -1)).sum(), metrics)
+    metrics = jax.tree_map.tree_map(lambda x: (x * (batch[1] != -1)).sum(), metrics)
 
     metrics['labels']=batch[1]
     metrics['preds']=preds
@@ -390,7 +390,7 @@ def validation_adv_step_exp(state: TrainState, batch: ArrayTree) -> ArrayTree:
     preds=metrics.pop('preds')
 
     metrics["num_samples"] = batch[1] != -1
-    metrics = jax.tree_map(lambda x: (x * (batch[1] != -1)).sum(), metrics)
+    metrics = jax.tree_map.tree_map(lambda x: (x * (batch[1] != -1)).sum(), metrics)
 
     metrics['labels']=labels
     metrics['preds']=preds
